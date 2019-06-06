@@ -24,6 +24,7 @@
 		"@babel/runtime": "^7.4.4",
 		"@wordpress/block-editor": "file:../block-editor",
 		"@wordpress/components": "file:../components",
+		"@wordpress/data": "file:../data",
 		"@wordpress/dom": "file:../dom",
 		"@wordpress/element": "file:../element",
 		"@wordpress/html-entities": "file:../html-entities",
