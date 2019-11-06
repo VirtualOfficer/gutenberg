@@ -10,18 +10,17 @@ import { withPreferredColorScheme } from '@wordpress/compose';
  * Internal dependencies
  */
 import WebPreformattedEdit from './edit.js';
-import styles from './styles.scss';
+import stylesheet from './styles.scss';
 
 function PreformattedEdit( props ) {
-	const { getStylesFromColorScheme } = props;
-	const richTextStyle = getStylesFromColorScheme( styles.wpRichText, styles.wpRichTextDark );
-	const wpBlockPreformatted = getStylesFromColorScheme( styles.wpBlockPreformatted, styles.wpBlockPreformattedDark );
+	const { getDynamicStyles } = props;
+	const styles = getDynamicStyles( stylesheet );
 	const propsWithStyle = {
 		...props,
-		style: richTextStyle,
+		style: styles.wpRichText,
 	};
 	return (
-		<View style={ wpBlockPreformatted } >
+		<View style={ styles.wpBlockPreformatted } >
 			<WebPreformattedEdit
 				{ ...propsWithStyle }
 			/>
