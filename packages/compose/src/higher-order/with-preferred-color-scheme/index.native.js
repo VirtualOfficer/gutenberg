@@ -18,10 +18,32 @@ const withPreferredColorScheme = createHigherOrderComponent(
 			return isDarkMode ? finalDarkStyles : lightStyles;
 		};
 
+		const getDynamicStyles = ( styles, append = true ) => {
+			if ( ! isDarkMode ) {
+				return styles;
+			}
+
+			const classNames = Object.keys( styles );
+			const dynamicClassNames = classNames.filter( key => classNames.includes( key + 'Dark' ) );
+
+			return classNames.reduce( ( result, key ) => {
+				if ( key.endsWith( 'Dark' ) && classNames.includes( key.slice( 0, -4 ) ) ) {
+					return result;
+				} else if ( dynamicClassNames.includes( key ) ) {
+					const lightStyle = styles[ key ];
+					const darkStyle = styles[ key + 'Dark' ];
+					return Object.assign( result, {
+						[ key ]: append ? { ...lightStyle, ...darkStyle } : darkStyle,
+					} );
+				}
+			}, {} );
+		};
+
 		return (
 			<WrappedComponent
 				preferredColorScheme={ colorScheme }
 				getStylesFromColorScheme={ getStyles }
+				getDynamicStyles={ getDynamicStyles }
 				{ ...props }
 			/>
 		);
