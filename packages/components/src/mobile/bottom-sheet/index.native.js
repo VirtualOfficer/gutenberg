@@ -1,73 +1,39 @@
-/**
- * External dependencies
- */
-import { Text, View, Platform, PanResponder, Dimensions, Easing } from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+	TouchableWithoutFeedback,
+	PanResponder,
+	View,
+	Dimensions
+} from 'react-native';
 import Modal from 'react-native-modal';
-import SafeArea from 'react-native-safe-area';
-
-/**
- * WordPress dependencies
- */
+import ReanimatedBottomSheet from 'reanimated-bottom-sheet';
 import { Component } from '@wordpress/element';
 import { withPreferredColorScheme } from '@wordpress/compose';
 
-/**
- * Internal dependencies
- */
-import styles from './styles.scss';
 import Button from './button';
 import Cell from './cell';
 import PickerCell from './picker-cell';
 import SwitchCell from './switch-cell';
 import RangeCell from './range-cell';
 import KeyboardAvoidingView from './keyboard-avoiding-view';
-
 class BottomSheet extends Component {
-	constructor() {
-		super( ...arguments );
-		this.onSafeAreaInsetsUpdate = this.onSafeAreaInsetsUpdate.bind( this );
-		this.state = {
-			safeAreaBottomInset: 0,
-		};
+  renderInner = () => (
+    <View style={styles.panel}>
+      {this.props.children}
+    </View>
+  );
 
-		SafeArea.getSafeAreaInsetsForRootView().then( this.onSafeAreaInsetsUpdate );
-	}
+  renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.panelHeader}>
+        <View style={styles.panelHandle} />
+      </View>
+    </View>
+  );
 
-	componentDidMount() {
-		this.safeAreaEventSubscription = SafeArea.addEventListener( 'safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsUpdate );
-	}
-
-	componentWillUnmount() {
-		if ( this.safeAreaEventSubscription === null ) {
-			return;
-		}
-		this.safeAreaEventSubscription.remove();
-		this.safeAreaEventSubscription = null;
-		SafeArea.removeEventListener( 'safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsUpdate );
-	}
-
-	onSafeAreaInsetsUpdate( result ) {
-		if ( this.safeAreaEventSubscription === null ) {
-			return;
-		}
-		const { safeAreaInsets } = result;
-		if ( this.state.safeAreaBottomInset !== safeAreaInsets.bottom ) {
-			this.setState( { safeAreaBottomInset: safeAreaInsets.bottom } );
-		}
-	}
-
-	render() {
-		const {
-			title = '',
-			isVisible,
-			leftButton,
-			rightButton,
-			hideHeader,
-			style = {},
-			contentStyle = {},
-			getStylesFromColorScheme,
-		} = this.props;
-
+  render() {
 		const panResponder = PanResponder.create( {
 			onMoveShouldSetPanResponder: ( evt, gestureState ) => {
 				// Activates swipe down over child Touchables if the swipe is long enough.
@@ -78,93 +44,25 @@ class BottomSheet extends Component {
 				}
 			},
 		} );
-
-		const getHeader = () => (
-			<View>
-				<View style={ styles.head }>
-					<View style={ { flex: 1 } }>
-						{ leftButton }
-					</View>
-					<View style={ styles.titleContainer }>
-						<Text style={ styles.title }>
-							{ title }
-						</Text>
-					</View>
-					<View style={ { flex: 1 } }>
-						{ rightButton }
-					</View>
-				</View>
-				<View style={ styles.separator } />
-			</View>
-		);
-
-		const { height } = Dimensions.get( 'window' );
-		const easing = Easing.bezier( 0.450, 0.000, 0.160, 1.020 );
-
-		const animationIn = {
-			easing,
-			from: {
-				translateY: height,
-			},
-			to: {
-				translateY: 0,
-			},
-		};
-
-		const animationOut = {
-			easing,
-			from: {
-				translateY: 0,
-			},
-			to: {
-				translateY: height,
-			},
-		};
-
-		const backgroundStyle = getStylesFromColorScheme( styles.background, styles.backgroundDark );
-
-		return (
-			<Modal
-				isVisible={ isVisible }
-				style={ styles.bottomModal }
-				animationIn={ animationIn }
-				animationInTiming={ 600 }
-				animationOut={ animationOut }
-				animationOutTiming={ 250 }
-				backdropTransitionInTiming={ 50 }
-				backdropTransitionOutTiming={ 50 }
-				backdropOpacity={ 0.2 }
-				onBackdropPress={ this.props.onClose }
-				onBackButtonPress={ this.props.onClose }
-				onSwipe={ this.props.onClose }
-				onDismiss={ Platform.OS === 'ios' ? this.props.onDismiss : undefined }
-				onModalHide={ Platform.OS === 'android' ? this.props.onDismiss : undefined }
-				swipeDirection="down"
-				onMoveShouldSetResponder={ panResponder.panHandlers.onMoveShouldSetResponder }
+    return (
+			<Modal isVisible={ this.props.isVisible } onBackdropPress={ this.props.onClose } style={{margin: 0}}
+			onMoveShouldSetResponder={ panResponder.panHandlers.onMoveShouldSetResponder }
 				onMoveShouldSetResponderCapture={ panResponder.panHandlers.onMoveShouldSetResponderCapture }
-				onAccessibilityEscape={ this.props.onClose }
 			>
-				<KeyboardAvoidingView
-					behavior={ Platform.OS === 'ios' && 'padding' }
-					style={ { ...backgroundStyle, borderColor: 'rgba(0, 0, 0, 0.1)', ...style } }
-					keyboardVerticalOffset={ -this.state.safeAreaBottomInset }
-				>
-					<View style={ styles.dragIndicator } />
-					{ hideHeader && ( <View style={ styles.emptyHeaderSpace } /> ) }
-					{ ! hideHeader && getHeader() }
-					<View style={ [ styles.content, contentStyle ] }>
-						{ this.props.children }
-					</View>
-					<View style={ { height: this.state.safeAreaBottomInset } } />
-				</KeyboardAvoidingView>
+        <ReanimatedBottomSheet
+          snapPoints={[500, 0]}
+          renderContent={this.renderInner}
+          renderHeader={this.renderHeader}
+					onCloseEnd={this.props.onClose}
+        />
 			</Modal>
 
-		);
-	}
+    );
+  }
 }
 
 function getWidth() {
-	return Math.min( Dimensions.get( 'window' ).width, styles.background.maxWidth );
+	return Math.min( Dimensions.get( 'window' ).width, 512 );
 }
 
 const ThemedBottomSheet = withPreferredColorScheme( BottomSheet );
@@ -177,3 +75,75 @@ ThemedBottomSheet.SwitchCell = SwitchCell;
 ThemedBottomSheet.RangeCell = RangeCell;
 
 export default ThemedBottomSheet;
+
+const IMAGE_SIZE = 200;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5FCFF',
+  },
+  box: {
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+  },
+  panelContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  panel: {
+    height: 600,
+		backgroundColor: '#f7f5eee8',
+  },
+  header: {
+    backgroundColor: '#f7f5eee8',
+    shadowColor: '#000000',
+    paddingTop: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  panelHeader: {
+    alignItems: 'center',
+  },
+  panelHandle: {
+    width: 40,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#00000040',
+    marginBottom: 10,
+  },
+  panelTitle: {
+    fontSize: 27,
+    height: 35,
+  },
+  panelSubtitle: {
+    fontSize: 14,
+    color: 'gray',
+    height: 30,
+    marginBottom: 10,
+  },
+  panelButton: {
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: '#318bfb',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  panelButtonTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  photo: {
+    width: '100%',
+    height: 225,
+    marginTop: 30,
+  },
+  map: {
+    height: '100%',
+    width: '100%',
+  },
+});

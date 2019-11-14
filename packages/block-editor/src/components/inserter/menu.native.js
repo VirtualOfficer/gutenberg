@@ -72,8 +72,6 @@ export class InserterMenu extends Component {
 			<BottomSheet
 				isVisible={ true }
 				onClose={ this.props.onDismiss }
-				contentStyle={ [ styles.content, bottomPadding ] }
-				hideHeader
 			>
 				<FlatList
 					onLayout={ this.onLayout }
@@ -93,7 +91,7 @@ export class InserterMenu extends Component {
 							activeOpacity={ .5 }
 							accessibilityLabel={ item.title }
 							onPress={ () => this.props.onSelect( item ) }>
-							<View style={ styles.modalItem }>
+							<View style={ [styles.modalItem, { width: BottomSheet.getWidth() / this.state.numberOfColumns}] }>
 								<View style={ modalIconWrapperStyle }>
 									<View style={ modalIconStyle }>
 										<Icon icon={ item.icon.src } fill={ modalIconStyle.fill } size={ modalIconStyle.width } />
