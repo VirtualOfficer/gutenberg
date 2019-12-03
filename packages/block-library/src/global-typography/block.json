@@ -1,0 +1,27 @@
+{
+	"name": "core/global-typography",
+	"category": "layout",
+	"attributes": {
+		"fontFamilyBase": {
+			"type": "string"
+		},
+		"fontFamilyHeading": {
+			"type": "string"
+		},
+		"fontSizeBase": {
+			"type": "number"
+		},
+		"fontSizeH1": {
+			"type": "number"
+		},
+		"typeScale": {
+			"type": "number"
+		},
+		"lineHeight": {
+			"type": "number"
+		},
+		"lineHeightHeading": {
+			"type": "number"
+		}
+	}
+}

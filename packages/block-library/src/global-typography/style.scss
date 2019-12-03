@@ -1,0 +1,128 @@
+@mixin globalTypographyStyles() {
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-family: var(--gbs-typography-fontFamilyHeading);
+	}
+
+	h1 {
+		font-size: var(--gbs-typography-fontSizeH1);
+		line-height: var(--gbs-typography-lineHeightHeading);
+	}
+
+	h2 {
+		font-size: var(--gbs-typography-fontSizeH2);
+		line-height: var(--gbs-typography-lineHeightHeading);
+	}
+
+	h3 {
+		font-size: var(--gbs-typography-fontSizeH3);
+		line-height: var(--gbs-typography-lineHeightHeading);
+	}
+
+	h4 {
+		font-size: var(--gbs-typography-fontSizeH4);
+		line-height: var(--gbs-typography-lineHeightHeading);
+	}
+
+	h5 {
+		font-size: var(--gbs-typography-fontSizeH5);
+		line-height: var(--gbs-typography-lineHeightHeading);
+	}
+
+	h6 {
+		font-size: var(--gbs-typography-fontSizeH6);
+		line-height: var(--gbs-typography-lineHeightHeading);
+	}
+
+	p {
+		font-size: var(--gbs-typography-fontSizeBase);
+		font-family: var(--gbs-typography-fontFamilyBase);
+		line-height: var(--gbs-typography-lineHeightBase);
+	}
+}
+
+@mixin titleFontStyles() {
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 1;
+	opacity: 0.6;
+	text-transform: uppercase;
+}
+
+@at-root {
+	@include globalTypographyStyles;
+}
+
+.wp-block-global-typography__section {
+	max-width: 800px;
+	margin: 0 auto 60px;
+
+	&:last-of-type {
+		padding-bottom: 30px;
+	}
+}
+
+.wp-block-global-typography__header {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	padding-bottom: 10px;
+	margin: 10px 0 20px;
+}
+
+.wp-block-global-typography__title {
+	@include titleFontStyles;
+}
+
+.wp-block-global-typography .wp-block-global-typography__type-scale-list {
+	list-style: none;
+	padding: 0 !important;
+	margin: 0 !important;
+
+	div {
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6,
+		p {
+			margin: 0 !important;
+			padding: 0 !important;
+			line-height: 1;
+		}
+	}
+}
+
+.wp-block-global-typography__type-scale-list-item {
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	padding: 16px 0;
+	border-bottom: 1px dotted rgba(0, 0, 0, 0.1);
+}
+
+
+.wp-block-global-typography__font-content {
+	display: flex;
+
+	& > * {
+		flex: 1;
+		margin-right: 32px;
+
+		&:last-of-type {
+			margin-right: 0;
+		}
+	}
+}
+
+.wp-block-global-typography__alphabet-title {
+	@include titleFontStyles;
+	margin: 10px 0;
+
+	& + * {
+		margin-top: 0 !important;
+	}
+}

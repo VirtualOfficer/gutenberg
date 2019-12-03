@@ -1,0 +1,9 @@
+{
+	"name": "core/global-colors",
+	"category": "layout",
+	"attributes": {
+		"globalColors": {
+			"type": "array"
+		}
+	}
+}

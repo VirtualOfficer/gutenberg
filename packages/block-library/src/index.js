@@ -33,6 +33,8 @@ import * as cover from './cover';
 import * as embed from './embed';
 import * as file from './file';
 import * as html from './html';
+import * as globalColors from './global-colors';
+import * as globalTypography from './global-typography';
 import * as mediaText from './media-text';
 import * as navigation from './navigation';
 import * as navigationLink from './navigation-link';
@@ -120,6 +122,8 @@ export const registerCoreBlocks = () => {
 		...embed.common,
 		...embed.others,
 		file,
+		globalColors,
+		globalTypography,
 		group,
 		window.wp && window.wp.oldEditor ? classic : null, // Only add the classic block in WP Context
 		html,

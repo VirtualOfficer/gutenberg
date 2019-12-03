@@ -1,0 +1,33 @@
+{
+	"name": "@wordpress/global-block-styles",
+	"version": "0.0.1",
+	"description": "Block Style System for Gutenberg.",
+	"author": "The WordPress Contributors",
+	"license": "GPL-2.0-or-later",
+	"keywords": [
+		"wordpress",
+		"blocks",
+		"style",
+		"system"
+	],
+	"homepage": "https://github.com/WordPress/gutenberg/tree/master/packages/global-block-styles/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/WordPress/gutenberg.git",
+		"directory": "packages/global-block-styles"
+	},
+	"bugs": {
+		"url": "https://github.com/WordPress/gutenberg/issues"
+	},
+	"main": "build/index.js",
+	"module": "build-module/index.js",
+	"dependencies": {
+		"@wordpress/edit-post": "file:../edit-post",
+		"@wordpress/element": "file:../element",
+		"@wordpress/plugins": "file:../plugins",
+		"lodash": "^4.17.15"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
