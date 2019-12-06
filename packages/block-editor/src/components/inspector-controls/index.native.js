@@ -13,13 +13,18 @@ import { createSlotFill } from '@wordpress/components';
  */
 import { ifBlockEditSelected } from '../block-edit/context';
 import { BlockSettingsButton } from '../block-settings';
+import MissingInspectorControls from '../missing-inspector-controls';
 
 const { Fill, Slot } = createSlotFill( 'InspectorControls' );
 
 const FillWithSettingsButton = ( { children, ...props } ) => {
+	const { fillProps } = props;
 	return (
 		<>
-			<Fill { ...props }>{ children }</Fill>
+			<Fill { ...props }>
+				{ children }
+				{ fillProps && fillProps.hasMissingControls && <MissingInspectorControls /> }
+			</Fill>
 			{ React.Children.count( children ) > 0 && ( <BlockSettingsButton /> ) }
 		</>
 	);

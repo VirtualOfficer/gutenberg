@@ -14,6 +14,8 @@ import {
 	RichText,
 	withColors,
 	InspectorControls,
+	Notification,
+	MissingInspectorControls,
 	__experimentalUseGradient,
 } from '@wordpress/block-editor';
 import {
@@ -22,6 +24,7 @@ import {
 	PanelBody,
 	RangeControl,
 	MissingControl,
+	createSlotFill,
 } from '@wordpress/components';
 import {
 	useCallback,
@@ -146,7 +149,7 @@ function ButtonEdit( { attributes, setAttributes, backgroundColor, textColor, is
 					onBlur={ () => setRichTextFocus( false ) }
 				/>
 			</RichTextWrapper>
-			<InspectorControls>
+			<InspectorControls fillProps={ { hasMissingControls: true } }>
 				<PanelBody title={ __( 'Border Settings' ) } >
 					<RangeControl
 						label={ __( 'Border Radius' ) }
@@ -175,15 +178,8 @@ function ButtonEdit( { attributes, setAttributes, backgroundColor, textColor, is
 						keyboardType="url"
 					/>
 				</PanelBody>
-				<PanelBody title={ __( 'Color Settings' ) } >
-					<MissingControl
-						label={ __( 'Coming Soon' ) }
-						onPress={ openNotificationSheet }
-						separatorType="none"
-					/>
-				</PanelBody>
 			</InspectorControls>
-			<NotificationSheet title="Color Settings" isVisible={ showHelp } onClose={ toggleShowNoticationSheet } type="plural" />
+			<Notification isVisible={ showHelp } onClose={ toggleShowNoticationSheet } openNotificationSheet={ openNotificationSheet } />
 		</View>
 	);
 }
