@@ -62,8 +62,8 @@ The following code example shows how to create a dynamic block that shows only t
 ```
 {% ESNext %}
 ```js
-const { registerBlockType } = wp.blocks;
-const { withSelect } = wp.data;
+import { registerBlockType } from '@wordpress/blocks';
+import { withSelect } from '@wordpress/data';
 
 registerBlockType( 'gutenberg-examples/example-05-dynamic', {
 	title: 'Example: last post',
@@ -77,11 +77,11 @@ registerBlockType( 'gutenberg-examples/example-05-dynamic', {
 	} )( ( { posts, className } ) => {
 
 		if ( ! posts ) {
-			return "Loading...";
+			return 'Loading...';
 		}
 
 		if ( posts && posts.length === 0 ) {
-			return "No posts";
+			return 'No posts';
 		}
 
 		let post = posts[ 0 ];
@@ -152,11 +152,11 @@ Gutenberg 2.8 added the [`<ServerSideRender>`](/packages/components/src/server-s
 {% codetabs %}
 {% ES5 %}
 ```js
-( function( blocks, element, components ) {
+( function( blocks, element, serverSideRender ) {
 
 	var el = element.createElement,
 	registerBlockType = blocks.registerBlockType,
-	ServerSideRender = components.ServerSideRender;
+	ServerSideRender = serverSideRender;
 
 	registerBlockType( 'gutenberg-examples/example-05-dynamic', {
 		title: 'Example: last post',
@@ -176,13 +176,13 @@ Gutenberg 2.8 added the [`<ServerSideRender>`](/packages/components/src/server-s
 }(
 	window.wp.blocks,
 	window.wp.element,
-	window.wp.components,
+	window.wp.serverSideRender,
 ) );
 ```
 {% ESNext %}
 ```js
-const { registerBlockType } = wp.blocks;
-const { ServerSideRender } = wp.components;
+import { registerBlockType } from '@wordpress/blocks';
+import ServerSideRender from '@wordpress/server-side-render';
 
 registerBlockType( 'gutenberg-examples/example-05-dynamic', {
 	title: 'Example: last post',
@@ -201,4 +201,4 @@ registerBlockType( 'gutenberg-examples/example-05-dynamic', {
 ```
 {% end %}
 
-Note that this code uses the `wp.components` utility but not `wp.data`. Make sure to update the `wp-data` dependency to `wp-compononents` in the PHP code.
+Note that this code uses the `wp-components` package but not `wp-data`. Make sure to update the dependencies in the PHP code. You can use wp-scripts and ESNext setup for auto dependencies (see the [gutenberg-examples repo](https://github.com/WordPress/gutenberg-examples/tree/master/01-basic-esnext) for PHP code setup).

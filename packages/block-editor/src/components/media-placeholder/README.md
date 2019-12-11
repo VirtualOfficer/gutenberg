@@ -8,7 +8,7 @@ MediaPlaceholder
 An example usage which sets the URL of the selected image to `theImage` attributes.
 
 ```
-const { MediaPlaceholder } = wp.editor;
+const { MediaPlaceholder } = wp.blockEditor;
 
 ...
 
@@ -22,7 +22,9 @@ const { MediaPlaceholder } = wp.editor;
 			allowedTypes = { [ 'image' ] }
 			multiple = { false }
 			labels = { { title: 'The Image' } }
-		/>;
+		>
+			"extra content"
+		</MediaPlaceholder>;
 		...
 	}
 ```
@@ -69,6 +71,23 @@ Class name added to the placeholder.
 - Required: No
 - Platform: Web
 
+### disableDropZone
+
+If true, the Drop Zone will not be rendered. Users won't be able to drag & drop any media into the component or the block. The UI controls to upload the media via file, url or the media library would be intact.
+
+- Type: `Boolean`
+- Required: No
+- Default: `false`
+
+### dropZoneUIOnly
+
+If true, only the Drop Zone will be rendered. No UI controls to upload the media will be shown.
+The `disableDropZone` prop still takes precedence over `dropZoneUIOnly` – specifying both as true will result in nothing to be rendered.
+
+- Type: `Boolean`
+- Required: No
+- Default: `false`
+
 ### icon
 
 Icon to display left of the title. When passed as a `String`, the icon will be resolved as a [Dashicon](https://developer.wordpress.org/resource/dashicons/). Alternatively, you can pass in a `WPComponent` such as `BlockIcon`to render instead.
@@ -85,7 +104,16 @@ If false the default placeholder style is used.
 - Type: `Boolean`
 - Required: No
 - Default: `false`
-- Platform: Web
+- Platform: Web | Mobile
+
+### disableMediaButtons
+
+If true, only the Drop Zone will be rendered. No UI controls to upload the media will be shown
+
+- Type: `Boolean`
+- Required: No
+- Default: `false`
+- Platform: Web | Mobile
 
 ### labels
 
@@ -127,9 +155,9 @@ The argument of the callback is an object containing the following properties:
 
 ### value
 
-Media ID (or media IDs if multiple is true) to be selected by default when opening the media library.
+An object or an array of objects that contain media ID (`id` property) to be selected by default when opening the media library.
 
-- Type: `Number|Array`
+- Type: `Object|Array`
 - Required: No
 - Platform: Web
 

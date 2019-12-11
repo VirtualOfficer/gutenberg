@@ -1,8 +1,14 @@
 /**
  * External dependencies
  */
-import classnames from 'classnames';
-import { filter, forEach, map, find, every } from 'lodash';
+import {
+	every,
+	filter,
+	find,
+	forEach,
+	map,
+	some,
+} from 'lodash';
 
 /**
  * WordPress dependencies
@@ -16,21 +22,21 @@ import {
 	withNotices,
 } from '@wordpress/components';
 import {
-	BlockIcon,
 	MediaPlaceholder,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { Component } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { Component, Platform } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { getBlobByURL, isBlobURL, revokeBlobURL } from '@wordpress/blob';
 import { withSelect } from '@wordpress/data';
+import { withViewportMatch } from '@wordpress/viewport';
 
 /**
  * Internal dependencies
  */
-import GalleryImage from './gallery-image';
-import icon from './icon';
+import { sharedIcon } from './shared-icon';
 import { defaultColumnsNumber, pickRelevantMediaFiles } from './shared';
+import Gallery from './gallery';
 
 const MAX_COLUMNS = 8;
 const linkOptions = [
@@ -39,6 +45,18 @@ const linkOptions = [
 	{ value: 'none', label: __( 'None' ) },
 ];
 const ALLOWED_MEDIA_TYPES = [ 'image' ];
+
+const PLACEHOLDER_TEXT = Platform.select( {
+	web: __( 'Drag images, upload new ones or select files from your library.' ),
+	native: __( 'ADD MEDIA' ),
+} );
+
+// currently this is needed for consistent controls UI on mobile
+// this can be removed after control components settle on consistent defaults
+const MOBILE_CONTROL_PROPS = Platform.select( {
+	web: {},
+	native: { separatorType: 'fullWidth' },
+} );
 
 class GalleryEdit extends Component {
 	constructor() {
@@ -56,6 +74,7 @@ class GalleryEdit extends Component {
 		this.onUploadError = this.onUploadError.bind( this );
 		this.setImageAttributes = this.setImageAttributes.bind( this );
 		this.setAttributes = this.setAttributes.bind( this );
+		this.onFocusGalleryCaption = this.onFocusGalleryCaption.bind( this );
 
 		this.state = {
 			selectedImage: null,
@@ -191,6 +210,12 @@ class GalleryEdit extends Component {
 		return checked ? __( 'Thumbnails are cropped to align.' ) : __( 'Thumbnails are not cropped.' );
 	}
 
+	onFocusGalleryCaption() {
+		this.setState( {
+			selectedImage: null,
+		} );
+	}
+
 	setImageAttributes( index, attributes ) {
 		const { attributes: { images } } = this.props;
 		const { setAttributes } = this;
@@ -212,7 +237,11 @@ class GalleryEdit extends Component {
 	componentDidMount() {
 		const { attributes, mediaUpload } = this.props;
 		const { images } = attributes;
-		if ( every( images, ( { url } ) => isBlobURL( url ) ) ) {
+		if (
+			Platform.OS === 'web' &&
+			images && images.length > 0 &&
+			every( images, ( { url } ) => isBlobURL( url ) )
+		) {
 			const filesList = map( images, ( { url } ) => getBlobByURL( url ) );
 			forEach( images, ( { url } ) => revokeBlobURL( url ) );
 			mediaUpload( {
@@ -234,42 +263,54 @@ class GalleryEdit extends Component {
 	}
 
 	render() {
-		const { attributes, isSelected, className, noticeUI } = this.props;
-		const { images, columns = defaultColumnsNumber( attributes ), align, imageCrop, linkTo } = attributes;
+		const {
+			attributes,
+			className,
+			isSelected,
+			noticeUI,
+		} = this.props;
+		const {
+			columns = defaultColumnsNumber( attributes ),
+			imageCrop,
+			images,
+			linkTo,
+		} = attributes;
 
 		const hasImages = !! images.length;
+		const hasImagesWithId = hasImages && some( images, ( { id } ) => id );
 
 		const mediaPlaceholder = (
 			<MediaPlaceholder
-				addToGallery={ hasImages }
+				addToGallery={ hasImagesWithId }
 				isAppender={ hasImages }
 				className={ className }
-				dropZoneUIOnly={ hasImages && ! isSelected }
-				icon={ ! hasImages && <BlockIcon icon={ icon } /> }
+				disableMediaButtons={ hasImages && ! isSelected }
+				icon={ ! hasImages && sharedIcon }
 				labels={ {
 					title: ! hasImages && __( 'Gallery' ),
-					instructions: ! hasImages && __( 'Drag images, upload new ones or select files from your library.' ),
+					instructions: ! hasImages && PLACEHOLDER_TEXT,
 				} }
 				onSelect={ this.onSelectImages }
 				accept="image/*"
 				allowedTypes={ ALLOWED_MEDIA_TYPES }
 				multiple
-				value={ hasImages ? images : undefined }
+				value={ hasImagesWithId ? images : undefined }
 				onError={ this.onUploadError }
 				notices={ hasImages ? undefined : noticeUI }
+				onFocus={ this.props.onFocus }
 			/>
 		);
 
 		if ( ! hasImages ) {
 			return mediaPlaceholder;
 		}
-
 		return (
 			<>
 				<InspectorControls>
 					<PanelBody title={ __( 'Gallery Settings' ) }>
 						{ images.length > 1 && <RangeControl
 							label={ __( 'Columns' ) }
+							{ ...MOBILE_CONTROL_PROPS }
 							value={ columns }
 							onChange={ this.setColumnsNumber }
 							min={ 1 }
@@ -278,12 +319,14 @@ class GalleryEdit extends Component {
 						/> }
 						<ToggleControl
 							label={ __( 'Crop Images' ) }
+							{ ...MOBILE_CONTROL_PROPS }
 							checked={ !! imageCrop }
 							onChange={ this.toggleImageCrop }
 							help={ this.getImageCropHelp }
 						/>
 						<SelectControl
 							label={ __( 'Link To' ) }
+							{ ...MOBILE_CONTROL_PROPS }
 							value={ linkTo }
 							onChange={ this.setLinkTo }
 							options={ linkOptions }
@@ -291,43 +334,17 @@ class GalleryEdit extends Component {
 					</PanelBody>
 				</InspectorControls>
 				{ noticeUI }
-				<ul
-					className={ classnames(
-						className,
-						{
-							[ `align${ align }` ]: align,
-							[ `columns-${ columns }` ]: columns,
-							'is-cropped': imageCrop,
-						}
-					) }
-				>
-					{ images.map( ( img, index ) => {
-						/* translators: %1$d is the order number of the image, %2$d is the total number of images. */
-						const ariaLabel = sprintf( __( 'image %1$d of %2$d in gallery' ), ( index + 1 ), images.length );
-
-						return (
-							<li className="blocks-gallery-item" key={ img.id || img.url }>
-								<GalleryImage
-									url={ img.url }
-									alt={ img.alt }
-									id={ img.id }
-									isCompact={ columns >= 7 }
-									isFirstItem={ index === 0 }
-									isLastItem={ ( index + 1 ) === images.length }
-									isSelected={ isSelected && this.state.selectedImage === index }
-									onMoveBackward={ this.onMoveBackward( index ) }
-									onMoveForward={ this.onMoveForward( index ) }
-									onRemove={ this.onRemoveImage( index ) }
-									onSelect={ this.onSelectImage( index ) }
-									setAttributes={ ( attrs ) => this.setImageAttributes( index, attrs ) }
-									caption={ img.caption }
-									aria-label={ ariaLabel }
-								/>
-							</li>
-						);
-					} ) }
-				</ul>
-				{ mediaPlaceholder }
+				<Gallery
+					{ ...this.props }
+					selectedImage={ this.state.selectedImage }
+					mediaPlaceholder={ mediaPlaceholder }
+					onMoveBackward={ this.onMoveBackward }
+					onMoveForward={ this.onMoveForward }
+					onRemoveImage={ this.onRemoveImage }
+					onSelectImage={ this.onSelectImage }
+					onSetImageAttributes={ this.setImageAttributes }
+					onFocusGalleryCaption={ this.onFocusGalleryCaption }
+				/>
 			</>
 		);
 	}
@@ -335,13 +352,9 @@ class GalleryEdit extends Component {
 export default compose( [
 	withSelect( ( select ) => {
 		const { getSettings } = select( 'core/block-editor' );
-		const {
-			__experimentalMediaUpload,
-		} = getSettings();
-
-		return {
-			mediaUpload: __experimentalMediaUpload,
-		};
+		const { mediaUpload } = getSettings();
+		return { mediaUpload };
 	} ),
 	withNotices,
+	withViewportMatch( { isNarrow: '< small' } ),
 ] )( GalleryEdit );

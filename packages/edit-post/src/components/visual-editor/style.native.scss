@@ -13,7 +13,11 @@
 }
 
 .blockHolderFocused {
-	border-color: $gray-lighten-30;
+	border-color: $blue-wordpress;
+}
+
+.blockHolderFocusedDark {
+	border-color: $blue-30;
 }
 
 .blockHolderFocusedDark {

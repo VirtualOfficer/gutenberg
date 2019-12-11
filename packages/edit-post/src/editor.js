@@ -7,7 +7,7 @@ import { size, map, without } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { withSelect } from '@wordpress/data';
+import { withSelect, withDispatch } from '@wordpress/data';
 import { EditorProvider, ErrorBoundary, PostLockedModal } from '@wordpress/editor';
 import { StrictMode, Component } from '@wordpress/element';
 import {
@@ -16,6 +16,7 @@ import {
 	DropZoneProvider,
 	ThemeProvider,
 } from '@wordpress/components';
+import { compose } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -41,12 +42,20 @@ class Editor extends Component {
 		focusMode,
 		hiddenBlockTypes,
 		blockTypes,
+		preferredStyleVariations,
+		__experimentalLocalAutosaveInterval,
+		updatePreferredStyleVariations,
 	) {
 		settings = {
 			...settings,
+			__experimentalPreferredStyleVariations: {
+				value: preferredStyleVariations,
+				onChange: updatePreferredStyleVariations,
+			},
 			hasFixedToolbar,
 			focusMode,
 			showInserterHelpPanel,
+			__experimentalLocalAutosaveInterval,
 		};
 
 		// Omit hidden block types if exists and non-empty.
@@ -80,7 +89,10 @@ class Editor extends Component {
 			onError,
 			hiddenBlockTypes,
 			blockTypes,
+			preferredStyleVariations,
+			__experimentalLocalAutosaveInterval,
 			showInserterHelpPanel,
+			updatePreferredStyleVariations,
 			...props
 		} = this.props;
 
@@ -95,6 +107,9 @@ class Editor extends Component {
 			focusMode,
 			hiddenBlockTypes,
 			blockTypes,
+			preferredStyleVariations,
+			__experimentalLocalAutosaveInterval,
+			updatePreferredStyleVariations,
 		);
 
 		return (
@@ -126,17 +141,27 @@ class Editor extends Component {
 	}
 }
 
-export default withSelect( ( select, { postId, postType } ) => {
-	const { isFeatureActive, getPreference } = select( 'core/edit-post' );
-	const { getEntityRecord } = select( 'core' );
-	const { getBlockTypes } = select( 'core/blocks' );
+export default compose( [
+	withSelect( ( select, { postId, postType } ) => {
+		const { isFeatureActive, getPreference } = select( 'core/edit-post' );
+		const { getEntityRecord } = select( 'core' );
+		const { getBlockTypes } = select( 'core/blocks' );
 
-	return {
-		showInserterHelpPanel: isFeatureActive( 'showInserterHelpPanel' ),
-		hasFixedToolbar: isFeatureActive( 'fixedToolbar' ),
-		focusMode: isFeatureActive( 'focusMode' ),
-		post: getEntityRecord( 'postType', postType, postId ),
-		hiddenBlockTypes: getPreference( 'hiddenBlockTypes' ),
-		blockTypes: getBlockTypes(),
-	};
-} )( Editor );
+		return {
+			showInserterHelpPanel: isFeatureActive( 'showInserterHelpPanel' ),
+			hasFixedToolbar: isFeatureActive( 'fixedToolbar' ),
+			focusMode: isFeatureActive( 'focusMode' ),
+			post: getEntityRecord( 'postType', postType, postId ),
+			preferredStyleVariations: getPreference( 'preferredStyleVariations' ),
+			hiddenBlockTypes: getPreference( 'hiddenBlockTypes' ),
+			blockTypes: getBlockTypes(),
+			__experimentalLocalAutosaveInterval: getPreference( 'localAutosaveInterval' ),
+		};
+	} ),
+	withDispatch( ( dispatch ) => {
+		const { updatePreferredStyleVariations } = dispatch( 'core/edit-post' );
+		return {
+			updatePreferredStyleVariations,
+		};
+	} ),
+] )( Editor );

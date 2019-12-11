@@ -10,8 +10,9 @@ import { sendNativeEditorDidLayout } from 'react-native-gutenberg-bridge';
  */
 import { Component } from '@wordpress/element';
 import { withSelect } from '@wordpress/data';
-import { compose } from '@wordpress/compose';
-import { HTMLTextInput, KeyboardAvoidingView, ReadableContentView, withTheme } from '@wordpress/components';
+import { BottomSheetSettings, __experimentalPageTemplatePicker, __experimentalWithPageTemplatePickerVisible } from '@wordpress/block-editor';
+import { compose, withPreferredColorScheme } from '@wordpress/compose';
+import { HTMLTextInput, KeyboardAvoidingView, ReadableContentView } from '@wordpress/components';
 import { AutosaveMonitor } from '@wordpress/editor';
 
 /**
@@ -100,7 +101,8 @@ class Layout extends Component {
 	render() {
 		const {
 			mode,
-			useStyle,
+			getStylesFromColorScheme,
+			showPageTemplatePicker,
 		} = this.props;
 
 		const isHtmlView = mode === 'text';
@@ -116,9 +118,9 @@ class Layout extends Component {
 		};
 
 		return (
-			<SafeAreaView style={ useStyle( styles.container, styles.containerDark ) } onLayout={ this.onRootViewLayout }>
+			<SafeAreaView style={ getStylesFromColorScheme( styles.container, styles.containerDark ) } onLayout={ this.onRootViewLayout }>
 				<AutosaveMonitor />
-				<View style={ useStyle( styles.background, styles.backgroundDark ) }>
+				<View style={ getStylesFromColorScheme( styles.background, styles.backgroundDark ) }>
 					{ isHtmlView ? this.renderHTML() : this.renderVisual() }
 				</View>
 				<View style={ { flex: 0, flexBasis: marginBottom, height: marginBottom } } />
@@ -128,7 +130,9 @@ class Layout extends Component {
 						style={ toolbarKeyboardAvoidingViewStyle }
 					>
 						<Header />
+						<BottomSheetSettings />
 					</KeyboardAvoidingView> ) }
+				{ showPageTemplatePicker && <__experimentalPageTemplatePicker /> }
 			</SafeAreaView>
 		);
 	}
@@ -148,5 +152,6 @@ export default compose( [
 			mode: getEditorMode(),
 		};
 	} ),
-	withTheme,
+	withPreferredColorScheme,
+	__experimentalWithPageTemplatePickerVisible,
 ] )( Layout );

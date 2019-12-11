@@ -1,14 +1,12 @@
 /**
- * External dependencies
- */
-import { isEmpty } from 'lodash';
-
-/**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { getBlockType, getUnregisteredTypeHandlerName } from '@wordpress/blocks';
-import { PanelBody } from '@wordpress/components';
+import {
+	PanelBody,
+	__experimentalSlotFillConsumer,
+} from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
 
 /**
@@ -20,6 +18,7 @@ import InspectorControls from '../inspector-controls';
 import InspectorAdvancedControls from '../inspector-advanced-controls';
 import BlockStyles from '../block-styles';
 import MultiSelectionInspector from '../multi-selection-inspector';
+import DefaultStylePicker from '../default-style-picker';
 const BlockInspector = ( {
 	blockType,
 	count,
@@ -50,7 +49,7 @@ const BlockInspector = ( {
 	}
 
 	return (
-		<>
+		<div className="block-editor-block-inspector">
 			<BlockCard blockType={ blockType } />
 			{ hasBlockStyles && (
 				<div>
@@ -61,25 +60,28 @@ const BlockInspector = ( {
 						<BlockStyles
 							clientId={ selectedBlockClientId }
 						/>
+						<DefaultStylePicker blockName={ blockType.name } />
 					</PanelBody>
 				</div>
 			) }
-			<div><InspectorControls.Slot /></div>
+			<InspectorControls.Slot bubblesVirtually />
 			<div>
-				<InspectorAdvancedControls.Slot>
-					{ ( fills ) => ! isEmpty( fills ) && (
-						<PanelBody
-							className="editor-block-inspector__advanced block-editor-block-inspector__advanced"
-							title={ __( 'Advanced' ) }
-							initialOpen={ false }
-						>
-							{ fills }
-						</PanelBody>
-					) }
-				</InspectorAdvancedControls.Slot>
+				<__experimentalSlotFillConsumer>
+					{ ( { hasFills } ) =>
+						hasFills( InspectorAdvancedControls.slotName ) && (
+							<PanelBody
+								className="editor-block-inspector__advanced block-editor-block-inspector__advanced"
+								title={ __( 'Advanced' ) }
+								initialOpen={ false }
+							>
+								<InspectorAdvancedControls.Slot bubblesVirtually />
+							</PanelBody>
+						)
+					}
+				</__experimentalSlotFillConsumer>
 			</div>
 			<SkipToSelectedBlock key="back" />
-		</>
+		</div>
 	);
 };
 

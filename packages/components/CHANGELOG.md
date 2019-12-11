@@ -1,6 +1,12 @@
-## Master
+# 8.3.0 (Unreleased)
 
-## New Features
+### New Features
+
+- Added a new `Guide` component which allows developers to easily present a user guide.
+
+## 8.2.0 (2019-08-29)
+
+### New Features
 
 - The bundled `re-resizable` dependency has been updated from requiring `5.0.1` to requiring `^6.0.0` ([#17011](https://github.com/WordPress/gutenberg/pull/17011)).
 
@@ -76,6 +82,10 @@
 - Added a new `BaseControl.VisualLabel` component.
 - Added a new `preview` prop to the `Placeholder` component which allows to display a preview, for example a media preview when the Placeholder is used in media editing contexts.
 - Added a new `anchorRect` prop to `Popover` which enables a developer to provide a custom `DOMRect` object at which to position the popover.
+
+### Improvements
+
+- Limit `Base Control Label` to the width of its content. 
 
 ### Bug fixes
 

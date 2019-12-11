@@ -11,7 +11,6 @@ import { Component, createRef } from '@wordpress/element';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { __ } from '@wordpress/i18n';
-import { DotTip } from '@wordpress/nux';
 
 /**
  * Internal dependencies
@@ -64,10 +63,10 @@ export class PostPublishButton extends Component {
 		let publishStatus;
 		if ( ! hasPublishAction ) {
 			publishStatus = 'pending';
-		} else if ( isBeingScheduled ) {
-			publishStatus = 'future';
 		} else if ( visibility === 'private' ) {
 			publishStatus = 'private';
+		} else if ( isBeingScheduled ) {
+			publishStatus = 'future';
 		} else {
 			publishStatus = 'publish';
 		}
@@ -112,13 +111,11 @@ export class PostPublishButton extends Component {
 		const componentChildren = isToggle ? toggleChildren : buttonChildren;
 		return (
 			<Button
+				isLarge
 				ref={ this.buttonNode }
 				{ ...componentProps }
 			>
 				{ componentChildren }
-				<DotTip tipId="core/editor.publish">
-					{ __( 'Finished writing? That’s great, let’s get this published right now. Just click “Publish” and you’re good to go.' ) }
-				</DotTip>
 			</Button>
 		);
 	}
@@ -152,7 +149,7 @@ export default compose( [
 	withDispatch( ( dispatch ) => {
 		const { editPost, savePost } = dispatch( 'core/editor' );
 		return {
-			onStatusChange: ( status ) => editPost( { status } ),
+			onStatusChange: ( status ) => editPost( { status }, { undoIgnore: true } ),
 			onSave: savePost,
 		};
 	} ),

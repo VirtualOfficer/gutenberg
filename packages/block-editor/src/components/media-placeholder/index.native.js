@@ -2,13 +2,19 @@
  * External dependencies
  */
 import { View, Text, TouchableWithoutFeedback } from 'react-native';
+import { uniqWith } from 'lodash';
 
 /**
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { MediaUpload, MEDIA_TYPE_IMAGE, MEDIA_TYPE_VIDEO } from '@wordpress/block-editor';
-import { withTheme } from '@wordpress/components';
+import {
+	MediaUpload,
+	MEDIA_TYPE_IMAGE,
+	MEDIA_TYPE_VIDEO,
+} from '@wordpress/block-editor';
+import { Dashicon } from '@wordpress/components';
+import { withPreferredColorScheme } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -16,7 +22,24 @@ import { withTheme } from '@wordpress/components';
 import styles from './styles.scss';
 
 function MediaPlaceholder( props ) {
-	const { allowedTypes = [], labels = {}, icon, onSelect, useStyle } = props;
+	const {
+		addToGallery,
+		allowedTypes = [],
+		labels = {},
+		icon,
+		onSelect,
+		isAppender,
+		disableMediaButtons,
+		getStylesFromColorScheme,
+		multiple,
+		value = [],
+	} = props;
+
+	const setMedia = multiple && addToGallery ?
+		( selected ) => onSelect( uniqWith( [ ...value, ...selected ], ( media1, media2 ) => {
+			return media1.id === media2.id || media1.url === media2.url;
+		} ) ) :
+		onSelect;
 
 	const isOneType = allowedTypes.length === 1;
 	const isImage = isOneType && allowedTypes.includes( MEDIA_TYPE_IMAGE );
@@ -38,6 +61,8 @@ function MediaPlaceholder( props ) {
 			instructions = __( 'ADD IMAGE' );
 		} else if ( isVideo ) {
 			instructions = __( 'ADD VIDEO' );
+		} else {
+			instructions = __( 'ADD IMAGE OR VIDEO' );
 		}
 	}
 
@@ -48,44 +73,77 @@ function MediaPlaceholder( props ) {
 		accessibilityHint = __( 'Double tap to select a video' );
 	}
 
-	const emptyStateContainerStyle = useStyle( styles.emptyStateContainer, styles.emptyStateContainerDark );
-	const emptyStateTitleStyle = useStyle( styles.emptyStateTitle, styles.emptyStateTitleDark );
+	const emptyStateTitleStyle = getStylesFromColorScheme( styles.emptyStateTitle, styles.emptyStateTitleDark );
+	const addMediaButtonStyle = getStylesFromColorScheme( styles.addMediaButton, styles.addMediaButtonDark );
+
+	const renderContent = () => {
+		if ( isAppender === undefined || ! isAppender ) {
+			return (
+				<>
+					<View style={ styles.modalIcon }>
+						{ icon }
+					</View>
+					<Text style={ emptyStateTitleStyle }>
+						{ placeholderTitle }
+					</Text>
+					<Text style={ styles.emptyStateDescription }>
+						{ instructions }
+					</Text>
+				</>
+			);
+		} else if ( isAppender && ! disableMediaButtons ) {
+			return (
+				<Dashicon
+					icon="plus-alt"
+					style={ addMediaButtonStyle }
+					color={ addMediaButtonStyle.color }
+					size={ addMediaButtonStyle.size }
+				/>
+			);
+		}
+	};
+
+	if ( isAppender && disableMediaButtons ) {
+		return null;
+	}
+
+	const appenderStyle = getStylesFromColorScheme( styles.appender, styles.appenderDark );
+	const emptyStateContainerStyle = getStylesFromColorScheme( styles.emptyStateContainer, styles.emptyStateContainerDark );
 
 	return (
-		<MediaUpload
-			allowedTypes={ allowedTypes }
-			onSelect={ onSelect }
-			render={ ( { open, getMediaOptions } ) => {
-				return (
-					<TouchableWithoutFeedback
-						accessibilityLabel={ sprintf(
-							/* translators: accessibility text for the media block empty state. %s: media type */
-							__( '%s block. Empty' ),
-							placeholderTitle
-						) }
-						accessibilityRole={ 'button' }
-						accessibilityHint={ accessibilityHint }
-						onPress={ ( event ) => {
-							props.onFocus( event );
-							open();
-						} }
-					>
-						<View style={ emptyStateContainerStyle }>
-							{ getMediaOptions() }
-							<View style={ styles.modalIcon }>
-								{ icon }
+		<View style={ { flex: 1 } }>
+			<MediaUpload
+				allowedTypes={ allowedTypes }
+				onSelect={ setMedia }
+				multiple={ multiple }
+				render={ ( { open, getMediaOptions } ) => {
+					return (
+						<TouchableWithoutFeedback
+							accessibilityLabel={ sprintf(
+								/* translators: accessibility text for the media block empty state. %s: media type */
+								__( '%s block. Empty' ),
+								placeholderTitle
+							) }
+							accessibilityRole={ 'button' }
+							accessibilityHint={ accessibilityHint }
+							onPress={ ( event ) => {
+								props.onFocus( event );
+								open();
+							} }>
+							<View
+								style={ [
+									emptyStateContainerStyle,
+									isAppender && appenderStyle,
+								] }>
+								{ getMediaOptions() }
+								{ renderContent() }
 							</View>
-							<Text style={ emptyStateTitleStyle }>
-								{ placeholderTitle }
-							</Text>
-							<Text style={ styles.emptyStateDescription }>
-								{ instructions }
-							</Text>
-						</View>
-					</TouchableWithoutFeedback>
-				);
-			} } />
+						</TouchableWithoutFeedback>
+					);
+				} }
+			/>
+		</View>
 	);
 }
 
-export default withTheme( MediaPlaceholder );
+export default withPreferredColorScheme( MediaPlaceholder );

@@ -1,11 +1,17 @@
-.dashicon,
-.components-toolbar__control {
+.dashicon-light,
+.components-toolbar__control-light {
 	color: #7b9ab1;
 	fill: currentColor;
 }
 
+.dashicon-dark,
+.components-toolbar__control-dark {
+	color: $gray_20;
+	fill: currentColor;
+}
+
 .dashicon-active,
-.is-active {
+.is-pressed {
 	color: #fff;
 	fill: currentColor;
 }

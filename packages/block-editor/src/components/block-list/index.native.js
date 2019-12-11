@@ -10,9 +10,9 @@ import { Text, View, Platform, TouchableWithoutFeedback } from 'react-native';
 import { Component } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { withDispatch, withSelect } from '@wordpress/data';
-import { compose } from '@wordpress/compose';
+import { compose, withPreferredColorScheme } from '@wordpress/compose';
 import { createBlock, isUnmodifiedDefaultBlock } from '@wordpress/blocks';
-import { KeyboardAwareFlatList, ReadableContentView, withTheme } from '@wordpress/components';
+import { KeyboardAwareFlatList, ReadableContentView } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -20,6 +20,7 @@ import { KeyboardAwareFlatList, ReadableContentView, withTheme } from '@wordpres
 import styles from './style.scss';
 import BlockListBlock from './block';
 import BlockListAppender from '../block-list-appender';
+import __experimentalBlockListFooter from '../block-list-footer';
 
 const innerToolbarHeight = 44;
 
@@ -41,10 +42,6 @@ export class BlockList extends Component {
 		this.props.insertBlock( newBlock, this.props.blockCount );
 	}
 
-	blockHolderBorderStyle() {
-		return this.props.isFullyBordered ? styles.blockHolderFullBordered : styles.blockHolderSemiBordered;
-	}
-
 	onCaretVerticalPositionChange( targetId, caretY, previousCaretY ) {
 		KeyboardAwareFlatList.handleCaretVerticalPositionChange( this.scrollViewRef, targetId, caretY, previousCaretY );
 	}
@@ -58,22 +55,36 @@ export class BlockList extends Component {
 	}
 
 	renderDefaultBlockAppender() {
+		const { shouldShowInsertionPointBefore } = this.props;
+		const willShowInsertionPoint = shouldShowInsertionPointBefore(); // call without the client_id argument since this is the appender
 		return (
 			<ReadableContentView>
-				<BlockListAppender
-					rootClientId={ this.props.rootClientId }
-					renderAppender={ this.props.renderAppender }
-				/>
+				{ willShowInsertionPoint ?
+					this.renderAddBlockSeparator() :	// show the new-block indicator when we're inserting a block or
+					<BlockListAppender				// show the default appender, as normal, when not inserting a block
+						rootClientId={ this.props.rootClientId }
+						renderAppender={ this.props.renderAppender }
+					/>
+				}
 			</ReadableContentView>
 		);
 	}
 
 	render() {
-		const { clearSelectedBlock, blockClientIds, isFullyBordered, title, header, withFooter = true, renderAppender } = this.props;
+		const {
+			clearSelectedBlock,
+			blockClientIds,
+			isFullyBordered,
+			title,
+			header,
+			withFooter = true,
+			renderAppender,
+			isRootList,
+		} = this.props;
 
 		return (
 			<View
-				style={ { flex: 1 } }
+				style={ { flex: isRootList ? 1 : 0 } }
 				onAccessibilityEscape={ clearSelectedBlock }
 			>
 				<KeyboardAwareFlatList
@@ -83,7 +94,7 @@ export class BlockList extends Component {
 					innerRef={ this.scrollViewInnerRef }
 					extraScrollHeight={ innerToolbarHeight + 10 }
 					keyboardShouldPersistTaps="always"
-					style={ styles.list }
+					scrollViewStyle={ { flex: isRootList ? 1 : 0 } }
 					data={ blockClientIds }
 					extraData={ [ isFullyBordered ] }
 					keyExtractor={ identity }
@@ -95,12 +106,16 @@ export class BlockList extends Component {
 					ListFooterComponent={ withFooter && this.renderBlockListFooter }
 				/>
 
-				{ renderAppender && blockClientIds.length > 0 &&
-					<BlockListAppender
-						rootClientId={ this.props.rootClientId }
-						renderAppender={ this.props.renderAppender }
-					/>
+				{ renderAppender && blockClientIds.length > 0 && (
+					<View style={ styles.paddingToContent }>
+						<BlockListAppender
+							rootClientId={ this.props.rootClientId }
+							renderAppender={ this.props.renderAppender }
+						/>
+					</View>
+				)
 				}
+
 			</View>
 		);
 	}
@@ -113,11 +128,10 @@ export class BlockList extends Component {
 	}
 
 	renderItem( { item: clientId, index } ) {
-		const blockHolderFocusedStyle = this.props.useStyle( styles.blockHolderFocused, styles.blockHolderFocusedDark );
-		const { shouldShowBlockAtIndex, shouldShowInsertionPoint } = this.props;
+		const { shouldShowBlockAtIndex, shouldShowInsertionPointBefore, shouldShowInsertionPointAfter } = this.props;
 		return (
 			<ReadableContentView>
-				{ shouldShowInsertionPoint( clientId ) && this.renderAddBlockSeparator() }
+				{ shouldShowInsertionPointBefore( clientId ) && this.renderAddBlockSeparator() }
 				{ shouldShowBlockAtIndex( index ) && (
 					<BlockListBlock
 						key={ clientId }
@@ -125,16 +139,16 @@ export class BlockList extends Component {
 						clientId={ clientId }
 						rootClientId={ this.props.rootClientId }
 						onCaretVerticalPositionChange={ this.onCaretVerticalPositionChange }
-						borderStyle={ this.blockHolderBorderStyle() }
-						focusedBorderColor={ blockHolderFocusedStyle.borderColor }
+						isSmallScreen={ ! this.props.isFullyBordered }
 					/> ) }
+				{ shouldShowInsertionPointAfter( clientId ) && this.renderAddBlockSeparator() }
 			</ReadableContentView>
 		);
 	}
 
 	renderAddBlockSeparator() {
-		const lineStyle = this.props.useStyle( styles.lineStyleAddHere, styles.lineStyleAddHereDark );
-		const labelStyle = this.props.useStyle( styles.labelStyleAddHere, styles.labelStyleAddHereDark );
+		const lineStyle = this.props.getStylesFromColorScheme( styles.lineStyleAddHere, styles.lineStyleAddHereDark );
+		const labelStyle = this.props.getStylesFromColorScheme( styles.labelStyleAddHere, styles.labelStyleAddHereDark );
 		return (
 			<View style={ styles.containerStyleAddHere } >
 				<View style={ lineStyle }></View>
@@ -147,11 +161,14 @@ export class BlockList extends Component {
 	renderBlockListFooter() {
 		const paragraphBlock = createBlock( 'core/paragraph' );
 		return (
-			<TouchableWithoutFeedback onPress={ () => {
-				this.addBlockToEndOfPost( paragraphBlock );
-			} } >
-				<View style={ styles.blockListFooter } />
-			</TouchableWithoutFeedback>
+			<>
+				<TouchableWithoutFeedback onPress={ () => {
+					this.addBlockToEndOfPost( paragraphBlock );
+				} } >
+					<View style={ styles.blockListFooter } />
+				</TouchableWithoutFeedback>
+				<__experimentalBlockListFooter.Slot />
+			</>
 		);
 	}
 }
@@ -168,24 +185,46 @@ export default compose( [
 			getSelectedBlock,
 		} = select( 'core/block-editor' );
 
+		const {
+			getGroupingBlockName,
+		} = select( 'core/blocks' );
+
 		const selectedBlockClientId = getSelectedBlockClientId();
 		const blockClientIds = getBlockOrder( rootClientId );
 		const insertionPoint = getBlockInsertionPoint();
 		const blockInsertionPointIsVisible = isBlockInsertionPointVisible();
 		const selectedBlock = getSelectedBlock();
-		const isSelectedGroup = selectedBlock && selectedBlock.name === 'core/group';
-		const shouldShowInsertionPoint = ( clientId ) => {
+		const hasInnerBlocks = selectedBlock && selectedBlock.name === getGroupingBlockName();
+		const shouldShowInsertionPointBefore = ( clientId ) => {
 			return (
 				blockInsertionPointIsVisible &&
 				insertionPoint.rootClientId === rootClientId &&
-				blockClientIds[ insertionPoint.index ] === clientId
+				(
+					// if list is empty, show the insertion point (via the default appender)
+					blockClientIds.length === 0 ||
+					// or if the insertion point is right before the denoted block
+					blockClientIds[ insertionPoint.index ] === clientId
+				)
+			);
+		};
+		const shouldShowInsertionPointAfter = ( clientId ) => {
+			return (
+				blockInsertionPointIsVisible &&
+				insertionPoint.rootClientId === rootClientId &&
+
+				// if the insertion point is at the end of the list
+				blockClientIds.length === insertionPoint.index &&
+
+				// and the denoted block is the last one on the list, show the indicator at the end of the block
+				blockClientIds[ insertionPoint.index - 1 ] === clientId
 			);
 		};
 
-		const selectedBlockIndex = getBlockIndex( selectedBlockClientId );
+		const selectedBlockIndex = getBlockIndex( selectedBlockClientId, rootClientId );
+
 		const shouldShowBlockAtIndex = ( index ) => {
 			const shouldHideBlockAtIndex = (
-				! isSelectedGroup && blockInsertionPointIsVisible &&
+				! hasInnerBlocks && blockInsertionPointIsVisible &&
 				// if `index` === `insertionPoint.index`, then block is replaceable
 				index === insertionPoint.index &&
 				// only hide selected block
@@ -199,8 +238,10 @@ export default compose( [
 			blockCount: getBlockCount( rootClientId ),
 			isBlockInsertionPointVisible: isBlockInsertionPointVisible(),
 			shouldShowBlockAtIndex,
-			shouldShowInsertionPoint,
+			shouldShowInsertionPointBefore,
+			shouldShowInsertionPointAfter,
 			selectedBlockClientId,
+			isRootList: rootClientId === undefined,
 		};
 	} ),
 	withDispatch( ( dispatch ) => {
@@ -216,6 +257,5 @@ export default compose( [
 			replaceBlock,
 		};
 	} ),
-	withTheme,
+	withPreferredColorScheme,
 ] )( BlockList );
-

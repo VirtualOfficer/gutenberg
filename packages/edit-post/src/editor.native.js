@@ -96,6 +96,7 @@ class Editor extends Component {
 			hiddenBlockTypes,
 			blockTypes,
 			post,
+			postType,
 			...props
 		} = this.props;
 
@@ -118,7 +119,9 @@ class Editor extends Component {
 				// For now, let's assume: serialize( parse( html ) ) !== html
 				raw: serialize( parse( props.initialHtml || '' ) ),
 			},
-			type: 'draft',
+			type: postType,
+			status: 'draft',
+			meta: [],
 		};
 
 		return (

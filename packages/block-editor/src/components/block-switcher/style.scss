@@ -89,7 +89,7 @@
 	}
 }
 // We double the max-width for it to fit both the preview & content but we keep the min width the same for the border to work.
-.components-popover:not(.is-mobile).block-editor-block-switcher__popover .components-popover__content {
+.components-popover.block-editor-block-switcher__popover .components-popover__content {
 	min-width: 300px;
 	max-width: calc(340px * 2);
 	display: flex;
@@ -118,6 +118,7 @@
 			align-self: stretch;
 			// For sticky to work we need top
 			top: 0;
+			padding: 10px;
 		}
 	}
 

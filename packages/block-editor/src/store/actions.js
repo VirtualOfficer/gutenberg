@@ -1,12 +1,14 @@
 /**
  * External dependencies
  */
-import { castArray, first } from 'lodash';
+import { castArray, first, get, includes } from 'lodash';
 
 /**
  * WordPress dependencies
  */
 import { getDefaultBlockName, createBlock } from '@wordpress/blocks';
+import { speak } from '@wordpress/a11y';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -45,6 +47,34 @@ export function resetBlocks( blocks ) {
 	return {
 		type: 'RESET_BLOCKS',
 		blocks,
+	};
+}
+
+/**
+ * A block selection object.
+ *
+ * @typedef {Object} WPBlockSelection
+ *
+ * @property {string} clientId     A block client ID.
+ * @property {string} attributeKey A block attribute key.
+ * @property {number} offset       An attribute value offset, based on the rich
+ *                                 text value. See `wp.richText.create`.
+ */
+
+/**
+ * Returns an action object used in signalling that selection state should be
+ * reset to the specified selection.
+ *
+ * @param {WPBlockSelection} selectionStart The selection start.
+ * @param {WPBlockSelection} selectionEnd   The selection end.
+ *
+ * @return {Object} Action object.
+ */
+export function resetSelection( selectionStart, selectionEnd ) {
+	return {
+		type: 'RESET_SELECTION',
+		selectionStart,
+		selectionEnd,
 	};
 }
 
@@ -218,6 +248,33 @@ export function toggleSelection( isSelectionEnabled = true ) {
 	};
 }
 
+function getBlocksWithDefaultStylesApplied( blocks, blockEditorSettings ) {
+	const preferredStyleVariations = get(
+		blockEditorSettings,
+		[ '__experimentalPreferredStyleVariations', 'value' ],
+		{}
+	);
+	return blocks.map( ( block ) => {
+		const blockName = block.name;
+		if ( ! preferredStyleVariations[ blockName ] ) {
+			return block;
+		}
+		const className = get( block, [ 'attributes', 'className' ] );
+		if ( includes( className, 'is-style-' ) ) {
+			return block;
+		}
+		const { attributes = {} } = block;
+		const blockStyle = preferredStyleVariations[ blockName ];
+		return {
+			...block,
+			attributes: {
+				...attributes,
+				className: `${ ( className || '' ) } is-style-${ blockStyle }`.trim(),
+			},
+		};
+	} );
+}
+
 /**
  * Returns an action object signalling that a blocks should be replaced with
  * one or more replacement blocks.
@@ -231,7 +288,13 @@ export function toggleSelection( isSelectionEnabled = true ) {
  */
 export function* replaceBlocks( clientIds, blocks, indexToSelect ) {
 	clientIds = castArray( clientIds );
-	blocks = castArray( blocks );
+	blocks = getBlocksWithDefaultStylesApplied(
+		castArray( blocks ),
+		yield select(
+			'core/block-editor',
+			'getSettings',
+		)
+	);
 	const rootClientId = yield select(
 		'core/block-editor',
 		'getBlockRootClientId',
@@ -398,7 +461,13 @@ export function* insertBlocks(
 	rootClientId,
 	updateSelection = true
 ) {
-	blocks = castArray( blocks );
+	blocks = getBlocksWithDefaultStylesApplied(
+		castArray( blocks ),
+		yield select(
+			'core/block-editor',
+			'getSettings',
+		)
+	);
 	const allowedBlocks = [];
 	for ( const block of blocks ) {
 		const isValid = yield select(
@@ -589,6 +658,28 @@ export function stopTyping() {
 }
 
 /**
+ * Returns an action object used in signalling that the user has begun to drag blocks.
+ *
+ * @return {Object} Action object.
+ */
+export function startDraggingBlocks() {
+	return {
+		type: 'START_DRAGGING_BLOCKS',
+	};
+}
+
+/**
+ * Returns an action object used in signalling that the user has stopped dragging blocks.
+ *
+ * @return {Object} Action object.
+ */
+export function stopDraggingBlocks() {
+	return {
+		type: 'STOP_DRAGGING_BLOCKS',
+	};
+}
+
+/**
  * Returns an action object used in signalling that the caret has entered formatted text.
  *
  * @return {Object} Action object.
@@ -726,15 +817,19 @@ export function __unstableMarkAutomaticChange() {
 }
 
 /**
- * Returns an action object used to enable or disable the navigation mode.
+ * Generators that triggers an action used to enable or disable the navigation mode.
  *
  * @param {string} isNavigationMode Enable/Disable navigation mode.
- *
- * @return {Object} Action object
  */
-export function setNavigationMode( isNavigationMode = true ) {
-	return {
+export function * setNavigationMode( isNavigationMode = true ) {
+	yield {
 		type: 'SET_NAVIGATION_MODE',
 		isNavigationMode,
 	};
+
+	if ( isNavigationMode ) {
+		speak( __( 'You are currently in navigation mode. Navigate blocks using the Tab key. To exit navigation mode and edit the selected block, press Enter.' ) );
+	} else {
+		speak( __( 'You are currently in edit mode. To return to the navigation mode, press Escape.' ) );
+	}
 }
