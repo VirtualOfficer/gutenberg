@@ -13,6 +13,7 @@
 	align-items: center;
 	box-sizing: border-box;
 	padding: 0 8px;
+	position: relative;
 	overflow: hidden;
 	border-radius: 3px;
 	color: $dark-gray-500;
@@ -239,8 +240,6 @@
 	}
 
 	&.is-loading {
-		position: relative;
-
 		.components-spinner {
 			background-color: currentColor;
 			display: block;

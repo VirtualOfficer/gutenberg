@@ -88,7 +88,7 @@ export const disabledLink = () => {
 };
 
 export const loading = () => {
-	const label = text( 'Label', 'Link Button' );
+	const label = text( 'Label', 'Button' );
 	const isLoading = boolean( 'isLoading', true );
 
 	return (

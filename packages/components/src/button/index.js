@@ -93,6 +93,7 @@ export function Button( props, ref ) {
 			{ ...tagProps }
 			{ ...additionalProps }
 			className={ classes }
+			aria-busy={ isLoading }
 			aria-label={ additionalProps[ 'aria-label' ] || label }
 			ref={ ref }
 		>
