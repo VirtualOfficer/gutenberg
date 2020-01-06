@@ -43,7 +43,12 @@ const exampleTree = [
 	},
 ];
 
-const ParentPageTreeSelectExample = ( { loadingTimeout = 1000 } ) => {
+const ParentPageTreeSelectExample = ( {
+	label,
+	noOptionLabelProp,
+	loadingText,
+	loadingTimeout = 1000,
+} ) => {
 	const [ isLoading, setIsLoading ] = useState( true );
 	const [ tree, setTree ] = useState( exampleTree );
 	const [ selected, setSelected ] = useState();
@@ -74,10 +79,6 @@ const ParentPageTreeSelectExample = ( { loadingTimeout = 1000 } ) => {
 		};
 	}, [ simulateLoad, clearSimulateLoadTimeout ] );
 
-	const label = text( 'label', 'Parent page' );
-	const noOptionLabelProp = text( 'noOptionLabel', 'No parent page' );
-	const loadingText = text( 'loadingText', 'Loading...' );
-
 	const noOptionLabel = isLoading ? loadingText : noOptionLabelProp;
 
 	const handleOnChange = ( selectedId ) => setSelected( selectedId );
@@ -104,7 +105,31 @@ const ParentPageTreeSelectExample = ( { loadingTimeout = 1000 } ) => {
 };
 
 export const _default = () => {
-	return <ParentPageTreeSelectExample />;
+	const label = text( 'label', 'Parent page' );
+	const noOptionLabel = text( 'noOptionLabel', 'No parent page' );
+
+	const props = {
+		label,
+		noOptionLabel,
+		onChange: () => undefined,
+		tree: exampleTree,
+	};
+
+	return <TreeSelect { ...props } />;
+};
+
+export const loading = () => {
+	const label = text( 'label', 'Parent page' );
+	const noOptionLabel = text( 'noOptionLabel', 'No parent page' );
+	const loadingText = text( 'loadingText', 'Loading...' );
+
+	const props = {
+		label,
+		noOptionLabel,
+		loadingText,
+	};
+
+	return <ParentPageTreeSelectExample { ...props } />;
 };
 
 const Container = styled.div`
