@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { text, number } from '@storybook/addon-knobs';
+import { boolean, text, number } from '@storybook/addon-knobs';
 
 /**
  * Internal dependencies
@@ -84,6 +84,20 @@ export const disabledLink = () => {
 		<Button href="https://wordpress.org/" target="_blank" disabled>
 			{ label }
 		</Button>
+	);
+};
+
+export const loading = () => {
+	const label = text( 'Label', 'Link Button' );
+	const isLoading = boolean( 'isLoading', true );
+
+	return (
+		<>
+			<Button isPrimary isLoading={ isLoading }>{ label }</Button>
+			<Button isSecondary isLoading={ isLoading }>{ label }</Button>
+			<Button isTertiary isLoading={ isLoading }>{ label }</Button>
+			<Button isLoading={ isLoading }>{ label }</Button>
+		</>
 	);
 };
 
