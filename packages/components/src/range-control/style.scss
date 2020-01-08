@@ -23,7 +23,7 @@
 }
 
 .components-range-control__reset {
-	margin-left: $grid-size;
+	margin-left: $grid-unit-10;
 }
 
 // creating mixin because we can't do multiline variables, and we can't comma-group the selectors for styling the range slider
@@ -47,7 +47,7 @@
 
 .components-range-control__slider {
 	width: 100%;
-	margin-left: $grid-size;
+	margin-left: $grid-unit-10;
 	padding: 0;
 	-webkit-appearance: none;
 	background: transparent;
@@ -123,7 +123,7 @@
 
 .components-range-control__number {
 	display: inline-block;
-	margin-left: $grid-size;
+	margin-left: $grid-unit-10;
 	font-weight: 500;
 	width: 54px;
 }
