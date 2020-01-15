@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import CyclePickerCell from '../mobile/bottom-sheet/cycle-picker-cell';
+import PickerCell from '../mobile/bottom-sheet/picker-cell';
 
 function SelectControl( {
 	help,
@@ -17,7 +17,7 @@ function SelectControl( {
 	const id = `inspector-select-control-${ instanceId }`;
 
 	return (
-		<CyclePickerCell
+		<PickerCell
 			label={ label }
 			hideLabelFromVision={ hideLabelFromVision }
 			id={ id }
