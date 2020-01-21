@@ -17,7 +17,7 @@ import {
 	prependHTTP,
 	getProtocol,
 } from '@wordpress/url';
-import { useInstanceId } from '@wordpress/compose';
+import { useInstanceId, withSafeTimeout } from '@wordpress/compose';
 import { useSelect } from '@wordpress/data';
 
 /**
@@ -33,6 +33,7 @@ function LinkControl( {
 	settings,
 	onChange = noop,
 	showInitialSuggestions,
+	setTimeout,
 } ) {
 	const instanceId = useInstanceId( LinkControl );
 	const [ inputValue, setInputValue ] = useState( ( value && value.url ) || '' );
@@ -155,6 +156,23 @@ function LinkControl( {
 					{ ! isInitialSuggestions && (
 						<LinkControlSearchCreate
 							searchTerm={ inputValue }
+							onClick={ async () => {
+								setIsEditingLink( false );
+								onChange( {
+									title: 'Loading link...',
+									url: 'loading...',
+								} );
+								const _result = await new Promise( ( resolve ) => {
+									setTimeout( () => {
+										resolve( {
+											title: 'Resolved Titlte',
+											url: '/some-revoled/slug',
+										} );
+									}, 5000 );
+								} );
+								setIsEditingLink( false );
+								onChange( _result );
+							} }
 						/>
 					) }
 				</div>
@@ -224,4 +242,4 @@ function LinkControl( {
 	);
 }
 
-export default LinkControl;
+export default withSafeTimeout( LinkControl );
