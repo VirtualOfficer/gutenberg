@@ -26,6 +26,7 @@ import { useSelect } from '@wordpress/data';
 import LinkControlSettingsDrawer from './settings-drawer';
 import LinkControlSearchItem from './search-item';
 import LinkControlSearchInput from './search-input';
+import LinkControlSearchCreate from './search-create-button';
 
 function LinkControl( {
 	value,
@@ -150,7 +151,14 @@ function LinkControl( {
 							searchTerm={ inputValue }
 						/>
 					) ) }
+
+					{ ! isInitialSuggestions && (
+						<LinkControlSearchCreate
+							searchTerm={ inputValue }
+						/>
+					) }
 				</div>
+
 			</div>
 		);
 	};
