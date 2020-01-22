@@ -47,7 +47,7 @@ figure.wp-block-gallery {
 		@include reduce-motion("transition");
 
 		&:hover {
-			box-shadow: $shadow-toolbar;
+			box-shadow: $shadow-popover;
 		}
 
 		.components-button {

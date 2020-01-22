@@ -25,6 +25,17 @@ $block-inserter-search-height: 38px;
 	}
 }
 
+.block-editor-inserter__toggle {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	border: none;
+	outline: none;
+	padding: 0;
+	transition: color 0.2s ease;
+	@include reduce-motion("transition");
+}
+
 .block-editor-inserter__menu {
 	height: 100%;
 	display: flex;

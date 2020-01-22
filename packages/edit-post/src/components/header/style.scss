@@ -1,6 +1,5 @@
 .edit-post-header {
 	height: $header-height;
-	padding: $grid-unit-05 2px;
 	background: $white;
 	display: flex;
 	flex-wrap: wrap;
@@ -10,13 +9,15 @@
 	// The header should never be wider than the viewport, or buttons might be hidden. Especially relevant at high zoom levels. Related to https://core.trac.wordpress.org/ticket/47603#ticket.
 	max-width: 100vw;
 
+	// Padding.
+	padding: $grid-unit-15;
+	@include break-small() {
+		padding: $grid-unit-15 ($grid-unit-15 + 6px);
+	}
+
 	// Make toolbar sticky on larger breakpoints
 	@include break-zoomed-in {
 		flex-wrap: nowrap;
-	}
-
-	@include break-small {
-		padding: $grid-unit-10;
 	}
 
 	// Some browsers, most notably IE11, honor an older version of the flexbox spec
@@ -48,12 +49,38 @@
 	flex-wrap: wrap;
 }
 
+
+/**
+ * Buttons in the Toolbar
+ */
+
+.edit-post-header__toolbar {
+	.block-editor-inserter__toggle {
+		margin-right: $grid-unit-10;
+
+		// Special dimensions for this button.
+		min-width: 32px;
+		height: 32px;
+
+		// Spot color button.
+		background-color: $blue-medium-focus;
+		color: $white;
+		border-radius: $radius-block-ui;
+
+		&:hover {
+			color: $white;
+			background-color: rgba($blue-medium-focus, 0.8);
+		}
+	}
+}
+
+
 // @todo: this state should be refactored away once the G2 UI goes beyond the canvas.
 .edit-post-header__settings .components-button {
 	// Header toggle buttons.
 	&.is-pressed {
 		color: $white;
-		background: $dark-gray-500;
+		background: $dark-gray-primary;
 	}
 
 	// The !important in this ruleset need to override the pile of :not() selectors used in the icon-button.
@@ -61,7 +88,7 @@
 	&.is-pressed:focus {
 		box-shadow: 0 0 0 $border-width $dark-gray-500, inset 0 0 0 $border-width $white !important;
 		color: $white !important;
-		background: $dark-gray-500 !important;
+		background: $dark-gray-primary !important;
 	}
 
 	// Make editor header bar buttons bigger to match Buttons.

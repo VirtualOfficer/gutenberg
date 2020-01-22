@@ -361,20 +361,22 @@
 	}
 }
 
+// Sibling inserter / "inbetweenserter".
 .block-editor-block-list__insertion-point-inserter,
 .block-editor-block-list__block-popover-inserter {
-	// Show a clickable plus.
 	.block-editor-inserter__toggle.components-button {
-		border-radius: 50%;
-		color: $blue-medium-focus;
-		background: $white;
-		height: $block-padding * 2;
-		width: $block-padding * 2;
-		padding: 0;
-		justify-content: center;
+		// Special dimensions for this button.
+		min-width: 32px;
+		height: 32px;
 
-		&:not(:disabled):not([aria-disabled="true"]):hover {
-			box-shadow: none;
+		// Spot color button.
+		background-color: $blue-medium-focus;
+		color: $white;
+		border-radius: $radius-block-ui;
+
+		&:hover {
+			color: $white;
+			background-color: rgba($blue-medium-focus, 0.8);
 		}
 	}
 }

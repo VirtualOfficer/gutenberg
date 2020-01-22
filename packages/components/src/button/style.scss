@@ -14,17 +14,16 @@
 	box-sizing: border-box;
 	padding: 6px; // Centers 24px icons.
 	overflow: hidden;
-	border-radius: 2px;
+	border-radius: $radius-block-ui;
 	color: $black;
 
-	// Legacy 20px icons get 2px margin to have a 24px dimensions, making them centered.
-	> .dashicon,
-	> svg[width="20"] {
-		margin: 0 2px;
+	&:hover {
+		color: $theme-color;
 	}
 
-	&:not(:disabled):not([aria-disabled="true"]):not(.is-secondary):not(.is-primary):not(.is-tertiary):not(.is-link):hover {
-		color: $theme-color;
+	// Unset some hovers, instead of adding :not specificity.
+	&[aria-disabled="true"]:hover {
+		color: initial;
 	}
 
 	&:focus:enabled {
@@ -218,6 +217,10 @@
 	}
 
 	&.has-icon {
+		// Icon buttons are square.
+		min-width: $icon-button-size;
+		justify-content: center;
+
 		.dashicon {
 			display: inline-block;
 			flex: 0 0 auto;

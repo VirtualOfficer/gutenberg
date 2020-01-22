@@ -5,6 +5,7 @@
 	width: 100%;
 	text-align: left;
 	margin: 0;
+	color: $dark-gray-primary;
 
 	// IE11 doesn't read rules inside this query. They are applied only to modern browsers.
 	@supports (position: sticky) {

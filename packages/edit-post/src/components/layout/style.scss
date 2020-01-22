@@ -100,8 +100,25 @@
 		display: flex;
 		background: $white;
 		height: $footer-height;
-		padding: 0 $grid-unit-10;
 		align-items: center;
 		font-size: $default-font-size;
+		padding: 0 ($grid-unit-15 + 6px);
+	}
+
+	.table-of-contents {
+		margin: auto 0 0 auto;
+	}
+
+	.table-of-contents .components-button {
+		height: $icon-button-size-small;
+		padding: 0;
+
+		&:focus {
+			box-shadow: inset 0 0 0 2px color($theme-color);
+
+			// Windows High Contrast mode will show this outline, but not the box-shadow.
+			outline: 1px solid transparent;
+
+		}
 	}
 }
