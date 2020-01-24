@@ -18,37 +18,43 @@ import { defaultEntities, kinds } from './entities';
 const entities = {
 	...defaultEntities.reduce( ( acc, entity ) => {
 		if ( ! acc[ entity.kind ] ) {
-			acc[ entity.kind ] = {};
+			acc[ entity.kind ] = { context: createContext() };
 		}
 		acc[ entity.kind ][ entity.name ] = { context: createContext() };
 		return acc;
 	}, {} ),
 	...kinds.reduce( ( acc, kind ) => {
-		acc[ kind.name ] = {};
+		acc[ kind.name ] = { context: createContext() };
 		return acc;
 	}, {} ),
+	context: createContext(),
 };
-const getEntity = ( kind, type ) => {
-	if ( ! entities[ kind ] ) {
-		throw new Error( `Missing entity config for kind: ${ kind }.` );
+export const getEntity = ( kind, type ) => {
+	let entity = entities;
+	if ( kind ) {
+		if ( ! entity[ kind ] ) {
+			throw new Error( `Missing entity config for kind: ${ kind }.` );
+		}
+		entity = entity[ kind ];
+		if ( type ) {
+			if ( ! entity[ type ] ) {
+				entity[ type ] = { context: createContext() };
+			}
+			entity = entity[ type ];
+		}
 	}
-
-	if ( ! entities[ kind ][ type ] ) {
-		entities[ kind ][ type ] = { context: createContext() };
-	}
-
-	return entities[ kind ][ type ];
+	return entity;
 };
 
 /**
  * Context provider component for providing
  * an entity for a specific entity type.
  *
- * @param {Object} props          The component's props.
- * @param {string} props.kind     The entity kind.
- * @param {string} props.type     The entity type.
- * @param {number} props.id       The entity ID.
- * @param {*}      props.children The children to wrap.
+ * @param {Object} props            The component's props.
+ * @param {string} [props.kind]     The entity kind.
+ * @param {string} [props.type]     The entity type.
+ * @param {number} props.id         The entity ID.
+ * @param {*}      props.children   The children to wrap.
  *
  * @return {Object} The provided children, wrapped with
  *                   the entity's context provider.
@@ -62,8 +68,8 @@ export default function EntityProvider( { kind, type, id, children } ) {
  * Hook that returns the ID for the nearest
  * provided entity of the specified type.
  *
- * @param {string} kind The entity kind.
- * @param {string} type The entity type.
+ * @param {string} [kind] The entity kind.
+ * @param {string} [type] The entity type.
  */
 export function useEntityId( kind, type ) {
 	return useContext( getEntity( kind, type ).context );
@@ -74,9 +80,9 @@ export function useEntityId( kind, type ) {
  * specified property of the nearest provided
  * entity of the specified type.
  *
- * @param {string} kind The entity kind.
- * @param {string} type The entity type.
- * @param {string} prop The property name.
+ * @param {string} [kind] The entity kind.
+ * @param {string} [type] The entity type.
+ * @param {string} prop   The property name.
  *
  * @return {[*, Function]} A tuple where the first item is the
  *                          property value and the second is the
@@ -121,9 +127,9 @@ export function useEntityProp( kind, type, prop ) {
  * last parameter lets you scope it to a single property
  * or a list of properties for each instance of this hook.
  *
- * @param {string}          kind    The entity kind.
- * @param {string}          type    The entity type.
- * @param {string|[string]} [props] The property name or list of property names.
+ * @param {string}          [kind]    The entity kind.
+ * @param {string}          [type]    The entity type.
+ * @param {string|[string]} [props]   The property name or list of property names.
  */
 export function __experimentalUseEntitySaving( kind, type, props ) {
 	const id = useEntityId( kind, type );
@@ -186,12 +192,12 @@ export function __experimentalUseEntitySaving( kind, type, props ) {
  * `BlockEditorProvider` and are intended to be used with it,
  * or similar components or hooks.
  *
- * @param {string} kind                            The entity kind.
- * @param {string} type                            The entity type.
+ * @param {string} [kind]                            The entity kind.
+ * @param {string} [type]                            The entity type.
  * @param {Object} options
- * @param {Object} [options.initialEdits]          Initial edits object for the entity record.
- * @param {string} [options.blocksProp='blocks']   The name of the entity prop that holds the blocks array.
- * @param {string} [options.contentProp='content'] The name of the entity prop that holds the serialized blocks.
+ * @param {Object} [options.initialEdits]            Initial edits object for the entity record.
+ * @param {string} [options.blocksProp='blocks']     The name of the entity prop that holds the blocks array.
+ * @param {string} [options.contentProp='content']   The name of the entity prop that holds the serialized blocks.
  *
  * @return {[WPBlock[], Function, Function]} The block array and setters.
  */
