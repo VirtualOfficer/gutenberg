@@ -4,235 +4,188 @@
  */
 const util = require( 'util' );
 const path = require( 'path' );
-const fs = require( 'fs' );
+const fs = require( 'fs' ).promises;
 const dockerCompose = require( 'docker-compose' );
-const NodeGit = require( 'nodegit' );
-
-/**
- * Internal dependencies
- */
-const createDockerComposeConfig = require( './create-docker-compose-config' );
-const detectContext = require( './detect-context' );
-const resolveDependencies = require( './resolve-dependencies' );
+const yaml = require( 'js-yaml' );
 
 /**
  * Promisified dependencies
  */
 const copyDir = util.promisify( require( 'copy-dir' ) );
-const wait = util.promisify( setTimeout );
+const sleep = util.promisify( setTimeout );
 
-// Config Variables
-const cwd = process.cwd();
-const cwdName = path.basename( cwd );
-const cwdTestsPath = fs.existsSync( './packages' ) ? '/packages' : '';
-const dockerComposeOptions = {
-	config: path.join( __dirname, 'docker-compose.yml' ),
-};
-const hasConfigFile = fs.existsSync( dockerComposeOptions.config );
-
-// WP CLI Utils
-const wpCliRun = ( command, isTests = false ) =>
-	dockerCompose.run(
-		`${ isTests ? 'tests-' : '' }wordpress-cli`,
-		command,
-		dockerComposeOptions
-	);
-const setupSite = ( isTests = false ) =>
-	wpCliRun(
-		`wp core install --url=localhost:${
-			isTests ?
-				process.env.WP_ENV_TESTS_PORT || 8889 :
-				process.env.WP_ENV_PORT || 8888
-		} --title=${ cwdName } --admin_user=admin --admin_password=password --admin_email=admin@wordpress.org`,
-		isTests
-	);
-const activateContext = ( { type, pathBasename }, isTests = false ) =>
-	wpCliRun( `wp ${ type } activate ${ pathBasename }`, isTests );
-const resetDatabase = ( isTests = false ) =>
-	wpCliRun( 'wp db reset --yes', isTests );
+/**
+ * Internal dependencies
+ */
+const { ValidationError, readConfig } = require( './config' );
+const downloadSource = require( './download-source' );
+const buildDockerComposeConfig = require( './build-docker-compose-config' );
 
 module.exports = {
-	async start( { ref, spinner = {} } ) {
-		const context = await detectContext();
-		const dependencies = await resolveDependencies();
+	/**
+	 *
+	 * @param {Object} options
+	 * @param {Object} options.spinner
+	 */
+	async start( { spinner } ) {
+		spinner.text = 'Initializing.';
 
-		spinner.text = `Downloading WordPress@${ ref } 0/100%.`;
-		const gitFetchOptions = {
-			fetchOpts: {
-				callbacks: {
-					transferProgress( progress ) {
-						// Fetches are finished when all objects are received and indexed,
-						// so received objects plus indexed objects should equal twice
-						// the total number of objects when done.
-						const percent = (
-							( ( progress.receivedObjects() + progress.indexedObjects() ) /
-								( progress.totalObjects() * 2 ) ) *
-							100
-						).toFixed( 0 );
-						spinner.text = `Downloading WordPress@${ ref } ${ percent }/100%.`;
-					},
-				},
-			},
-		};
+		const configPath = path.resolve( '.wp-env.json' );
+		const config = await readConfig( configPath );
 
-		// Clone or get the repo.
-		const repoPath = `../${ cwdName }-wordpress/`;
-		const repo = await NodeGit.Clone(
-			'https://github.com/WordPress/WordPress.git',
-			repoPath,
-			gitFetchOptions
-		)
-			// Repo already exists, get it.
-			.catch( () => NodeGit.Repository.open( repoPath ) );
+		await fs.mkdir( config.workDirectoryPath, { recursive: true } );
 
-		// Checkout the specified ref.
-		const remote = await repo.getRemote( 'origin' );
-		await remote.fetch( ref, gitFetchOptions.fetchOpts );
-		await remote.disconnect();
-		try {
-			await repo.checkoutRef(
-				await repo
-					.getReference( 'FETCH_HEAD' )
-					// Sometimes git doesn't update FETCH_HEAD for things
-					// like tags so we try another method here.
-					.catch( repo.getReference.bind( repo, ref ) ),
-				{
-					checkoutStrategy: NodeGit.Checkout.STRATEGY.FORCE,
-				}
-			);
-		} catch ( err ) {
-			// Some commit refs need to be set as detached.
-			await repo.setHeadDetached( ref );
-		}
-
-		// Duplicate repo for the tests container.
-		let stashed = true; // Stash to avoid copying config changes.
-		try {
-			await NodeGit.Stash.save(
-				repo,
-				await NodeGit.Signature.default( repo ),
-				null,
-				NodeGit.Stash.FLAGS.INCLUDE_UNTRACKED
-			);
-		} catch ( err ) {
-			stashed = false;
-		}
-		await copyDir( repoPath, `../${ cwdName }-tests-wordpress/`, {
-			filter: ( stat, filepath ) =>
-				stat !== 'symbolicLink' &&
-				( stat !== 'directory' ||
-					( filepath !== `${ repoPath }.git` &&
-						! filepath.endsWith( 'node_modules' ) ) ),
-		} );
-		if ( stashed ) {
-			try {
-				await NodeGit.Stash.pop( repo, 0 );
-			} catch ( err ) {}
-		}
-		spinner.text = `Downloading WordPress@${ ref } 100/100%.`;
-
-		spinner.text = `Starting WordPress@${ ref }.`;
-		fs.writeFileSync(
-			dockerComposeOptions.config,
-			createDockerComposeConfig( cwdTestsPath, context, dependencies )
+		await fs.writeFile(
+			config.dockerComposeConfigPath,
+			yaml.dump( buildDockerComposeConfig( config ) )
 		);
 
-		// These will bring up the database container,
-		// because it's a dependency.
-		await dockerCompose.upMany(
-			[ 'wordpress', 'tests-wordpress' ],
-			dockerComposeOptions
-		);
+		spinner.text = 'Downloading WordPress.';
 
-		const retryableSiteSetup = async () => {
-			try {
-				await Promise.all( [ setupSite(), setupSite( true ) ] );
-			} catch ( err ) {
-				await wait( 5000 );
-				throw err;
-			}
+		const progresses = {};
+		const getProgressSetter = ( id ) => ( progress ) => {
+			progresses[ id ] = progress;
+			spinner.text =
+				'Downloading WordPress.\n' +
+				Object.entries( progresses )
+					.map( ( [ key, value ] ) => `  - ${ key }: ${ ( value * 100 ).toFixed( 0 ) }/100%` )
+					.join( '\n' );
 		};
-		// Try a few times, in case
-		// the database wasn't ready.
-		await retryableSiteSetup()
-			.catch( retryableSiteSetup )
-			.catch( retryableSiteSetup );
 
 		await Promise.all( [
-			activateContext( context ),
-			activateContext( context, true ),
-			...dependencies.map( activateContext ),
+			// Preemptively start the database while we wait for sources to download.
+			dockerCompose.upOne( 'mysql', { config: config.dockerComposeConfigPath } ),
+
+			( async () => {
+				if ( config.coreSource ) {
+					await downloadSource( config.coreSource, { onProgress: getProgressSetter( 'core' ) } );
+					await copyCoreFiles( config.coreSource.path, config.coreSource.testsPath );
+				}
+			} )(),
+
+			...config.pluginSources.map( ( source ) =>
+				downloadSource( source, { onProgress: getProgressSetter( source.basename ) } )
+			),
+
+			...config.themeSources.map( ( source ) =>
+				downloadSource( source, { onProgress: getProgressSetter( source.basename ) } )
+			),
 		] );
 
-		// Remove dangling containers and finish.
-		await dockerCompose.rm( dockerComposeOptions );
-		spinner.text = `Started WordPress@${ ref }.`;
+		spinner.text = 'Starting WordPress.';
+
+		await dockerCompose.upMany( [ 'wordpress', 'tests-wordpress' ], {
+			config: config.dockerComposeConfigPath,
+		} );
+
+		try {
+			await checkDatabaseConnection( config );
+		} catch ( error ) {
+			// Wait 30 seconds for MySQL to accept connections.
+			await retry( () => checkDatabaseConnection( config ), {
+				times: 30,
+				delay: 1000,
+			} );
+
+			// It takes 3-4 seconds for MySQL to be ready after it starts accepting connections.
+			await sleep( 4000 );
+		}
+
+		// Retry WordPress installation in case MySQL *still* wasn't ready.
+		await Promise.all( [
+			retry( () => configureWordPress( 'development', config ), { times: 2 } ),
+			retry( () => configureWordPress( 'tests', config ), { times: 2 } ),
+		] );
+
+		spinner.text = 'WordPress started.';
 	},
 
-	async stop( { spinner = {} } ) {
+	/**
+	 *
+	 * @param {Object} options
+	 * @param {Object} options.spinner
+	 */
+	async stop( { spinner } ) {
 		spinner.text = 'Stopping WordPress.';
-		await dockerCompose.stop( dockerComposeOptions );
+
+		const configPath = path.resolve( '.wp-env.json' );
+		const { dockerComposeConfigPath } = await readConfig( configPath );
+
+		await dockerCompose.down( { config: dockerComposeConfigPath } );
+
 		spinner.text = 'Stopped WordPress.';
 	},
 
+	/**
+	 *
+	 * @param {Object} options
+	 * @param {Object} options.environment
+	 * @param {Object} options.spinner
+	 */
 	async clean( { environment, spinner } ) {
-		const context = await detectContext();
-		const dependencies = await resolveDependencies();
-		const activateDependencies = () =>
-			Promise.all( dependencies.map( activateContext ) );
-
-		const description = `${ environment } environment${
-			environment === 'all' ? 's' : ''
-		}`;
+		const description = `${ environment } environment${ environment === 'all' ? 's' : '' }`;
 		spinner.text = `Cleaning ${ description }.`;
 
-		// Parallelize task sequences for each environment.
+		const configPath = path.resolve( '.wp-env.json' );
+		const config = await readConfig( configPath );
+
+		await fs.mkdir( config.workDirectoryPath, { recursive: true } );
+
+		await fs.writeFile(
+			config.dockerComposeConfigPath,
+			yaml.dump( buildDockerComposeConfig( config ) )
+		);
+
 		const tasks = [];
+
 		if ( environment === 'all' || environment === 'development' ) {
 			tasks.push(
-				resetDatabase()
-					.then( setupSite )
-					.then( activateContext.bind( null, context ) )
-					.then( activateDependencies )
+				resetDatabase( 'development', config )
+					.then( () => configureWordPress( 'development', config ) )
 					.catch( () => {} )
 			);
 		}
+
 		if ( environment === 'all' || environment === 'tests' ) {
 			tasks.push(
-				resetDatabase( true )
-					.then( setupSite.bind( null, true ) )
-					.then( activateContext.bind( null, context, true ) )
+				resetDatabase( 'tests', config )
+					.then( () => configureWordPress( 'tests', config ) )
 					.catch( () => {} )
 			);
 		}
+
 		await Promise.all( tasks );
 
-		// Remove dangling containers and finish.
-		await dockerCompose.rm( dockerComposeOptions );
 		spinner.text = `Cleaned ${ description }.`;
 	},
 
+	/**
+	 *
+	 * @param {Object} options
+	 * @param {Object} options.container
+	 * @param {Object} options.command
+	 * @param {Object} options.spinner
+	 */
 	async run( { container, command, spinner } ) {
 		command = command.join( ' ' );
-		spinner.text = `Running \`${ command }\` in "${ container }".`;
 
-		// Generate config file if we don't have one.
-		if ( ! hasConfigFile ) {
-			fs.writeFileSync(
-				dockerComposeOptions.config,
-				createDockerComposeConfig(
-					cwdTestsPath,
-					await detectContext(),
-					await resolveDependencies()
-				)
-			);
-		}
+		spinner.text = `Running \`${ command }\` in '${ container }'.`;
 
-		const result = await dockerCompose.run(
-			container,
-			command,
-			dockerComposeOptions
+		const configPath = path.resolve( '.wp-env.json' );
+		const config = await readConfig( configPath );
+
+		await fs.mkdir( config.workDirectoryPath, { recursive: true } );
+
+		await fs.writeFile(
+			config.dockerComposeConfigPath,
+			yaml.dump( buildDockerComposeConfig( config ) )
 		);
+
+		const result = await dockerCompose.run( container, command, {
+			config: config.dockerComposeConfigPath,
+			commandOptions: [ '--rm' ],
+		} );
+
 		if ( result.out ) {
 			// eslint-disable-next-line no-console
 			console.log( process.stdout.isTTY ? `\n\n${ result.out }\n\n` : result.out );
@@ -242,8 +195,129 @@ module.exports = {
 			throw result.err;
 		}
 
-		// Remove dangling containers and finish.
-		await dockerCompose.rm( dockerComposeOptions );
-		spinner.text = `Ran \`${ command }\` in "${ container }".`;
+		spinner.text = `Ran \`${ command }\` in '${ container }'.`;
 	},
+
+	ValidationError,
 };
+
+/**
+ *
+ * @param {string} fromPath
+ * @param {string} toPath
+ */
+async function copyCoreFiles( fromPath, toPath ) {
+	await copyDir( fromPath, toPath, {
+		filter( stat, filepath, filename ) {
+			if ( stat === 'symbolicLink' ) {
+				return false;
+			}
+			if ( stat === 'directory' && filename === '.git' ) {
+				return false;
+			}
+			if ( stat === 'directory' && filename === 'node_modules' ) {
+				return false;
+			}
+			if ( stat === 'file' && filename === 'wp-config.php' ) {
+				return false;
+			}
+			return true;
+		},
+	} );
+}
+
+/**
+ *
+ * @param {Function} action
+ * @param {Object} options
+ * @param {number} options.times
+ * @param {delay=} options.delay
+ */
+async function retry( action, { times, delay = 5000 } ) {
+	let tries = 0;
+	while ( true ) {
+		try {
+			return await action();
+		} catch ( error ) {
+			if ( ++tries >= times ) {
+				throw error;
+			}
+			await sleep( delay );
+		}
+	}
+}
+
+/**
+ *
+ * @param {Config} config
+ */
+async function checkDatabaseConnection( { dockerComposeConfigPath } ) {
+	await dockerCompose.run( 'cli', 'wp db check', {
+		config: dockerComposeConfigPath,
+		commandOptions: [ '--rm' ],
+	} );
+}
+
+/**
+ *
+ * @param {string} environment
+ * @param {Config} config
+ */
+async function configureWordPress( environment, config ) {
+	const options = {
+		config: config.dockerComposeConfigPath,
+		commandOptions: [ '--rm' ],
+	};
+
+	// Install WordPress.
+	await dockerCompose.run(
+		environment === 'development' ? 'cli' : 'tests-cli',
+		`wp core install
+			--url=localhost:${
+				environment === 'development'
+					? process.env.WP_ENV_PORT || '8888'
+					: process.env.WP_ENV_TESTS_PORT || '8889'
+			}
+			--title='${ config.name }'
+			--admin_user=admin
+			--admin_password=password
+			--admin_email=wordpress@example.com
+			--skip-email`,
+		options
+	);
+
+	// Activate all plugins.
+	for ( const pluginSource of config.pluginSources ) {
+		await dockerCompose.run(
+			environment === 'development' ? 'cli' : 'tests-cli',
+			`wp plugin activate ${ pluginSource.basename }`,
+			options
+		);
+	}
+
+	// Activate the first theme.
+	const [ themeSource ] = config.themeSources;
+	if ( themeSource ) {
+		await dockerCompose.run(
+			environment === 'development' ? 'cli' : 'tests-cli',
+			`wp theme activate ${ themeSource.basename }`,
+			options
+		);
+	}
+}
+
+/**
+ *
+ * @param {string} environment
+ * @param {Config} config
+ */
+async function resetDatabase( environment, { dockerComposeConfigPath } ) {
+	await dockerCompose.run(
+		environment === 'development' ? 'cli' : 'tests-cli',
+		'wp db reset --yes',
+		{
+			config: dockerComposeConfigPath,
+			commandOptions: [ '--rm' ],
+		}
+	);
+}
