@@ -75,7 +75,6 @@
 }
 
 
-// @todo: this state should be refactored away once the G2 UI goes beyond the canvas.
 .edit-post-header__settings .components-button {
 	// Header toggle buttons.
 	&.is-pressed {
@@ -83,55 +82,18 @@
 		background: $dark-gray-primary;
 	}
 
-	// The !important in this ruleset need to override the pile of :not() selectors used in the icon-button.
-	&.is-pressed:hover,
-	&.is-pressed:focus {
-		box-shadow: 0 0 0 $border-width $dark-gray-500, inset 0 0 0 $border-width $white !important;
-		color: $white !important;
-		background: $dark-gray-primary !important;
-	}
-
-	// Make editor header bar buttons bigger to match Buttons.
+	// Adjust button paddings to scale better to mobile.
 	&.editor-post-save-draft,
 	&.editor-post-switch-to-draft,
 	&.editor-post-preview,
 	&.editor-post-publish-button,
 	&.editor-post-publish-panel__toggle {
-		margin: 2px;
-		font-size: $default-font-size;
-	}
-
-	&.editor-post-save-draft,
-	&.editor-post-switch-to-draft {
-		padding: 0 5px;
+		padding: 0 6px;
+		margin-right: $grid-unit-05;
 
 		@include break-small() {
 			padding: 0 12px;
-		}
-	}
-
-	// These paddings actually duplicate existing rules from button component.
-	// But they are duplicated so as to provide smaller paddings to fit the buttons on mobile.
-	&.editor-post-preview,
-	&.editor-post-publish-button,
-	&.editor-post-publish-panel__toggle {
-		padding-left: 5px;
-		padding-right: 5px;
-
-		@include break-small() {
-			padding-left: 12px;
-			padding-right: 12px;
-		}
-	}
-
-	@include break-medium() {
-		&.editor-post-preview {
-			margin: 0 3px 0 12px;
-		}
-
-		&.editor-post-publish-button,
-		&.editor-post-publish-panel__toggle {
-			margin: 0 12px 0 3px;
+			margin-right: $grid-unit-10;
 		}
 	}
 }

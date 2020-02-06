@@ -226,6 +226,10 @@
 			flex: 0 0 auto;
 		}
 
+		&.has-text {
+			justify-content: left;
+		}
+
 		&.has-text svg {
 			margin-right: 8px;
 		}
