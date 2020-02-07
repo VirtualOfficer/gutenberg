@@ -473,6 +473,7 @@
 			// When button is focused, it receives a box-shadow instead of the border.
 			&:focus {
 				border: none;
+				box-shadow: inset 0 0 0 1px color($theme-color), 0 0 0 1px color($theme-color);
 			}
 		}
 

@@ -12,11 +12,12 @@
 	height: $icon-button-size;
 	align-items: center;
 	box-sizing: border-box;
-	padding: 6px; // Centers 24px icons.
+	padding: 6px; // Works for 24px icons. Smaller icons are vertically centered by flex alignments.
 	overflow: hidden;
 	border-radius: $radius-block-ui;
 	color: $black;
 
+	&[aria-expanded="true"],
 	&:hover {
 		color: $theme-color;
 	}
