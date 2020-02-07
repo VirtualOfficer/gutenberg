@@ -29,7 +29,7 @@
 	left: 0;
 	right: 0;
 	background: $white;
-	min-height: 36px;
+	//min-height: 36px;
 	border-bottom: $border-width solid $light-gray-500;
 
 	&:empty {
@@ -60,18 +60,17 @@
 		right: auto;
 		background: none;
 		border-bottom: none;
-		min-height: auto;
 
 		.is-sidebar-opened & {
 			right: auto;
 		}
 
 		.block-editor-block-toolbar {
-			margin: -($grid-unit-10 + $border-width) 0;
-		}
+			margin: -($grid-unit-15) 0;
 
-		.block-editor-block-toolbar .components-toolbar {
-			padding: ($grid-unit-10 - $border-width - $border-width) 0;
+			.components-toolbar {
+				padding: ($grid-unit-15 - $border-width - $border-width) 0;
+			}
 		}
 	}
 }
