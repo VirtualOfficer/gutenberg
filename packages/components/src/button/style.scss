@@ -27,7 +27,9 @@
 		color: initial;
 	}
 
-	&:focus:enabled {
+	// Focus.
+	// See https://github.com/WordPress/gutenberg/issues/13267 for more context on these selectors.
+	&:focus:not(:disabled) {
 		box-shadow: 0 0 0 2px color($theme-color);
 
 		// Windows High Contrast mode will show this outline, but not the box-shadow.
@@ -43,14 +45,14 @@
 		border-color: color($theme-color shade(6%));
 		background: #f3f5f6;
 
-		&:not(:disabled):not([aria-disabled="true"]):hover {
+		&:hover:not(:disabled) {
 			background: #f1f1f1;
 			border-color: color($theme-color shade(25%));
 			color: color($theme-color shade(25%));
 			text-decoration: none;
 		}
 
-		&:not([aria-disabled="true"]):active:enabled {
+		&:active:not(:disabled) {
 			background: #f3f5f6;
 			color: color($theme-color shade(5%));
 			border-color: #7e8993;
@@ -78,19 +80,19 @@
 		text-decoration: none;
 		text-shadow: none;
 
-		&:not(:disabled):not([aria-disabled="true"]):hover {
+		&:hover:not(:disabled) {
 			background: color($theme-color shade(10%));
 			border-color: color($theme-color shade(10%));
 			color: $white;
 		}
 
-		&:active:enabled {
+		&:active:not(:disabled) {
 			background: color($theme-color shade(20%));
 			border-color: color($theme-color shade(20%));
 			color: $white;
 		}
 
-		&:focus:enabled {
+		&:focus:not(:disabled) {
 			box-shadow:
 				0 0 0 $border-width $white,
 				0 0 0 2px color($theme-color);
@@ -154,8 +156,8 @@
 		@include reduce-motion("transition");
 		height: auto;
 
-		&:not(:disabled):not([aria-disabled="true"]):hover,
-		&:not([aria-disabled="true"]):active {
+		&:hover:not(:disabled),
+		&:active:not(:disabled) {
 			color: #00a0d2;
 		}
 
