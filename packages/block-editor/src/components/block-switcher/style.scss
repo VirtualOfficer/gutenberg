@@ -31,7 +31,7 @@
 .components-button.block-editor-block-switcher__no-switcher-icon {
 	margin: 0;
 	display: block;
-	height: $icon-button-size;
+	height: $grid-unit-60;
 
 	.block-editor-block-icon {
 		margin: auto;
@@ -149,11 +149,11 @@
 .block-editor-block-contextual-toolbar {
 	.components-button.block-editor-block-switcher__toggle,
 	.components-button.block-editor-block-switcher__no-switcher-icon {
-		height: $block-toolbar-height;
+		height: $grid-unit-60;
 	}
 
 	.components-button.block-editor-block-switcher__no-switcher-icon {
-		width: $block-toolbar-height;
+		width: $grid-unit-60;
 	}
 
 	.components-button.block-editor-block-switcher__toggle {

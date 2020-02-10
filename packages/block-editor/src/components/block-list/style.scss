@@ -424,9 +424,10 @@
 
 
 /**
- * Block Toolbar when contextual.
+ * Block Toolbar, top and contextual.
  */
 
+.edit-post-header-toolbar__block-toolbar,
 .block-editor-block-contextual-toolbar {
 	// Adapt the height of the toolbar items.
 	.components-toolbar {
@@ -438,7 +439,14 @@
 	.components-button {
 		height: $block-toolbar-height;
 	}
+}
 
+
+/**
+ * Block Toolbar when contextual.
+ */
+
+.block-editor-block-contextual-toolbar {
 	// Block UI appearance.
 	border: $border-width solid $dark-gray-primary;
 	border-radius: $radius-block-ui;
@@ -543,7 +551,7 @@
 
 			// @todo It should position the block transform dialog as the left margin of a block. It currently
 			// positions instead, the mover control.
-			margin-left: -$grid-unit-60;
+			margin-left: -$grid-unit-60 - $border-width;
 		}
 
 		.block-editor-block-contextual-toolbar[data-align="full"],

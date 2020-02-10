@@ -5,6 +5,7 @@
 
 	@include break-medium() {
 		display: flex;
+		align-items: center;
 		border: none;
 		margin-right: $grid-unit-10;
 	}

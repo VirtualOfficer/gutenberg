@@ -29,7 +29,6 @@
 	left: 0;
 	right: 0;
 	background: $white;
-	//min-height: 36px;
 	border-bottom: $border-width solid $light-gray-500;
 
 	&:empty {
@@ -65,12 +64,10 @@
 			right: auto;
 		}
 
-		.block-editor-block-toolbar {
-			margin: -($grid-unit-15) 0;
-
-			.components-toolbar {
-				padding: ($grid-unit-15 - $border-width - $border-width) 0;
-			}
+		.block-editor-block-toolbar .components-toolbar {
+			$top-toolbar-padding: ($header-height - $grid-unit-60) / 2;
+			height: $header-height;
+			padding: $top-toolbar-padding 0;
 		}
 	}
 }

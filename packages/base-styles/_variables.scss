@@ -92,10 +92,9 @@ $widget-area-width: 700px;
  */
 
 $border-width: 1px;
-$block-controls-height: 36px;
 $icon-button-size: 36px;
-$icon-button-size-small: 24px;
 $inserter-tabs-height: 36px;
+$icon-button-size-small: 24px;
 $block-toolbar-height: $grid-unit-60;
 $resize-handler-size: 15px;
 $resize-handler-container-size: $resize-handler-size + ($grid-unit-05 * 2); // Make the resize handle container larger so there's a larger grabbable area.
