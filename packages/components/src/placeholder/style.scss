@@ -1,6 +1,6 @@
 .components-placeholder.components-placeholder { // This needs specificity to override individual block styles.
 	position: relative;
-	padding: 1em;
+	padding: $grid-unit-15 $grid-unit-30 $grid-unit-30 $grid-unit-30;
 	min-height: 200px;
 	width: 100%;
 	text-align: left;
@@ -36,15 +36,9 @@
 
 .components-placeholder__label {
 	display: flex;
-	font-weight: 600;
-	margin-bottom: 1em;
-
-	> svg,
-	.dashicon,
-	.block-editor-block-icon {
-		fill: currentColor;
-		margin-right: 1ch;
-	}
+	font-weight: normal;
+	margin: 0 0 $grid-unit-15 0;
+	font-size: 18pt;
 }
 
 .components-placeholder__fieldset,
@@ -72,7 +66,7 @@
 }
 
 .components-placeholder__instructions {
-	margin-bottom: 1em;
+	margin-bottom: $grid-unit-30;
 }
 
 .components-placeholder__error {
@@ -111,6 +105,11 @@
 // Element queries to show different layouts at various sizes.
 .components-placeholder {
 
+	// Very large.
+	&.is-large {
+		padding: ($grid-unit-15 * 3) ($grid-unit-15 * 5);
+	}
+
 	// Medium and small sizes.
 	&.is-medium,
 	&.is-small {
@@ -130,10 +129,6 @@
 
 	// Small sizes.
 	&.is-small {
-		.block-editor-block-icon {
-			display: none;
-		}
-
 		.components-button {
 			padding: 0 $grid-unit-10 2px;
 		}

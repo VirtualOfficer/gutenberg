@@ -125,8 +125,8 @@
 [data-type="core/columns"] {
 
 	.block-list-appender {
-		margin-top: $block-padding*2;
-		margin-bottom: $block-padding*2;
+		margin-top: ($block-padding * 2) + 2px;
+		margin-bottom: ($block-padding * 2) + 2px;
 	}
 }
 
