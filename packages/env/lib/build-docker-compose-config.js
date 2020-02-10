@@ -65,8 +65,9 @@ module.exports = function buildDockerComposeConfig( config ) {
 				image: 'wordpress',
 				ports: [ '${WP_ENV_PORT:-8888}:80' ],
 				environment: {
-					WORDPRESS_DEBUG: '1',
 					WORDPRESS_DB_NAME: 'wordpress',
+					WORDPRESS_DEBUG: '1',
+					WORDPRESS_CONFIG_EXTRA: "define( 'SCRIPT_DEBUG', true );",
 				},
 				volumes: developmentMounts,
 			},
@@ -75,8 +76,9 @@ module.exports = function buildDockerComposeConfig( config ) {
 				image: 'wordpress',
 				ports: [ '${WP_ENV_TESTS_PORT:-8889}:80' ],
 				environment: {
-					WORDPRESS_DEBUG: '1',
 					WORDPRESS_DB_NAME: 'tests-wordpress',
+					WORDPRESS_DEBUG: '1',
+					WORDPRESS_CONFIG_EXTRA: "define( 'SCRIPT_DEBUG', true );",
 				},
 				volumes: testsMounts,
 			},
