@@ -75,19 +75,20 @@
 }
 
 
-.edit-post-header__settings .components-button {
+.edit-post-header__settings {
 	// Header toggle buttons.
-	&.is-pressed {
+	.components-button.is-pressed {
 		color: $white;
 		background: $dark-gray-primary;
 	}
 
 	// Adjust button paddings to scale better to mobile.
-	&.editor-post-save-draft,
-	&.editor-post-switch-to-draft,
-	&.editor-post-preview,
-	&.editor-post-publish-button,
-	&.editor-post-publish-panel__toggle {
+	.components-button.editor-post-save-draft,
+	.editor-post-saved-state,
+	.components-button.editor-post-switch-to-draft,
+	.components-button.editor-post-preview,
+	.components-button.editor-post-publish-button,
+	.components-button.editor-post-publish-panel__toggle {
 		padding: 0 6px;
 		margin-right: $grid-unit-05;
 
