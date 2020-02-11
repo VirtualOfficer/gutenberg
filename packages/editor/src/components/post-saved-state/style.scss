@@ -1,9 +1,9 @@
 .editor-post-saved-state {
 	display: flex;
 	align-items: center;
-	width: $icon-button-size - 8px;
+	width: $icon-button-size - $grid-unit-10;
 	padding: #{ $grid-unit-05 * 3 } $grid-unit-05;
-	color: $dark-gray-500;
+	color: $medium-gray-text;
 	overflow: hidden;
 	white-space: nowrap;
 
