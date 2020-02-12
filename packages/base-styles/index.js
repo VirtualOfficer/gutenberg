@@ -1,10 +1,10 @@
 exports.adminColorSchemes = {
 	defaults: {
 		primary: '#0085ba',
-		secondary: '#11a0d2',
-		toggle: '#11a0d2',
-		button: '#007cba',
-		outlines: '#007cba',
+		secondary: '#1635bb',
+		toggle: '#1635bb',
+		button: '#5c7bff',
+		outlines: '#5c7bff',
 	},
 	themes: {
 		'admin-color-light': {

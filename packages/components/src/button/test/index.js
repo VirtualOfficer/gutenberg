@@ -130,11 +130,7 @@ describe( 'Button', () => {
 
 		it( 'should allow tooltip disable', () => {
 			const iconButton = shallow(
-				<Button
-					icon={ add }
-					label="WordPress"
-					showTooltip={ false }
-				/>
+				<Button icon={ add } label="WordPress" showTooltip={ false } />
 			);
 			expect( iconButton.name() ).toBe( 'button' );
 			expect( iconButton.prop( 'aria-label' ) ).toBe( 'WordPress' );

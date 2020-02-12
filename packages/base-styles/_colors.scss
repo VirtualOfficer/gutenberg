@@ -26,12 +26,18 @@ $light-gray-100: #f8f9f9;
 $white: #fff;
 
 // G2 colors.
+// @todo: adjust towards better naming system.
+$blueberry: #5c7bff;
+$blueberry-dark: #1635bb;
+$pomegrade: #f3664d;
+$greens: #00f467;
+
 $dark-gray-primary: #1e1e1e;
 $medium-gray-text: #757575;
 $light-gray-secondary: #ccc;
 $light-gray-tertiary: #e7e8e9;
 $theme-color: theme(button);
-$blue-medium-focus: #007cba;	// @todo: Currently being used as "spot" color. Needs to be considered in context of themes.
+$blue-medium-focus: $blueberry;	// @todo: Currently being used as "spot" color. Needs to be considered in context of themes.
 $blue-medium-focus-dark: #fff;
 
 // Dark opacities, for use with light themes.
