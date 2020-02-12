@@ -3,10 +3,10 @@
  */
 import { SVG, Polygon } from '@wordpress/primitives';
 
-const chevronLeft = (
+const add = (
 	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-		<Polygon points="13.7,18.5 8,12.8 13.7,6.5 14.8,7.5 10,12.7 14.8,17.5 " />
+		<Polygon points="12.5,11.5 12.5,7 11,7 11,11.5 6,11.5 6,13 11,13 11,18 12.5,18 12.5,13 17,13 17,11.5 " />
 	</SVG>
 );
 
-export default chevronLeft;
+export default add;

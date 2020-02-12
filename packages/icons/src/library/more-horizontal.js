@@ -4,8 +4,8 @@
 import { SVG, Path } from '@wordpress/primitives';
 
 const moreHorizontal = (
-	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 24 24">
-		<Path d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+		<Path d="M5,13h2v-2H5V13z M11,13h2v-2h-2V13z M17,11v2h2v-2H17z" />
 	</SVG>
 );
 

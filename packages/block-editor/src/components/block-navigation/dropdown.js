@@ -16,10 +16,10 @@ const MenuIcon = (
 	<SVG
 		xmlns="http://www.w3.org/2000/svg"
 		viewBox="0 0 24 24"
-		width="20"
-		height="20"
+		width="24"
+		height="24"
 	>
-		<Path d="M5 5H3v2h2V5zm3 8h11v-2H8v2zm9-8H6v2h11V5zM7 11H5v2h2v-2zm0 8h2v-2H7v2zm3-2v2h11v-2H10z" />
+		<Path d="M18,11.2H6v1.5h12V11.2z M14,5.2H2v1.5h12V5.2z M10,17.2v1.5h12v-1.5H10z" />
 	</SVG>
 );
 
