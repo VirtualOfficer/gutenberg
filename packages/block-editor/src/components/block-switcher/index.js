@@ -20,7 +20,6 @@ import { DOWN } from '@wordpress/keycodes';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 
-
 /**
  * Internal dependencies
  */

@@ -102,6 +102,32 @@
 	}
 
 	/**
+	 * Secondary and tertiary buttons.
+	 */
+
+	&.is-secondary,
+	&.is-tertiary {
+		&:hover:not(:disabled) {
+			color: color($theme-color shade(10%));
+			box-shadow: 0 0 0 $border-width color($theme-color shade(10%));
+		}
+
+		&:active:not(:disabled) {
+			background: $light-gray-tertiary;
+			color: color($theme-color shade(10%));
+			box-shadow: none;
+		}
+
+		&:disabled,
+		&[aria-disabled="true"] {
+			color: $medium-gray-text;
+			background: $light-gray-secondary;
+			transform: none;
+			opacity: 1;
+		}
+	}
+
+	/**
 	 * Secondary button style.
 	 */
 
@@ -111,28 +137,6 @@
 		white-space: nowrap;
 		color: $theme-color;
 		background: transparent;
-
-		&:hover:not(:disabled) {
-			color: color($theme-color shade(5%));
-			box-shadow: 0 0 0 $border-width color($theme-color shade(5%));
-		}
-
-		&:active:not(:disabled) {
-			background: #f3f5f6;
-			color: color($theme-color shade(5%));
-			border-color: #7e8993;
-			box-shadow: none;
-		}
-
-		&:disabled,
-		&[aria-disabled="true"] {
-			color: #a0a5aa;
-			border-color: #ddd;
-			background: #f7f7f7;
-			text-shadow: 0 $border-width 0 #fff;
-			transform: none;
-			opacity: 1;
-		}
 	}
 
 	/**
@@ -143,27 +147,6 @@
 		white-space: nowrap;
 		color: $theme-color;
 		background: transparent;
-
-		&:hover:not(:disabled) {
-			border-color: $theme-color;
-		}
-
-		&:active:not(:disabled) {
-			background: #f3f5f6;
-			color: color($theme-color shade(5%));
-			border-color: #7e8993;
-			box-shadow: none;
-		}
-
-		&:disabled,
-		&[aria-disabled="true"] {
-			color: #a0a5aa;
-			border-color: #ddd;
-			background: #f7f7f7;
-			text-shadow: 0 $border-width 0 #fff;
-			transform: none;
-			opacity: 1;
-		}
 
 		.dashicon {
 			display: inline-block;
