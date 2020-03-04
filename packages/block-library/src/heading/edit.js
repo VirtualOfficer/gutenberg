@@ -12,7 +12,7 @@ import HeadingToolbar from './heading-toolbar';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { PanelBody } from '@wordpress/components';
+import { PanelBody, Text } from '@wordpress/components';
 import { createBlock } from '@wordpress/blocks';
 import {
 	AlignmentToolbar,
@@ -22,7 +22,7 @@ import {
 	__experimentalUseColors,
 	__experimentalBlock as Block,
 } from '@wordpress/block-editor';
-import { useRef } from '@wordpress/element';
+import { Platform, useRef } from '@wordpress/element';
 
 function HeadingEdit( {
 	attributes,
@@ -30,14 +30,15 @@ function HeadingEdit( {
 	mergeBlocks,
 	onReplace,
 	className,
+	style,
 } ) {
 	const ref = useRef();
 	const { TextColor, InspectorControlsColorPanel } = __experimentalUseColors(
 		[ { name: 'textColor', property: 'color' } ],
-		{
+		Platform.OS === 'web' ? {
 			contrastCheckers: { backgroundColor: true, textColor: true },
 			colorDetector: { targetRef: ref },
-		},
+		} : undefined,
 		[]
 	);
 
@@ -49,11 +50,12 @@ function HeadingEdit( {
 			<BlockControls>
 				<HeadingToolbar
 					minLevel={ 2 }
-					maxLevel={ 5 }
+					maxLevel={ Platform.OS === 'web' ? 5 : 7 }
 					selectedLevel={ level }
 					onChange={ ( newLevel ) =>
 						setAttributes( { level: newLevel } )
 					}
+					isCollapsed={ Platform.OS === 'web' }
 				/>
 				<AlignmentToolbar
 					value={ align }
@@ -62,26 +64,27 @@ function HeadingEdit( {
 					} }
 				/>
 			</BlockControls>
-			<InspectorControls>
-				<PanelBody title={ __( 'Heading settings' ) }>
-					<p>{ __( 'Level' ) }</p>
-					<HeadingToolbar
-						isCollapsed={ false }
-						minLevel={ 1 }
-						maxLevel={ 7 }
-						selectedLevel={ level }
-						onChange={ ( newLevel ) =>
-							setAttributes( { level: newLevel } )
-						}
-					/>
-				</PanelBody>
-			</InspectorControls>
-			{ InspectorControlsColorPanel }
+			{ Platform.OS === 'web' ?
+				<InspectorControls>
+					<PanelBody title={ __( 'Heading settings' ) }>
+						<Text>{ __( 'Level' ) }</Text>
+						<HeadingToolbar
+							isCollapsed={ false }
+							minLevel={ 1 }
+							maxLevel={ 7 }
+							selectedLevel={ level }
+							onChange={ ( newLevel ) =>
+								setAttributes( { level: newLevel } )
+							}
+						/>
+					</PanelBody>
+				</InspectorControls> : null }
+			{ Platform.OS === 'web' ? InspectorControlsColorPanel : null }
 			<TextColor>
 				<RichText
 					ref={ ref }
 					identifier="content"
-					tagName={ Block[ tagName ] }
+					tagName={ Platform.OS === 'web' ? Block[ tagName ] : tagName }
 					value={ content }
 					onChange={ ( value ) =>
 						setAttributes( { content: value } )
@@ -102,7 +105,9 @@ function HeadingEdit( {
 					className={ classnames( className, {
 						[ `has-text-align-${ align }` ]: align,
 					} ) }
+					style={ style }
 					placeholder={ placeholder || __( 'Write heading…' ) }
+					textAlign={ align }
 				/>
 			</TextColor>
 		</>
