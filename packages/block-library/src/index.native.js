@@ -154,6 +154,9 @@ export const registerCoreBlocks = () => {
 		shortcode,
 		devOnly( verse ),
 		cover,
+		embed,
+		...embed.common,
+		...embed.others,
 	].forEach( registerBlock );
 
 	setDefaultBlockName( paragraph.name );
