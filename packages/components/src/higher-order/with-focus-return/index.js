@@ -79,7 +79,7 @@ function withFocusReturn( options ) {
 				// the default behavior otherwise occurring here. This allows
 				// for support that the `onFocusReturn` decides to allow the
 				// default behavior to occur under some conditions.
-				if ( onFocusReturn() === false ) {
+				if ( onFocusReturn( this.props.childProps ) === false ) {
 					return;
 				}
 

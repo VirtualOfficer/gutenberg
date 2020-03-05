@@ -1,0 +1,37 @@
+{
+	"name": "@wordpress/admin-screen",
+	"version": "0.0.1",
+	"private": true,
+	"description": "Admin screen module for WordPress.",
+	"author": "The WordPress Contributors",
+	"license": "GPL-2.0-or-later",
+	"keywords": [
+		"wordpress"
+	],
+	"homepage": "https://github.com/WordPress/gutenberg/tree/master/packages/admin-screen/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/WordPress/gutenberg.git",
+		"directory": "packages/admin-screen"
+	},
+	"bugs": {
+		"url": "https://github.com/WordPress/gutenberg/issues"
+	},
+	"main": "build/index.js",
+	"module": "build-module/index.js",
+	"react-native": "src/index",
+	"dependencies": {
+		"@babel/runtime": "^7.8.3",
+		"@wordpress/components": "../components",
+		"@wordpress/data": "4.14.0",
+		"@wordpress/element": "../element",
+		"@wordpress/i18n": "../i18n",
+		"@wordpress/icons": "../icons",
+		"@wordpress/plugins": "../plugins",
+		"classnames": "^2.2.5",
+		"lodash": "4.17.15"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

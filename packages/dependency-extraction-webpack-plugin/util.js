@@ -1,5 +1,5 @@
 const WORDPRESS_NAMESPACE = '@wordpress/';
-const BUNDLED_PACKAGES = [ '@wordpress/icons' ];
+const BUNDLED_PACKAGES = [ '@wordpress/icons', '@wordpress/admin-screen' ];
 
 /**
  * Default request to global transformation

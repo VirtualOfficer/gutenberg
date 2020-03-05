@@ -1086,6 +1086,12 @@
 		"parent": "packages"
 	},
 	{
+		"title": "@wordpress/admin-screen",
+		"slug": "packages-admin-screen",
+		"markdown_source": "../packages/admin-screen/README.md",
+		"parent": "packages"
+	},
+	{
 		"title": "@wordpress/annotations",
 		"slug": "packages-annotations",
 		"markdown_source": "../packages/annotations/README.md",
