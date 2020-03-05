@@ -1,6 +1,5 @@
-/**
- * External dependencies
- */
+import { Component } from '@wordpress/element';
+
 import YouTube from 'react-native-youtube';
 
 export function getEmbedEditComponent( title, icon, responsive = true ) {
