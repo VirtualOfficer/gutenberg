@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { View, AccessibilityInfo, Platform, Clipboard } from 'react-native';
+import HsvColorPicker from 'react-native-hsv-color-picker';
 /**
  * WordPress dependencies
  */
@@ -18,13 +19,13 @@ import {
 	ToggleControl,
 	PanelBody,
 	RangeControl,
-	UnsupportedFooterControl,
 	ToolbarGroup,
 	ToolbarButton,
 	BottomSheet,
+	Consumer,
 } from '@wordpress/components';
-import { Component } from '@wordpress/element';
-import { withSelect } from '@wordpress/data';
+import { Component, createRef } from '@wordpress/element';
+import { withSelect, withDispatch } from '@wordpress/data';
 import { isURL, prependHTTP } from '@wordpress/url';
 import { link, external } from '@wordpress/icons';
 
@@ -52,24 +53,33 @@ class ButtonEdit extends Component {
 		this.onChangeURL = this.onChangeURL.bind( this );
 		this.onClearSettings = this.onClearSettings.bind( this );
 		this.onLayout = this.onLayout.bind( this );
+		this.onSetMaxWidth = this.onSetMaxWidth.bind( this );
 		this.getURLFromClipboard = this.getURLFromClipboard.bind( this );
 		this.onToggleLinkSettings = this.onToggleLinkSettings.bind( this );
 		this.onToggleButtonFocus = this.onToggleButtonFocus.bind( this );
 		this.setRef = this.setRef.bind( this );
+		this.onRemove = this.onRemove.bind( this );
+		this.onSatValPickerChange = this.onSatValPickerChange.bind( this );
+		this.onHuePickerChange = this.onHuePickerChange.bind( this );
 
 		// `isEditingURL` property is used to prevent from automatically pasting
 		// URL from clipboard while trying to clear `Button URL` field and then
 		// manually adding specific link
 		this.isEditingURL = false;
-
-		const isButtonFocused =
-			Platform.OS === 'ios' ? ! props.hasParents : true;
+		this.colorPicker = createRef();
 
 		this.state = {
 			maxWidth: INITIAL_MAX_WIDTH,
 			isLinkSheetVisible: false,
-			isButtonFocused,
+			isButtonFocused: true,
+			hue: 0,
+			sat: 0.5,
+			val: 0.5,
 		};
+	}
+
+	componentDidMount() {
+		this.onSetMaxWidth();
 	}
 
 	componentDidUpdate( prevProps, prevState ) {
@@ -78,8 +88,17 @@ class ButtonEdit extends Component {
 			setAttributes,
 			editorSidebarOpened,
 			attributes: { url },
+			parentWidth,
 		} = this.props;
 		const { isLinkSheetVisible, isButtonFocused } = this.state;
+
+		if ( prevProps.selectedId !== selectedId ) {
+			this.onToggleButtonFocus( true );
+		}
+
+		if ( prevProps.parentWidth !== parentWidth ) {
+			this.onSetMaxWidth();
+		}
 
 		if (
 			( prevProps.editorSidebarOpened && ! editorSidebarOpened ) ||
@@ -223,9 +242,40 @@ class ButtonEdit extends Component {
 
 	onLayout( { nativeEvent } ) {
 		const { width } = nativeEvent.layout;
-		const { marginRight } = styles.button;
-		const buttonSpacing = 2 * marginRight;
-		this.setState( { maxWidth: width - buttonSpacing } );
+		this.onSetMaxWidth( width );
+	}
+
+	onSetMaxWidth( width ) {
+		const { maxWidth } = this.state;
+		const { parentWidth, isSelectedButtonsBlock } = this.props;
+		const { marginRight: unselectedSpacing } = styles.button;
+		const { marginRight: selectedSpacing } = styles.buttonsSelected;
+
+		const buttonSpacing = isSelectedButtonsBlock
+			? selectedSpacing
+			: unselectedSpacing;
+
+		const isParentWidthChanged =
+			maxWidth !== parentWidth - 2 * buttonSpacing;
+		const isWidthChanged = maxWidth !== width - unselectedSpacing;
+
+		if ( parentWidth && ! width && isParentWidthChanged ) {
+			this.setState( {
+				maxWidth: parentWidth - 2 * buttonSpacing,
+			} );
+		} else if ( ! parentWidth && width && isWidthChanged ) {
+			this.setState( { maxWidth: width - unselectedSpacing } );
+		}
+	}
+
+	onRemove() {
+		const { numOfButtons, onDelete, onReplace } = this.props;
+
+		if ( numOfButtons === 1 ) {
+			onDelete();
+		} else {
+			onReplace( [] );
+		}
 	}
 
 	getLinkSettings( url, rel, linkTarget, isCompatibleWithSettings ) {
@@ -278,6 +328,19 @@ class ButtonEdit extends Component {
 		this.richTextRef = richText;
 	}
 
+	onSatValPickerChange( { saturation, value } ) {
+		this.setState( {
+			sat: saturation,
+			val: value,
+		} );
+	}
+
+	onHuePickerChange( { hue } ) {
+		this.setState( {
+			hue,
+		} );
+	}
+
 	render() {
 		const {
 			attributes,
@@ -285,6 +348,8 @@ class ButtonEdit extends Component {
 			isSelected,
 			clientId,
 			onReplace,
+			mergeBlocks,
+			parentWidth,
 		} = this.props;
 		const {
 			placeholder,
@@ -294,7 +359,18 @@ class ButtonEdit extends Component {
 			linkTarget,
 			rel,
 		} = attributes;
-		const { maxWidth, isLinkSheetVisible, isButtonFocused } = this.state;
+		const {
+			maxWidth,
+			isLinkSheetVisible,
+			isButtonFocused,
+			hue,
+			sat,
+			val,
+		} = this.state;
+
+		if ( parentWidth === 0 ) {
+			return null;
+		}
 
 		const borderRadiusValue =
 			borderRadius !== undefined
@@ -325,7 +401,7 @@ class ButtonEdit extends Component {
 		const backgroundColor = this.getBackgroundColor();
 
 		return (
-			<View style={ { flex: 1 } } onLayout={ this.onLayout }>
+			<View onLayout={ this.onLayout }>
 				<ColorBackground
 					borderRadiusValue={ borderRadiusValue }
 					backgroundColor={ backgroundColor }
@@ -368,9 +444,14 @@ class ButtonEdit extends Component {
 							this.onToggleButtonFocus( true )
 						}
 						__unstableMobileNoFocusOnMount={ ! isSelected }
+						onBlur={ () => {
+							this.onToggleButtonFocus( false );
+							this.onSetMaxWidth();
+						} }
 						selectionColor={ textColor.color || '#fff' }
 						onReplace={ onReplace }
-						onRemove={ () => onReplace( [] ) }
+						onRemove={ this.onRemove }
+						onMerge={ mergeBlocks }
 					/>
 				</ColorBackground>
 
@@ -415,13 +496,58 @@ class ButtonEdit extends Component {
 					<PanelBody title={ __( 'Link Settings' ) }>
 						{ this.getLinkSettings( url, rel, linkTarget, true ) }
 					</PanelBody>
-					<PanelBody>
-						<UnsupportedFooterControl
-							label={ __(
-								'Button color settings are coming soon.'
-							) }
-							separatorType="none"
-						/>
+					<PanelBody title={ __( 'Color Settings' ) }>
+						<Consumer>
+							{ ( {
+								isBottomSheetScrolling,
+								shouldEnableBottomSheetScroll,
+							} ) => {
+								return (
+									<HsvColorPicker
+										huePickerHue={ hue }
+										onHuePickerDragMove={
+											this.onHuePickerChange
+										}
+										onHuePickerPress={
+											! isBottomSheetScrolling &&
+											this.onHuePickerChange
+										}
+										satValPickerHue={ hue }
+										satValPickerSaturation={ sat }
+										satValPickerValue={ val }
+										onSatValPickerDragMove={
+											this.onSatValPickerChange
+										}
+										onSatValPickerPress={
+											! isBottomSheetScrolling &&
+											this.onSatValPickerChange
+										}
+										onSatValPickerDragStart={ () =>
+											shouldEnableBottomSheetScroll(
+												false
+											)
+										}
+										onSatValPickerDragEnd={ () =>
+											shouldEnableBottomSheetScroll(
+												true
+											)
+										}
+										onHuePickerDragStart={ () =>
+											shouldEnableBottomSheetScroll(
+												false
+											)
+										}
+										onHuePickerDragEnd={ () =>
+											shouldEnableBottomSheetScroll(
+												true
+											)
+										}
+										ref={ this.colorPicker }
+										containerStyle={ { marginBottom: 20 } }
+									/>
+								);
+							} }
+						</Consumer>
 					</PanelBody>
 				</InspectorControls>
 			</View>
@@ -432,19 +558,33 @@ class ButtonEdit extends Component {
 export default compose( [
 	withInstanceId,
 	withColors( 'backgroundColor', { textColor: 'color' } ),
-	withSelect( ( select ) => {
+	withSelect( ( select, { clientId } ) => {
 		const { isEditorSidebarOpened } = select( 'core/edit-post' );
-		const { getSelectedBlockClientId, getBlockParents } = select(
-			'core/block-editor'
-		);
+		const {
+			getSelectedBlockClientId,
+			getBlockCount,
+			getBlockRootClientId,
+		} = select( 'core/block-editor' );
 
+		const parentId = getBlockRootClientId( clientId );
 		const selectedId = getSelectedBlockClientId();
-		const hasParents = getBlockParents( selectedId ).length > 0;
+		const isSelectedButtonsBlock = parentId === selectedId;
+		const numOfButtons = getBlockCount( parentId );
 
 		return {
 			selectedId,
 			editorSidebarOpened: isEditorSidebarOpened(),
-			hasParents,
+			parentId,
+			numOfButtons,
+			isSelectedButtonsBlock,
+		};
+	} ),
+	withDispatch( ( dispatch, { parentId } ) => {
+		const { removeBlock } = dispatch( 'core/block-editor' );
+		return {
+			onDelete: () => {
+				removeBlock( parentId );
+			},
 		};
 	} ),
 ] )( ButtonEdit );
