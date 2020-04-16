@@ -12,6 +12,7 @@ import { CSS_UNITS } from './utils';
 
 export default function UnitControl( {
 	className,
+	disableUnits = false,
 	isUnitSelectTabbable = true,
 	isResetValueOnUnitChange = true,
 	label,
@@ -46,14 +47,16 @@ export default function UnitControl( {
 				size={ size }
 				type="number"
 			/>
-			<UnitSelectControl
-				className="component-unit-control__select"
-				isTabbable={ isUnitSelectTabbable }
-				options={ units }
-				onChange={ handleOnUnitChange }
-				size={ size }
-				value={ unit }
-			/>
+			{ ! disableUnits && (
+				<UnitSelectControl
+					className="component-unit-control__select"
+					isTabbable={ isUnitSelectTabbable }
+					options={ units }
+					onChange={ handleOnUnitChange }
+					size={ size }
+					value={ unit }
+				/>
+			) }
 		</Root>
 	);
 }
