@@ -17,7 +17,7 @@ import {
 	Popover,
 	ToggleControl,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 const ALIGNMENTS = {
 	'top left': [
@@ -65,6 +65,8 @@ export default function BackgroundControl( {
 	onSizeChange = noop,
 	onColorChange = noop,
 	onFixedChange = noop,
+	onRepeatChange = noop,
+	repeat = 'no-repeat',
 	fixed = false,
 	size = 'cover',
 } ) {
@@ -77,6 +79,10 @@ export default function BackgroundControl( {
 				onFixedChange={ onFixedChange }
 			/>
 			<BackgroundSizeControl size={ size } onChange={ onSizeChange } />
+			<BackgroundRepeatControl
+				repeat={ repeat }
+				onChange={ onRepeatChange }
+			/>
 			<div style={ { padding: '10px 0' } }>
 				<hr />
 			</div>
@@ -230,6 +236,15 @@ function BackgroundSizeControl( { size = 'cover', onChange = noop } ) {
 	const isCustom = checked !== 'cover' && checked !== 'contain';
 	const currentChecked = isCustom ? 'custom' : checked;
 
+	useEffect( () => {
+		if ( ! isCustom ) {
+			setCustomSize( {
+				width: [ 'auto', 'px' ],
+				height: [ 'auto', 'px' ],
+			} );
+		}
+	}, [ isCustom ] );
+
 	const handleOnChange = ( next ) => {
 		let nextSize = next;
 
@@ -238,10 +253,6 @@ function BackgroundSizeControl( { size = 'cover', onChange = noop } ) {
 		}
 
 		setChecked( nextSize );
-		setCustomSize( {
-			width: [ 'auto', widthUnit ],
-			height: [ 'auto', heightUnit ],
-		} );
 		onChange( nextSize );
 	};
 
@@ -349,6 +360,28 @@ function BackgroundSizeControl( { size = 'cover', onChange = noop } ) {
 					</Flex.Item>
 				</Flex>
 			) }
+		</div>
+	);
+}
+
+function BackgroundRepeatControl( { onChange = noop, repeat = 'no-repeat' } ) {
+	const [ checked, setChecked ] = useState( repeat );
+	const handleOnChange = ( next ) => {
+		setChecked( next );
+		onChange( next );
+	};
+
+	return (
+		<div>
+			<h3>Repeat</h3>
+			<div style={ { paddingBottom: 10 } }>
+				<RadioGroup checked={ checked } onChange={ handleOnChange }>
+					<Radio value="no-repeat">None</Radio>
+					<Radio value="repeat">Grid</Radio>
+					<Radio value="repeat-x">Horizontal</Radio>
+					<Radio value="repeat-y">Vertical</Radio>
+				</RadioGroup>
+			</div>
 		</div>
 	);
 }

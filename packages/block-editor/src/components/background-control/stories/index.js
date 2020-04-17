@@ -22,6 +22,7 @@ const Demo = () => {
 	const [ size, setSize ] = useState( 'cover' );
 	const [ fixed, setFixed ] = useState( false );
 	const [ color, setColor ] = useState( '#eee' );
+	const [ repeat, setRepeat ] = useState( 'no-repeat' );
 	const handleOnPositionChange = ( next ) => setPosition( next );
 
 	return (
@@ -37,7 +38,7 @@ const Demo = () => {
 							width: '100%',
 							backgroundAttachment: fixed ? 'fixed' : null,
 							backgroundImage: `url(${ backgroundImageUrl })`,
-							backgroundRepeat: 'no-repeat',
+							backgroundRepeat: repeat,
 							backgroundColor: color,
 							backgroundPosition: `${ position.x } ${ position.y }`,
 							backgroundSize: size,
@@ -58,6 +59,8 @@ const Demo = () => {
 					onPositionChange={ handleOnPositionChange }
 					onSizeChange={ setSize }
 					onColorChange={ setColor }
+					onRepeatChange={ setRepeat }
+					repeat={ repeat }
 					size={ size }
 				/>
 			</Flex.Item>
