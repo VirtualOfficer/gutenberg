@@ -80,6 +80,33 @@ const Indicators = ( { colors, gradients, settings } ) => {
 	);
 };
 
+export const ColorGradientSettingsInner = ( {
+	children,
+	colors,
+	gradients,
+	disableCustomColors,
+	disableCustomGradients,
+	settings,
+} ) => {
+	return (
+		<>
+			{ settings.map( ( setting, index ) => (
+				<ColorGradientControl
+					key={ index }
+					{ ...{
+						colors,
+						gradients,
+						disableCustomColors,
+						disableCustomGradients,
+						...setting,
+					} }
+				/>
+			) ) }
+			{ children }
+		</>
+	);
+};
+
 export const PanelColorGradientSettingsInner = ( {
 	className,
 	colors,
@@ -129,20 +156,29 @@ export const PanelColorGradientSettingsInner = ( {
 			title={ titleElement }
 			{ ...props }
 		>
-			{ settings.map( ( setting, index ) => (
-				<ColorGradientControl
-					key={ index }
-					{ ...{
-						colors,
-						gradients,
-						disableCustomColors,
-						disableCustomGradients,
-						...setting,
-					} }
-				/>
-			) ) }
-			{ children }
+			<ColorGradientSettingsInner
+				{ ...{
+					children,
+					colors,
+					gradients,
+					disableCustomColors,
+					disableCustomGradients,
+					settings,
+				} }
+			/>
 		</PanelBody>
+	);
+};
+
+const ColorGradientSettingsSelect = ( props ) => {
+	const colorGradientSettings = useSelect( ( select ) => {
+		const settings = select( 'core/block-editor' ).getSettings();
+		return pick( settings, colorsAndGradientKeys );
+	} );
+	return (
+		<ColorGradientSettingsInner
+			{ ...{ ...colorGradientSettings, ...props } }
+		/>
 	);
 };
 
@@ -156,6 +192,15 @@ const PanelColorGradientSettingsSelect = ( props ) => {
 			{ ...{ ...colorGradientSettings, ...props } }
 		/>
 	);
+};
+
+export const ColorGradientSettings = ( props ) => {
+	if (
+		every( colorsAndGradientKeys, ( key ) => props.hasOwnProperty( key ) )
+	) {
+		return <ColorGradientSettingsInner { ...props } />;
+	}
+	return <ColorGradientSettingsSelect { ...props } />;
 };
 
 const PanelColorGradientSettings = ( props ) => {

@@ -33,6 +33,7 @@ import {
 	__experimentalBlock as Block,
 	__experimentalUseGradient,
 	__experimentalPanelColorGradientSettings as PanelColorGradientSettings,
+	__experimentalColorGradientSettings as ColorGradientSettings,
 	__experimentalUnitControl as UnitControl,
 	__experimentalBlockAlignmentMatrixToolbar as BlockAlignmentMatrixToolbar,
 } from '@wordpress/block-editor';
@@ -43,6 +44,7 @@ import { cover as icon } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import ColorToolbar from './color-toolbar';
 import {
 	attributesFromMedia,
 	IMAGE_BACKGROUND_TYPE,
@@ -296,6 +298,36 @@ function CoverEdit( {
 	const controls = (
 		<>
 			<BlockControls>
+				<ColorToolbar>
+					<ColorGradientSettings
+						title={ __( 'Overlay' ) }
+						initialOpen={ true }
+						settings={ [
+							{
+								colorValue: overlayColor.color,
+								gradientValue,
+								onColorChange: setOverlayColor,
+								onGradientChange: setGradient,
+								label: __( 'Color' ),
+							},
+						] }
+					>
+						{ !! url && (
+							<RangeControl
+								label={ __( 'Background opacity' ) }
+								value={ dimRatio }
+								onChange={ ( newDimRation ) =>
+									setAttributes( {
+										dimRatio: newDimRation,
+									} )
+								}
+								min={ 0 }
+								max={ 100 }
+								required
+							/>
+						) }
+					</ColorGradientSettings>
+				</ColorToolbar>
 				<BlockAlignmentMatrixToolbar
 					label={ __( 'Change content position' ) }
 					value={ contentPosition }
@@ -303,6 +335,7 @@ function CoverEdit( {
 						setAttributes( { contentPosition: nextPosition } )
 					}
 				/>
+
 				{ hasBackground && (
 					<MediaReplaceFlow
 						mediaId={ id }

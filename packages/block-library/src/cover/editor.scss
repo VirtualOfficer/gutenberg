@@ -51,3 +51,11 @@
 	// Important is used to have higher specificity than the inline style set by re-resizable library.
 	height: auto !important;
 }
+
+.block-editor-block-color-toolbar__popover {
+	.components-popover__content {
+		min-width: 0;
+		padding: $grid-unit;
+		width: 265px;
+	}
+}
