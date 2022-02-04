@@ -35,7 +35,7 @@ import { store as noticesStore } from '@wordpress/notices';
  * Internal dependencies
  */
 import TextEditor from '../text-editor';
-import VisualEditor from '../visual-editor';
+import VisualEditorOrPluginPreview from '../visual-editor/visual-editor-or-plugin-preview';
 import EditPostKeyboardShortcuts from '../keyboard-shortcuts';
 import KeyboardShortcutHelpModal from '../keyboard-shortcut-help-modal';
 import PreferencesModal from '../preferences-modal';
@@ -87,8 +87,6 @@ function Layout( { styles } ) {
 		showIconLabels,
 		hasReducedUI,
 		showBlockBreadcrumbs,
-		isTemplateMode,
-		documentLabel,
 	} = useSelect( ( select ) => {
 		const { getEditorSettings, getPostTypeLabel } = select( editorStore );
 		const editorSettings = getEditorSettings();
@@ -127,8 +125,6 @@ function Layout( { styles } ) {
 			showBlockBreadcrumbs: select( editPostStore ).isFeatureActive(
 				'showBlockBreadcrumbs'
 			),
-			// translators: Default label for the Document in the Block Breadcrumb.
-			documentLabel: postTypeLabel || _x( 'Document', 'noun' ),
 		};
 	}, [] );
 	const className = classnames( 'edit-post-layout', 'is-mode-' + mode, {
@@ -242,13 +238,7 @@ function Layout( { styles } ) {
 							<TextEditor />
 						) }
 						{ isRichEditingEnabled && mode === 'visual' && (
-							<VisualEditor styles={ styles } />
-						) }
-						{ ! isTemplateMode && (
-							<div className="edit-post-layout__metaboxes">
-								<MetaBoxes location="normal" />
-								<MetaBoxes location="advanced" />
-							</div>
+							<VisualEditorOrPluginPreview styles={ styles } />
 						) }
 						{ isMobileViewport && sidebarIsOpened && (
 							<ScrollLock />
