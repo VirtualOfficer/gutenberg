@@ -2,7 +2,12 @@
  * WordPress dependencies
  */
 import { useEntityProp } from '@wordpress/core-data';
-import { SelectControl, TextControl } from '@wordpress/components';
+import {
+	SelectControl,
+	TextControl,
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
+} from '@wordpress/components';
 import { sprintf, __ } from '@wordpress/i18n';
 import { InspectorControls } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
@@ -34,19 +39,14 @@ export function TemplatePartAdvancedControls( {
 		templatePartId
 	);
 
-	const { areaOptions } = useSelect( ( select ) => {
+	const areas = useSelect( ( select ) => {
 		// FIXME: @wordpress/block-library should not depend on @wordpress/editor.
 		// Blocks can be loaded into a *non-post* block editor.
 		/* eslint-disable @wordpress/data-no-store-string-literals */
-		const definedAreas =
-			select( 'core/editor' ).__experimentalGetDefaultTemplatePartAreas();
+		return select(
+			'core/editor'
+		).__experimentalGetDefaultTemplatePartAreas();
 		/* eslint-enable @wordpress/data-no-store-string-literals */
-		return {
-			areaOptions: definedAreas.map( ( { label, area: _area } ) => ( {
-				label,
-				value: _area,
-			} ) ),
-		};
 	}, [] );
 
 	return (
@@ -62,13 +62,23 @@ export function TemplatePartAdvancedControls( {
 						onFocus={ ( event ) => event.target.select() }
 					/>
 
-					<SelectControl
+					<ToggleGroupControl
+						help={ __(
+							'The area of a page that this block should occupy.'
+						) }
 						label={ __( 'Area' ) }
-						labelPosition="top"
-						options={ areaOptions }
-						value={ area }
 						onChange={ setArea }
-					/>
+						value={ area }
+					>
+						{ areas.map( ( { area: value, icon, label } ) => (
+							<ToggleGroupControlOptionIcon
+								icon={ icon }
+								key={ value }
+								label={ label }
+								value={ value }
+							/>
+						) ) }
+					</ToggleGroupControl>
 				</>
 			) }
 			<SelectControl
