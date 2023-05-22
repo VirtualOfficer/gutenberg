@@ -5,14 +5,19 @@ import { CustomSelectControl } from '@wordpress/components';
 import { useMemo } from '@wordpress/element';
 import { __, _x, sprintf } from '@wordpress/i18n';
 
+export const FONT_WEIGHT_REGULAR = '400';
+export const FONT_WEIGHT_BOLD = '700';
+export const FONT_STYLE_REGULAR = 'normal';
+export const FONT_STYLE_ITALIC = 'italic';
+
 const FONT_STYLES = [
 	{
 		name: _x( 'Regular', 'font style' ),
-		value: 'normal',
+		value: FONT_STYLE_REGULAR,
 	},
 	{
 		name: _x( 'Italic', 'font style' ),
-		value: 'italic',
+		value: FONT_STYLE_ITALIC,
 	},
 ];
 
@@ -31,7 +36,7 @@ const FONT_WEIGHTS = [
 	},
 	{
 		name: _x( 'Regular', 'font weight' ),
-		value: '400',
+		value: FONT_WEIGHT_REGULAR,
 	},
 	{
 		name: _x( 'Medium', 'font weight' ),
@@ -43,7 +48,7 @@ const FONT_WEIGHTS = [
 	},
 	{
 		name: _x( 'Bold', 'font weight' ),
-		value: '700',
+		value: FONT_WEIGHT_BOLD,
 	},
 	{
 		name: _x( 'Extra Bold', 'font weight' ),

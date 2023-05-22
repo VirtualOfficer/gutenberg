@@ -15,6 +15,7 @@ import {
 	InspectorControls,
 	BlockControls,
 	useBlockProps,
+	__experimentalUseFontAppearanceStyles as useFontAppearanceStyles,
 } from '@wordpress/block-editor';
 import { ToggleControl, PanelBody } from '@wordpress/components';
 import { createBlock, getDefaultBlockName } from '@wordpress/blocks';
@@ -24,6 +25,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  * Internal dependencies
  */
 import LevelControl from './level-toolbar';
+import FontAppearanceControl from './font-appearance-control';
 
 export default function SiteTitleEdit( {
 	attributes,
@@ -51,12 +53,16 @@ export default function SiteTitleEdit( {
 		} );
 	}
 
+	const { onKeyDownToggleFontAppearance, ...fontAppearanceProps } =
+		useFontAppearanceStyles( { attributes, setAttributes } );
+
 	const TagName = level === 0 ? 'p' : `h${ level }`;
 	const blockProps = useBlockProps( {
 		className: classnames( {
 			[ `has-text-align-${ textAlign }` ]: textAlign,
 			'wp-block-site-title__placeholder': ! canUserEdit && ! title,
 		} ),
+		onKeyDown: onKeyDownToggleFontAppearance,
 	} );
 	const siteTitleContent = canUserEdit ? (
 		<TagName { ...blockProps }>
@@ -107,6 +113,9 @@ export default function SiteTitleEdit( {
 						setAttributes( { textAlign: nextAlign } );
 					} }
 				/>
+			</BlockControls>
+			<BlockControls group="other">
+				<FontAppearanceControl { ...fontAppearanceProps } />
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody title={ __( 'Settings' ) }>
