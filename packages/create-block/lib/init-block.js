@@ -26,6 +26,7 @@ async function initBlockJSON( {
 	dashicon,
 	textdomain,
 	folderName,
+	targetDir,
 	editorScript,
 	editorStyle,
 	style,
@@ -38,8 +39,9 @@ async function initBlockJSON( {
 	info( 'Creating a "block.json" file.' );
 
 	const outputFile = plugin
-		? join( process.cwd(), slug, folderName, 'block.json' )
-		: join( process.cwd(), slug, 'block.json' );
+		? join( process.cwd(), targetDir, slug, folderName, 'block.json' )
+		: join( process.cwd(), folderName, slug, 'block.json' );
+
 	await makeDir( dirname( outputFile ) );
 	await writeFile(
 		outputFile,
@@ -77,8 +79,7 @@ module.exports = async function ( outputTemplates, view ) {
 		Object.keys( outputTemplates ).map( async ( outputFile ) => {
 			const pathName = view.plugin
 				? join( view.folderName, outputFile )
-				: join( process.cwd(), view.slug, outputFile );
-
+				: join( process.cwd(), view.folderName, view.slug, outputFile );
 			await writeOutputTemplate(
 				outputTemplates[ outputFile ],
 				pathName,

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+-   Add `--target-dir` flag to allow indicating where resulting plugin will be scaffolded ([#53781](https://github.com/WordPress/gutenberg/pull/53781))
+
 ## 4.24.0 (2023-08-16)
 
 ## 4.23.0 (2023-08-10)
