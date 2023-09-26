@@ -1,5 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`'isDark' attribute does not add attribute when using a dark color 1`] = `
+"<!-- wp:cover {"overlayColor":"black","isUserOverlayColor":true,"layout":{"type":"constrained"}} -->
+<div class="wp-block-cover"><span aria-hidden="true" class="wp-block-cover__background has-black-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
+<p class="has-text-align-center"></p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:cover -->"
+`;
+
+exports[`'isDark' attribute sets to false when using a light color 1`] = `
+"<!-- wp:cover {"overlayColor":"white","isUserOverlayColor":true,"isDark":false,"layout":{"type":"constrained"}} -->
+<div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
+<p class="has-text-align-center"></p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:cover -->"
+`;
+
+exports[`'isDark' attribute updates value when changing opacity 1`] = `
+"<!-- wp:cover {"url":"https://cldup.com/cXyG__fTLN.jpg","id":10710,"dimRatio":80,"overlayColor":"foreground","isUserOverlayColor":true} -->
+<div class="wp-block-cover"><span aria-hidden="true" class="wp-block-cover__background has-foreground-background-color has-background-dim-80 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-10710" alt="" src="https://cldup.com/cXyG__fTLN.jpg" data-object-fit="cover"/><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…","fontSize":"large"} -->
+<p class="has-text-align-center has-large-font-size"></p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:cover -->"
+`;
+
+exports[`'isDark' attribute updates value when changing opacity 2`] = `
+"<!-- wp:cover {"url":"https://cldup.com/cXyG__fTLN.jpg","id":10710,"dimRatio":20,"overlayColor":"foreground","isUserOverlayColor":true,"isDark":false} -->
+<div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-foreground-background-color has-background-dim-20 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-10710" alt="" src="https://cldup.com/cXyG__fTLN.jpg" data-object-fit="cover"/><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…","fontSize":"large"} -->
+<p class="has-text-align-center has-large-font-size"></p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:cover -->"
+`;
+
 exports[`color settings clears the selected overlay color and mantains the inner blocks 1`] = `
 "<!-- wp:cover {"isUserOverlayColor":true,"isDark":false} -->
 <div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
@@ -9,7 +41,7 @@ exports[`color settings clears the selected overlay color and mantains the inner
 `;
 
 exports[`color settings sets a color for the overlay background when the placeholder is visible 1`] = `
-"<!-- wp:cover {"overlayColor":"vivid-red"} -->
+"<!-- wp:cover {"overlayColor":"vivid-red","isUserOverlayColor":true,"layout":{"type":"constrained"}} -->
 <div class="wp-block-cover"><span aria-hidden="true" class="wp-block-cover__background has-vivid-red-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
 <p class="has-text-align-center"></p>
 <!-- /wp:paragraph --></div></div>
@@ -25,8 +57,8 @@ exports[`color settings sets a gradient overlay background when a solid backgrou
 `;
 
 exports[`color settings toggles between solid colors and gradients 1`] = `
-"<!-- wp:cover {"gradient":"light-green-cyan-to-vivid-green-cyan","isDark":false} -->
-<div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim has-background-gradient has-light-green-cyan-to-vivid-green-cyan-gradient-background"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
+"<!-- wp:cover {"isUserOverlayColor":true,"gradient":"light-green-cyan-to-vivid-green-cyan","layout":{"type":"constrained"}} -->
+<div class="wp-block-cover"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim has-background-gradient has-light-green-cyan-to-vivid-green-cyan-gradient-background"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
 <p class="has-text-align-center"></p>
 <!-- /wp:paragraph --></div></div>
 <!-- /wp:cover -->"
@@ -92,6 +124,14 @@ exports[`when an image is attached updates background opacity 1`] = `
 "<!-- wp:cover {"url":"https://cldup.com/cXyG__fTLN.jpg","id":10710,"dimRatio":15,"overlayColor":"foreground","isUserOverlayColor":true,"isDark":false} -->
 <div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-foreground-background-color has-background-dim-20 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-10710" alt="" src="https://cldup.com/cXyG__fTLN.jpg" data-object-fit="cover"/><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…","fontSize":"large"} -->
 <p class="has-text-align-center has-large-font-size"></p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:cover -->"
+`;
+
+exports[`when no media is attached and overlay color is set adds image 1`] = `
+"<!-- wp:cover {"url":"https://test.files.wordpress.com/local-image-1.mp4","id":2000,"dimRatio":50,"overlayColor":"cyan-bluish-gray","isUserOverlayColor":true,"isDark":false} -->
+<div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-cyan-bluish-gray-background-color has-background-dim"></span><img class="wp-block-cover__image-background wp-image-2000" src="https://test.files.wordpress.com/local-image-1.mp4" data-object-fit="cover"/><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
+<p class="has-text-align-center"></p>
 <!-- /wp:paragraph --></div></div>
 <!-- /wp:cover -->"
 `;

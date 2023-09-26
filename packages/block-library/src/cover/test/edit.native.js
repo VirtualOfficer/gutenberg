@@ -11,6 +11,8 @@ import {
 	within,
 	getBlock,
 	openBlockSettings,
+	setupMediaPicker,
+	setupPicker,
 } from 'test/helpers';
 
 /**
@@ -43,8 +45,8 @@ jest.mock( '@wordpress/compose', () => ( {
 	) ),
 } ) );
 
-const COVER_BLOCK_PLACEHOLDER_HTML = `<!-- wp:cover {"isDark":false} -->
-<div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"></div></div>
+const COVER_BLOCK_PLACEHOLDER_HTML = `<!-- wp:cover {"layout":{"type":"constrained"}} -->
+<div class="wp-block-cover"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"></div></div>
 <!-- /wp:cover -->`;
 const COVER_BLOCK_SOLID_COLOR_HTML = `<!-- wp:cover {"overlayColor":"cyan-bluish-gray","isDark":false} -->
 <div class="wp-block-cover is-light"><span aria-hidden="true" class="wp-block-cover__background has-cyan-bluish-gray-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center","placeholder":"Write title…"} -->
@@ -62,11 +64,21 @@ const COVER_BLOCK_CUSTOM_HEIGHT_HTML = `<!-- wp:cover {"url":"https://cldup.com/
 <!-- /wp:paragraph --></div></div>
 <!-- /wp:cover -->`;
 
+const COLOR_BLACK = '#000000';
+const COLOR_WHITE = '#ffffff';
 const COLOR_PINK = '#f78da7';
 const COLOR_RED = '#cf2e2e';
 const COLOR_GRAY = '#abb8c3';
 const GRADIENT_GREEN =
 	'linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%)';
+
+const MEDIA_OPTIONS = [
+	'Choose from device',
+	'Take a Photo',
+	'Take a Video',
+	'WordPress Media Library',
+];
+const DEFAULT_OPACITY_VALUE = '50';
 
 // Simplified tree to render Cover edit within slot.
 const CoverEdit = ( props ) => (
@@ -124,6 +136,35 @@ describe( 'when no media is attached', () => {
 		fireEvent.press( mediaLibraryButton );
 
 		expect( requestMediaPicker ).toHaveBeenCalled();
+	} );
+} );
+
+describe( 'when no media is attached and overlay color is set', () => {
+	it( 'adds image', async () => {
+		const media = {
+			type: 'image',
+			id: 2000,
+			url: 'https://test.files.wordpress.com/local-image-1.mp4',
+		};
+		const { mediaPickerCallback } = setupMediaPicker();
+		const screen = await initializeEditor( {
+			initialHtml: COVER_BLOCK_SOLID_COLOR_HTML,
+		} );
+		const { getByText } = screen;
+		const { selectOption } = setupPicker( screen, MEDIA_OPTIONS );
+
+		// Get block
+		const coverBlock = await getBlock( screen, 'Cover' );
+		fireEvent.press( coverBlock );
+
+		// Open block settings
+		await openBlockSettings( screen );
+
+		fireEvent.press( getByText( 'Add image or video' ) );
+		selectOption( 'WordPress Media Library' );
+		await mediaPickerCallback( media );
+
+		expect( getEditorHtml() ).toMatchSnapshot();
 	} );
 } );
 
@@ -321,10 +362,12 @@ describe( 'when an image is attached', () => {
 		// Update Opacity attribute
 		const opacityControl = getByLabelText( /Opacity/ );
 		fireEvent.press(
-			within( opacityControl ).getByText( '50', { hidden: true } )
+			within( opacityControl ).getByText( DEFAULT_OPACITY_VALUE, {
+				hidden: true,
+			} )
 		);
 		const heightTextInput = within( opacityControl ).getByDisplayValue(
-			'50',
+			DEFAULT_OPACITY_VALUE,
 			{ hidden: true }
 		);
 		fireEvent.changeText( heightTextInput, '20' );
@@ -653,5 +696,81 @@ describe( 'minimum height settings', () => {
 				expect( getEditorHtml() ).toMatchSnapshot();
 			}
 		);
+	} );
+} );
+
+describe( "'isDark' attribute", () => {
+	it( 'does not add attribute when using a dark color', async () => {
+		const screen = await initializeEditor( {
+			initialHtml: COVER_BLOCK_PLACEHOLDER_HTML,
+		} );
+		const { getByTestId, findByLabelText } = screen;
+
+		// Get block
+		const coverBlock = await getBlock( screen, 'Cover' );
+		fireEvent.press( coverBlock );
+
+		// Select overlay color
+		fireEvent.press( getByTestId( COLOR_BLACK ) );
+
+		// Wait for the block to be created
+		fireEvent.press( await findByLabelText( /Cover Block\. Row 1/ ) );
+
+		expect( getEditorHtml() ).toMatchSnapshot();
+	} );
+
+	it( 'sets to false when using a light color', async () => {
+		const screen = await initializeEditor( {
+			initialHtml: COVER_BLOCK_PLACEHOLDER_HTML,
+		} );
+		const { getByTestId, findByLabelText } = screen;
+
+		// Get block
+		const coverBlock = await getBlock( screen, 'Cover' );
+		fireEvent.press( coverBlock );
+
+		// Select overlay color
+		fireEvent.press( getByTestId( COLOR_WHITE ) );
+
+		// Wait for the block to be created
+		fireEvent.press( await findByLabelText( /Cover Block\. Row 1/ ) );
+
+		expect( getEditorHtml() ).toMatchSnapshot();
+	} );
+
+	it( 'updates value when changing opacity', async () => {
+		const screen = await initializeEditor( {
+			initialHtml: COVER_BLOCK_IMAGE_HTML,
+		} );
+		const { getByLabelText } = screen;
+
+		// Get block
+		const coverBlock = await getBlock( screen, 'Cover' );
+		fireEvent.press( coverBlock );
+
+		// Open block settings
+		await openBlockSettings( screen );
+
+		// Update opacity to 80
+		const opacityControl = getByLabelText( /Opacity/ );
+		fireEvent.press(
+			within( opacityControl ).getByText( DEFAULT_OPACITY_VALUE, {
+				hidden: true,
+			} )
+		);
+		const opacityValue = within( opacityControl ).getByDisplayValue(
+			DEFAULT_OPACITY_VALUE,
+			{
+				hidden: true,
+			}
+		);
+		fireEvent.changeText( opacityValue, '80' );
+
+		expect( getEditorHtml() ).toMatchSnapshot();
+
+		// Update opacity to 20
+		fireEvent.changeText( opacityValue, '20' );
+
+		expect( getEditorHtml() ).toMatchSnapshot();
 	} );
 } );
