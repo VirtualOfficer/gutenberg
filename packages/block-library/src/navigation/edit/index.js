@@ -100,6 +100,7 @@ function Navigation( {
 		overlayMenu,
 		showSubmenuIcon,
 		templateLock,
+		defaultBlock,
 		layout: {
 			justifyContent,
 			orientation = 'horizontal',
@@ -915,6 +916,7 @@ function Navigation( {
 									}
 									templateLock={ templateLock }
 									orientation={ orientation }
+									defaultBlock={ defaultBlock }
 								/>
 							) }
 						</ResponsiveWrapper>
