@@ -23,6 +23,7 @@ export default function SingleNavigationMenu( {
 		<SidebarNavigationScreenWrapper
 			actions={
 				<>
+					<EditButton postId={ navigationMenu?.id } />
 					<ScreenNavigationMoreMenu
 						menuTitle={ decodeEntities( menuTitle ) }
 						onDelete={ handleDelete }
