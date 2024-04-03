@@ -10,7 +10,6 @@ import {
 	TextControl,
 	ToolbarButton,
 	ToolbarGroup,
-	Dropdown,
 	__experimentalToolsPanel as ToolsPanel,
 	__experimentalToolsPanelItem as ToolsPanelItem,
 	__experimentalUseCustomUnits as useCustomUnits,
@@ -31,7 +30,6 @@ import {
 } from '@wordpress/block-editor';
 import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import { __, _x, sprintf, isRTL } from '@wordpress/i18n';
-import { DOWN } from '@wordpress/keycodes';
 import { getFilename } from '@wordpress/url';
 import { switchToBlockType, store as blocksStore } from '@wordpress/blocks';
 import { crop, overlayText, upload } from '@wordpress/icons';
@@ -555,38 +553,27 @@ export default function Image( {
 					</ToolbarGroup>
 				</BlockControls>
 			) }
-			{ isContentOnlyMode && (
+			{ isContentOnlyMode && isSingleSelected && (
 				// Add some extra controls for content attributes when content only mode is active.
-				// With content only mode active, the inspector is hidden, so users need another way
-				// to edit these attributes.
-				<BlockControls group="other">
-					<Dropdown
-						popoverProps={ { position: 'bottom right' } }
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<ToolbarButton
-								onClick={ onToggle }
-								aria-haspopup="true"
-								aria-expanded={ isOpen }
-								onKeyDown={ ( event ) => {
-									if ( ! isOpen && event.keyCode === DOWN ) {
-										event.preventDefault();
-										onToggle();
-									}
-								} }
-							>
-								{ _x(
-									'Alt',
-									'Alternative text for an image. Block toolbar label, a low character count is preferred.'
-								) }
-							</ToolbarButton>
-						) }
-						renderContent={ () => (
+				<InspectorControls group="contentOnly">
+					<ToolsPanel
+						label={ __( 'Settings' ) }
+						resetAll={ resetAll }
+						dropdownMenuProps={ TOOLSPANEL_DROPDOWNMENU_PROPS }
+					>
+						<ToolsPanelItem
+							label={ __( 'Alternative text' ) }
+							isShownByDefault
+							hasValue={ () => !! alt }
+							onDeselect={ () =>
+								setAttributes( { alt: undefined } )
+							}
+						>
 							<TextareaControl
-								className="wp-block-image__toolbar_content_textarea"
 								label={ __( 'Alternative text' ) }
 								value={ alt || '' }
 								onChange={ updateAlt }
-								disabled={ lockAltControls }
+								readOnly={ lockAltControls }
 								help={
 									lockAltControls ? (
 										<>{ lockAltControlsMessage }</>
@@ -606,33 +593,21 @@ export default function Image( {
 								}
 								__nextHasNoMarginBottom
 							/>
-						) }
-					/>
-					<Dropdown
-						popoverProps={ { position: 'bottom right' } }
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<ToolbarButton
-								onClick={ onToggle }
-								aria-haspopup="true"
-								aria-expanded={ isOpen }
-								onKeyDown={ ( event ) => {
-									if ( ! isOpen && event.keyCode === DOWN ) {
-										event.preventDefault();
-										onToggle();
-									}
-								} }
-							>
-								{ __( 'Title' ) }
-							</ToolbarButton>
-						) }
-						renderContent={ () => (
+						</ToolsPanelItem>
+						<ToolsPanelItem
+							label={ __( 'Title attribute' ) }
+							hasValue={ () => !! title }
+							onDeselect={ () =>
+								setAttributes( { title: undefined } )
+							}
+						>
 							<TextControl
-								className="wp-block-image__toolbar_content_textarea"
 								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 								label={ __( 'Title attribute' ) }
 								value={ title || '' }
 								onChange={ onSetTitle }
-								disabled={ lockTitleControls }
+								readOnly={ lockTitleControls }
 								help={
 									lockTitleControls ? (
 										<>{ lockTitleControlsMessage }</>
@@ -650,9 +625,9 @@ export default function Image( {
 									)
 								}
 							/>
-						) }
-					/>
-				</BlockControls>
+						</ToolsPanelItem>
+					</ToolsPanel>
+				</InspectorControls>
 			) }
 			<InspectorControls>
 				<ToolsPanel
