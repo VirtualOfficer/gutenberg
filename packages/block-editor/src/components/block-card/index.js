@@ -9,7 +9,7 @@ import classnames from 'classnames';
 import deprecated from '@wordpress/deprecated';
 import { Button } from '@wordpress/components';
 import { chevronLeft, chevronRight } from '@wordpress/icons';
-import { __, isRTL } from '@wordpress/i18n';
+import { __, isRTL, sprintf } from '@wordpress/i18n';
 import { useSelect, useDispatch } from '@wordpress/data';
 
 /**
@@ -17,6 +17,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import BlockIcon from '../block-icon';
 import { store as blockEditorStore } from '../../store';
+import useBlockDisplayInformation from '../use-block-display-information';
 
 function BlockCard( { title, icon, description, blockType, className } ) {
 	if ( blockType ) {
@@ -27,29 +28,41 @@ function BlockCard( { title, icon, description, blockType, className } ) {
 		( { title, icon, description } = blockType );
 	}
 
-	const { parentNavBlockClientId } = useSelect( ( select ) => {
-		const { getSelectedBlockClientId, getBlockParentsByBlockName } =
-			select( blockEditorStore );
+	const parentClientId = useSelect( ( select ) => {
+		const {
+			getSelectedBlockClientId,
+			getBlockParentsByBlockName,
+			__unstableGetContentLockingParent,
+		} = select( blockEditorStore );
 
 		const _selectedBlockClientId = getSelectedBlockClientId();
+		let _parentClientId = getBlockParentsByBlockName(
+			_selectedBlockClientId,
+			'core/navigation',
+			true
+		)[ 0 ];
 
-		return {
-			parentNavBlockClientId: getBlockParentsByBlockName(
-				_selectedBlockClientId,
-				'core/navigation',
-				true
-			)[ 0 ],
-		};
+		if ( ! _parentClientId ) {
+			_parentClientId = __unstableGetContentLockingParent(
+				_selectedBlockClientId
+			);
+		}
+
+		return _parentClientId;
 	}, [] );
-
+	const parentDisplayInfo = useBlockDisplayInformation( parentClientId );
 	const { selectBlock } = useDispatch( blockEditorStore );
 
 	return (
 		<div className={ classnames( 'block-editor-block-card', className ) }>
-			{ parentNavBlockClientId && ( // This is only used by the Navigation block for now. It's not ideal having Navigation block specific code here.
+			{ parentClientId && ( // This is only used by the Navigation block for now. It's not ideal having Navigation block specific code here.
 				<Button
-					onClick={ () => selectBlock( parentNavBlockClientId ) }
-					label={ __( 'Go to parent Navigation block' ) }
+					onClick={ () => selectBlock( parentClientId ) }
+					label={ sprintf(
+						// translators: %s: the block title of the parent.
+						__( 'Go to parent: %s' ),
+						parentDisplayInfo?.title
+					) }
 					style={
 						// TODO: This style override is also used in ToolsPanelHeader.
 						// It should be supported out-of-the-box by Button.
