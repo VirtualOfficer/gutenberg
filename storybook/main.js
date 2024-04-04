@@ -51,8 +51,10 @@ module.exports = {
 		'@storybook/addon-a11y',
 		'@storybook/addon-toolbars',
 		'@storybook/addon-actions',
-		'storybook-source-link',
-		'@geometricpanda/storybook-addon-badges',
+		/*'storybook-source-link',*/
+		/*'@geometricpanda/storybook-addon-badges',*/
+		'@storybook/addon-mdx-gfm',
+		'@storybook/addon-webpack5-compiler-babel',
 	],
 	framework: {
 		name: '@storybook/react-webpack5',
@@ -61,7 +63,7 @@ module.exports = {
 	features: {
 		babelModeV7: true,
 		emotionAlias: false,
-		storyStoreV7: true,
+		// storyStoreV7: true,
 	},
 	docs: {
 		autodocs: true,
@@ -73,7 +75,7 @@ module.exports = {
 				...config.module,
 				rules: [
 					...config.module.rules,
-					{
+					/*{
 						// Adds a `sourceLink` parameter to the story metadata, based on the file path
 						test: /\/stories\/.+\.story\.(j|t)sx?$/,
 						loader: path.resolve(
@@ -81,7 +83,7 @@ module.exports = {
 							'./webpack/source-link-loader.js'
 						),
 						enforce: 'post',
-					},
+					},*/
 					{
 						test: /\.scss$/,
 						exclude: /\.lazy\.scss$/,
