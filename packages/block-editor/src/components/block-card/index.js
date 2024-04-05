@@ -7,7 +7,10 @@ import classnames from 'classnames';
  * WordPress dependencies
  */
 import deprecated from '@wordpress/deprecated';
-import { Button } from '@wordpress/components';
+import {
+	Button,
+	__experimentalUseSlotFills as useSlotFills,
+} from '@wordpress/components';
 import { chevronLeft, chevronRight } from '@wordpress/icons';
 import { __, isRTL, sprintf } from '@wordpress/i18n';
 import { useSelect, useDispatch } from '@wordpress/data';
@@ -51,27 +54,29 @@ function BlockCard( { title, icon, description, blockType, className } ) {
 		return _parentClientId;
 	}, [] );
 	const parentDisplayInfo = useBlockDisplayInformation( parentClientId );
+	const contentOnlyFills = useSlotFills( 'InspectorControlsContentOnly' );
 	const { selectBlock } = useDispatch( blockEditorStore );
 
 	return (
 		<div className={ classnames( 'block-editor-block-card', className ) }>
-			{ parentClientId && ( // This is only used by the Navigation block for now. It's not ideal having Navigation block specific code here.
-				<Button
-					onClick={ () => selectBlock( parentClientId ) }
-					label={ sprintf(
-						// translators: %s: the block title of the parent.
-						__( 'Go to parent: %s' ),
-						parentDisplayInfo?.title
-					) }
-					style={
-						// TODO: This style override is also used in ToolsPanelHeader.
-						// It should be supported out-of-the-box by Button.
-						{ minWidth: 24, padding: 0 }
-					}
-					icon={ isRTL() ? chevronRight : chevronLeft }
-					size="small"
-				/>
-			) }
+			{ !! contentOnlyFills?.length &&
+				parentClientId && ( // This is only used by the Navigation block for now. It's not ideal having Navigation block specific code here.
+					<Button
+						onClick={ () => selectBlock( parentClientId ) }
+						label={ sprintf(
+							// translators: %s: the block title of the parent.
+							__( 'Go to parent: %s' ),
+							parentDisplayInfo?.title
+						) }
+						style={
+							// TODO: This style override is also used in ToolsPanelHeader.
+							// It should be supported out-of-the-box by Button.
+							{ minWidth: 24, padding: 0 }
+						}
+						icon={ isRTL() ? chevronRight : chevronLeft }
+						size="small"
+					/>
+				) }
 			<BlockIcon icon={ icon } showColors />
 			<div className="block-editor-block-card__content">
 				<h2 className="block-editor-block-card__title">{ title }</h2>
