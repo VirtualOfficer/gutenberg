@@ -9,11 +9,13 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
+	Icon,
 } from '@wordpress/components';
 import {
 	__experimentalGetBlockLabel,
 	store as blocksStore,
 } from '@wordpress/blocks';
+import { chevronRight } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -21,7 +23,10 @@ import {
 import { store as blockEditorStore } from '../../store';
 import BlockIcon from '../block-icon';
 
-export default function BlockQuickNavigation( { clientIds } ) {
+export default function BlockQuickNavigation( {
+	clientIds,
+	clientIdsWithControls,
+} ) {
 	if ( ! clientIds.length ) {
 		return null;
 	}
@@ -31,13 +36,14 @@ export default function BlockQuickNavigation( { clientIds } ) {
 				<BlockQuickNavigationItem
 					key={ clientId }
 					clientId={ clientId }
+					hasControls={ clientIdsWithControls.includes( clientId ) }
 				/>
 			) ) }
 		</VStack>
 	);
 }
 
-function BlockQuickNavigationItem( { clientId } ) {
+function BlockQuickNavigationItem( { clientId, hasControls } ) {
 	const { name, icon, isSelected } = useSelect(
 		( select ) => {
 			const {
@@ -81,6 +87,11 @@ function BlockQuickNavigationItem( { clientId } ) {
 				<FlexBlock style={ { textAlign: 'left' } }>
 					<Truncate>{ name }</Truncate>
 				</FlexBlock>
+				{ hasControls && (
+					<FlexItem>
+						<Icon icon={ chevronRight } />
+					</FlexItem>
+				) }
 			</Flex>
 		</Button>
 	);
