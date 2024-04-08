@@ -391,3 +391,17 @@ export function expandBlock( clientId ) {
 		clientId,
 	};
 }
+
+export function addContentOnlyControlsBlock( clientId ) {
+	return {
+		type: 'ADD_CONTENT_ONLY_CONTROLS_BLOCK',
+		clientId,
+	};
+}
+
+export function removeContentOnlyControlsBlock( clientId ) {
+	return {
+		type: 'REMOVE_CONTENT_ONLY_CONTROLS_BLOCK',
+		clientId,
+	};
+}

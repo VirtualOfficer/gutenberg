@@ -2065,6 +2065,26 @@ export function lastFocus( state = false, action ) {
 	return state;
 }
 
+export function contentOnlyControlsBlocks( state = [], action ) {
+	switch ( action.type ) {
+		case 'ADD_CONTENT_ONLY_CONTROLS_BLOCK': {
+			if ( state.includes( action.clientId ) ) {
+				return state;
+			}
+			return [ ...state, action.clientId ];
+		}
+		case 'DELETE_CONTENT_ONLY_CONTROLS_BLOCK': {
+			if ( ! state.includes( action.clientId ) ) {
+				return state;
+			}
+
+			return state.filter( ( item ) => item !== action.clientId );
+		}
+	}
+
+	return state;
+}
+
 const combinedReducers = combineReducers( {
 	blocks,
 	isDragging,
@@ -2097,6 +2117,7 @@ const combinedReducers = combineReducers( {
 	blockRemovalRules,
 	openedBlockSettingsMenu,
 	registeredInserterMediaCategories,
+	contentOnlyControlsBlocks,
 } );
 
 function withAutomaticChangeReset( reducer ) {
