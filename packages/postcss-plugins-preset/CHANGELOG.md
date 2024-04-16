@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+-   Updated `autoprefixer` options to no longer add IE 10-11 prefixes for CSS grid properties
+
 ## 4.39.0 (2024-04-03)
 
 ## 4.38.0 (2024-03-21)
