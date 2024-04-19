@@ -6,7 +6,7 @@ import clsx from 'clsx';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	ExternalLink,
@@ -79,7 +79,8 @@ export default function LinkPreview( {
 
 	return (
 		<div
-			aria-label={ __( 'Currently selected' ) }
+			role="group"
+			aria-label={ __( 'Manage link' ) }
 			className={ clsx( 'block-editor-link-control__search-item', {
 				'is-current': true,
 				'is-rich': hasRichData,
@@ -90,7 +91,14 @@ export default function LinkPreview( {
 			} ) }
 		>
 			<div className="block-editor-link-control__search-item-top">
-				<span className="block-editor-link-control__search-item-header">
+				<span
+					className="block-editor-link-control__search-item-header"
+					role="figure"
+					aria-label={
+						/* translators: Accessibility text for the link preview when editing a link. */
+						__( 'Link information' )
+					}
+				>
 					<span
 						className={ clsx(
 							'block-editor-link-control__search-item-icon',
@@ -132,6 +140,7 @@ export default function LinkPreview( {
 					label={ __( 'Edit link' ) }
 					onClick={ onEditClick }
 					size="compact"
+					showTooltip={ ! showIconLabels }
 				/>
 				{ hasUnlinkControl && (
 					<Button
@@ -139,18 +148,16 @@ export default function LinkPreview( {
 						label={ __( 'Remove link' ) }
 						onClick={ onRemove }
 						size="compact"
+						showTooltip={ ! showIconLabels }
 					/>
 				) }
 				<Button
 					icon={ copySmall }
-					label={ sprintf(
-						// Translators: %s is a placeholder for the link URL and an optional colon, (if a Link URL is present).
-						__( 'Copy link%s' ), // Ends up looking like "Copy link: https://example.com".
-						isEmptyURL || showIconLabels ? '' : ': ' + value.url
-					) }
+					label={ __( 'Copy link' ) }
 					ref={ ref }
 					disabled={ isEmptyURL }
 					size="compact"
+					showTooltip={ ! showIconLabels }
 				/>
 				<ViewerSlot fillProps={ value } />
 			</div>
