@@ -15,15 +15,16 @@ const { baseConfig, plugins } = require( './shared' );
 
 module.exports = {
 	...baseConfig,
-	name: 'interactivity',
+	name: 'script-modules',
 	entry: {
-		index: './packages/interactivity',
+		apiFetch: './packages/api-fetch',
 		debug: './packages/interactivity/src/debug',
-		router: './packages/interactivity-router',
+		file: './packages/block-library/src/file/view.js',
+		image: './packages/block-library/src/image/view.js',
+		index: './packages/interactivity',
 		navigation: './packages/block-library/src/navigation/view.js',
 		query: './packages/block-library/src/query/view.js',
-		image: './packages/block-library/src/image/view.js',
-		file: './packages/block-library/src/file/view.js',
+		router: './packages/interactivity-router',
 		search: './packages/block-library/src/search/view.js',
 	},
 	experiments: {
@@ -31,7 +32,7 @@ module.exports = {
 	},
 	output: {
 		devtoolNamespace: 'wp',
-		filename: './build/interactivity/[name].min.js',
+		filename: './build/script-modules/[name].min.js',
 		library: {
 			type: 'module',
 		},
