@@ -17,16 +17,17 @@ module.exports = {
 	...baseConfig,
 	name: 'script-modules',
 	entry: {
-		apiFetch: '@wordpress/api-fetch/wp-module',
+		apiFetch: './packages/api-fetch',
 
+		'interactivity/index': './packages/interactivity',
 		'interactivity/debug': './packages/interactivity/src/debug',
+		'interactivity/router': './packages/interactivity-router',
+
 		'interactivity/file': './packages/block-library/src/file/view.js',
 		'interactivity/image': './packages/block-library/src/image/view.js',
-		'interactivity/index': './packages/interactivity',
 		'interactivity/navigation':
 			'./packages/block-library/src/navigation/view.js',
 		'interactivity/query': './packages/block-library/src/query/view.js',
-		'interactivity/router': './packages/interactivity-router',
 		'interactivity/search': './packages/block-library/src/search/view.js',
 	},
 	experiments: {
@@ -45,9 +46,11 @@ module.exports = {
 		environment: { module: true },
 		module: true,
 		chunkFormat: 'module',
+		asyncChunks: false,
 	},
 	resolve: {
 		extensions: [ '.js', '.ts', '.tsx' ],
+		mainFields: [ 'wp-module', 'module' ],
 	},
 	module: {
 		rules: [
