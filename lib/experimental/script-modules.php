@@ -197,3 +197,25 @@ function gutenberg_dequeue_module( $module_identifier ) {
 	_deprecated_function( __FUNCTION__, 'Gutenberg 17.6.0', 'wp_dequeue_script_module' );
 	wp_script_modules()->dequeue( $module_identifier );
 }
+
+add_action(
+	'init',
+	function () {
+		wp_register_script_module( '@wordpress/api-fetch', gutenberg_url( 'build/script-modules/apiFetch.min.js' ) );
+
+		// add_filter(
+		// 	'scriptmoduleconfig_@wordpress/api-fetch',
+		// 	function ( $data ) {
+		// 		return array_merge(
+		// 			$data,
+		// 			array(
+		// 				'rootURL'       => sanitize_url( get_rest_url() ),
+		// 				'nonce'         => wp_installing() ? '' : wp_create_nonce( 'wp_rest' ),
+		// 				'shouldRegisterMediaUploadMiddleware' => true,
+		// 				'nonceEndpoint' => admin_url( 'admin-ajax.php?action=rest-nonce' ),
+		// 			)
+		// 		);
+		// 	}
+		// );
+	}
+);

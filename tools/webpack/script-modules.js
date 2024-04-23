@@ -17,22 +17,27 @@ module.exports = {
 	...baseConfig,
 	name: 'script-modules',
 	entry: {
-		apiFetch: './packages/api-fetch',
-		debug: './packages/interactivity/src/debug',
-		file: './packages/block-library/src/file/view.js',
-		image: './packages/block-library/src/image/view.js',
-		index: './packages/interactivity',
-		navigation: './packages/block-library/src/navigation/view.js',
-		query: './packages/block-library/src/query/view.js',
-		router: './packages/interactivity-router',
-		search: './packages/block-library/src/search/view.js',
+		apiFetch: '@wordpress/api-fetch/wp-module',
+
+		'interactivity/debug': './packages/interactivity/src/debug',
+		'interactivity/file': './packages/block-library/src/file/view.js',
+		'interactivity/image': './packages/block-library/src/image/view.js',
+		'interactivity/index': './packages/interactivity',
+		'interactivity/navigation':
+			'./packages/block-library/src/navigation/view.js',
+		'interactivity/query': './packages/block-library/src/query/view.js',
+		'interactivity/router': './packages/interactivity-router',
+		'interactivity/search': './packages/block-library/src/search/view.js',
 	},
 	experiments: {
 		outputModule: true,
 	},
 	output: {
 		devtoolNamespace: 'wp',
-		filename: './build/script-modules/[name].min.js',
+		filename: ( pathData ) => {
+			console.log( pathData );
+			return './build/script-modules/[name].min.js';
+		},
 		library: {
 			type: 'module',
 		},
