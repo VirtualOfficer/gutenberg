@@ -21,6 +21,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import BlockIcon from '../block-icon';
 import { store as blockEditorStore } from '../../store';
 import useBlockDisplayInformation from '../use-block-display-information';
+import { unlock } from '../../lock-unlock';
 
 function BlockCard( { title, icon, description, blockType, className } ) {
 	if ( blockType ) {
@@ -31,52 +32,62 @@ function BlockCard( { title, icon, description, blockType, className } ) {
 		( { title, icon, description } = blockType );
 	}
 
-	const parentClientId = useSelect( ( select ) => {
-		const {
-			getSelectedBlockClientId,
-			getBlockParentsByBlockName,
-			__unstableGetContentLockingParent,
-		} = select( blockEditorStore );
+	const { isParentNavigationBlock, parentClientId } = useSelect(
+		( select ) => {
+			const {
+				getSelectedBlockClientId,
+				getBlockParentsByBlockName,
+				getContentLockingParent,
+			} = unlock( select( blockEditorStore ) );
 
-		const _selectedBlockClientId = getSelectedBlockClientId();
-		let _parentClientId = getBlockParentsByBlockName(
-			_selectedBlockClientId,
-			'core/navigation',
-			true
-		)[ 0 ];
+			const _selectedBlockClientId = getSelectedBlockClientId();
 
-		if ( ! _parentClientId ) {
-			_parentClientId = __unstableGetContentLockingParent(
-				_selectedBlockClientId
-			);
-		}
+			let _parentClientId = getBlockParentsByBlockName(
+				_selectedBlockClientId,
+				'core/navigation',
+				true
+			)[ 0 ];
+			const _isParentNavigationBlock = !! _parentClientId;
 
-		return _parentClientId;
-	}, [] );
+			if ( ! _parentClientId ) {
+				_parentClientId = getContentLockingParent(
+					_selectedBlockClientId
+				);
+			}
+
+			return {
+				isParentNavigationBlock: _isParentNavigationBlock,
+				parentClientId: _parentClientId,
+			};
+		},
+		[]
+	);
 	const parentDisplayInfo = useBlockDisplayInformation( parentClientId );
 	const contentOnlyFills = useSlotFills( 'InspectorControlsContentOnly' );
 	const { selectBlock } = useDispatch( blockEditorStore );
+	const hasParentBackArrow =
+		isParentNavigationBlock ||
+		( parentClientId && !! contentOnlyFills?.length );
 
 	return (
 		<div className={ classnames( 'block-editor-block-card', className ) }>
-			{ !! contentOnlyFills?.length &&
-				parentClientId && ( // This is only used by the Navigation block for now. It's not ideal having Navigation block specific code here.
-					<Button
-						onClick={ () => selectBlock( parentClientId ) }
-						label={ sprintf(
-							// translators: %s: the block title of the parent.
-							__( 'Go to parent: %s' ),
-							parentDisplayInfo?.title
-						) }
-						style={
-							// TODO: This style override is also used in ToolsPanelHeader.
-							// It should be supported out-of-the-box by Button.
-							{ minWidth: 24, padding: 0 }
-						}
-						icon={ isRTL() ? chevronRight : chevronLeft }
-						size="small"
-					/>
-				) }
+			{ hasParentBackArrow && ( // This is only used by the Navigation block for now. It's not ideal having Navigation block specific code here.
+				<Button
+					onClick={ () => selectBlock( parentClientId ) }
+					label={ sprintf(
+						// translators: %s: the block title of the parent.
+						__( 'Go to parent: %s' ),
+						parentDisplayInfo?.title
+					) }
+					style={
+						// TODO: This style override is also used in ToolsPanelHeader.
+						// It should be supported out-of-the-box by Button.
+						{ minWidth: 24, padding: 0 }
+					}
+					icon={ isRTL() ? chevronRight : chevronLeft }
+					size="small"
+				/>
+			) }
 			<BlockIcon icon={ icon } showColors />
 			<div className="block-editor-block-card__content">
 				<h2 className="block-editor-block-card__title">{ title }</h2>

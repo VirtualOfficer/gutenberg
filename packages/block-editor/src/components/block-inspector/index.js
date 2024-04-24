@@ -36,7 +36,6 @@ import useBlockInspectorAnimationSettings from './useBlockInspectorAnimationSett
 import BlockInfo from '../block-info-slot-fill';
 import BlockQuickNavigation from '../block-quick-navigation';
 import { useBorderPanelLabel } from '../../hooks/border';
-import { unlock } from '../../lock-unlock';
 
 function BlockInspectorContentLockedUI( {
 	clientId,

@@ -36,7 +36,7 @@ export default function BlockQuickNavigation( {
 				<BlockQuickNavigationItem
 					key={ clientId }
 					clientId={ clientId }
-					hasControls={ clientIdsWithControls.includes( clientId ) }
+					hasControls={ clientIdsWithControls?.includes( clientId ) }
 				/>
 			) ) }
 		</VStack>
