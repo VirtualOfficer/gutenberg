@@ -7,15 +7,22 @@ import {
 	getUnregisteredTypeHandlerName,
 	store as blocksStore,
 } from '@wordpress/blocks';
-import { PanelBody, __unstableMotion as motion } from '@wordpress/components';
+import {
+	PanelBody,
+	__unstableMotion as motion,
+	__experimentalUseSlotFills as useSlotFills,
+} from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { unlock } from '../../lock-unlock';
 import SkipToSelectedBlock from '../skip-to-selected-block';
 import BlockCard from '../block-card';
-import MultiSelectionInspector from '../multi-selection-inspector';
+import MultiSelectionInspector, {
+	MultiSelectionControls,
+} from '../multi-selection-inspector';
 import BlockVariationTransforms from '../block-variation-transforms';
 import useBlockDisplayInformation from '../use-block-display-information';
 import { store as blockEditorStore } from '../../store';
@@ -30,9 +37,30 @@ import BlockInfo from '../block-info-slot-fill';
 import BlockQuickNavigation from '../block-quick-navigation';
 import { useBorderPanelLabel } from '../../hooks/border';
 
-import { unlock } from '../../lock-unlock';
+function BlockInspectorContentLockedUI( {
+	clientId,
+	contentLockingParent,
+	isContentLockedChild,
+	isContentLockedParent,
+} ) {
+	const contentOnlyFills = useSlotFills( 'InspectorControlsContentOnly' );
+	const isChildWithoutContentControls =
+		isContentLockedChild && ! contentOnlyFills?.length;
 
-function BlockInspectorLockedBlocks( { topLevelLockedBlock } ) {
+	if ( isChildWithoutContentControls || isContentLockedParent ) {
+		const parentClientId = isContentLockedParent
+			? clientId
+			: contentLockingParent;
+
+		return (
+			<BlockInspectorContentLockedParent clientId={ parentClientId } />
+		);
+	}
+
+	return <BlockInspectorContentLockedChild clientId={ clientId } />;
+}
+
+function BlockInspectorContentLockedParent( { clientId } ) {
 	const contentClientIds = useSelect(
 		( select ) => {
 			const {
@@ -40,28 +68,51 @@ function BlockInspectorLockedBlocks( { topLevelLockedBlock } ) {
 				getBlockName,
 				getBlockEditingMode,
 			} = select( blockEditorStore );
-			return getClientIdsOfDescendants( topLevelLockedBlock ).filter(
-				( clientId ) =>
-					getBlockName( clientId ) !== 'core/list-item' &&
-					getBlockEditingMode( clientId ) === 'contentOnly'
+			return getClientIdsOfDescendants( clientId ).filter(
+				( innerClientId ) =>
+					getBlockName( innerClientId ) !== 'core/list-item' &&
+					getBlockEditingMode( innerClientId ) === 'contentOnly'
 			);
 		},
-		[ topLevelLockedBlock ]
+		[ clientId ]
 	);
-	const blockInformation = useBlockDisplayInformation( topLevelLockedBlock );
+	const blockInformation = useBlockDisplayInformation( clientId );
+	const contentClientIdsWithControls = useSelect(
+		( select ) =>
+			unlock( select( blockEditorStore ) ).getContentOnlyControlsBlocks(),
+		[]
+	);
 	return (
 		<div className="block-editor-block-inspector">
 			<BlockCard
 				{ ...blockInformation }
 				className={ blockInformation.isSynced && 'is-synced' }
 			/>
-			<BlockVariationTransforms blockClientId={ topLevelLockedBlock } />
+			<BlockVariationTransforms blockClientId={ clientId } />
 			<BlockInfo.Slot />
 			{ contentClientIds.length > 0 && (
 				<PanelBody title={ __( 'Content' ) }>
-					<BlockQuickNavigation clientIds={ contentClientIds } />
+					<BlockQuickNavigation
+						clientIds={ contentClientIds }
+						clientIdsWithControls={ contentClientIdsWithControls }
+					/>
 				</PanelBody>
 			) }
+		</div>
+	);
+}
+
+function BlockInspectorContentLockedChild( { clientId } ) {
+	const blockInformation = useBlockDisplayInformation( clientId );
+	return (
+		<div className="block-editor-block-inspector">
+			<BlockCard
+				{ ...blockInformation }
+				className={ blockInformation.isSynced && 'is-synced' }
+			/>
+			<BlockVariationTransforms blockClientId={ clientId } />
+			<BlockInfo.Slot />
+			<InspectorControls.Slot group="contentOnly" />
 		</div>
 	);
 }
@@ -72,38 +123,39 @@ const BlockInspector = ( { showNoBlockSelectedMessage = true } ) => {
 		selectedBlockName,
 		selectedBlockClientId,
 		blockType,
-		topLevelLockedBlock,
+		isContentLockedParent,
+		isContentLockedChild,
+		contentLockingParent,
 	} = useSelect( ( select ) => {
 		const {
-			getSelectedBlockClientId,
+			getSelectedBlockClientIds,
 			getSelectedBlockCount,
 			getBlockName,
-			getContentLockingParent,
 			getTemplateLock,
+			getContentLockingParent,
 		} = unlock( select( blockEditorStore ) );
 
-		const _selectedBlockClientId = getSelectedBlockClientId();
+		const _selectedBlockClientId = getSelectedBlockClientIds()?.[ 0 ];
 		const _selectedBlockName =
 			_selectedBlockClientId && getBlockName( _selectedBlockClientId );
 		const _blockType =
 			_selectedBlockName && getBlockType( _selectedBlockName );
+		const _contentLockingParent = getContentLockingParent(
+			_selectedBlockClientId
+		);
 
 		return {
 			count: getSelectedBlockCount(),
 			selectedBlockClientId: _selectedBlockClientId,
 			selectedBlockName: _selectedBlockName,
 			blockType: _blockType,
-			topLevelLockedBlock:
-				getContentLockingParent( _selectedBlockClientId ) ||
-				( getTemplateLock( _selectedBlockClientId ) === 'contentOnly' ||
-				_selectedBlockName === 'core/block'
-					? _selectedBlockClientId
-					: undefined ),
+			isContentLockedParent:
+				getTemplateLock( _selectedBlockClientId ) === 'contentOnly' ||
+				_selectedBlockName === 'core/block',
+			isContentLockedChild: !! _contentLockingParent,
+			contentLockingParent: _contentLockingParent,
 		};
 	}, [] );
-
-	const availableTabs = useInspectorControlsTabs( blockType?.name );
-	const showTabs = availableTabs?.length > 1;
 
 	// The block inspector animation settings will be completely
 	// removed in the future to create an API which allows the block
@@ -116,38 +168,15 @@ const BlockInspector = ( { showNoBlockSelectedMessage = true } ) => {
 		selectedBlockClientId
 	);
 
-	const borderPanelLabel = useBorderPanelLabel( {
-		blockName: selectedBlockName,
-	} );
-
 	if ( count > 1 ) {
 		return (
 			<div className="block-editor-block-inspector">
 				<MultiSelectionInspector />
-				{ showTabs ? (
-					<InspectorControlsTabs tabs={ availableTabs } />
-				) : (
-					<>
-						<InspectorControls.Slot />
-						<InspectorControls.Slot
-							group="color"
-							label={ __( 'Color' ) }
-							className="color-block-support-panel__inner-wrapper"
-						/>
-						<InspectorControls.Slot
-							group="typography"
-							label={ __( 'Typography' ) }
-						/>
-						<InspectorControls.Slot
-							group="dimensions"
-							label={ __( 'Dimensions' ) }
-						/>
-						<InspectorControls.Slot
-							group="border"
-							label={ borderPanelLabel }
-						/>
-						<InspectorControls.Slot group="styles" />
-					</>
+				{ ! isContentLockedChild && (
+					<MultiSelectionControls
+						blockType={ blockType }
+						blockName={ selectedBlockName }
+					/>
 				) }
 			</div>
 		);
@@ -174,10 +203,14 @@ const BlockInspector = ( { showNoBlockSelectedMessage = true } ) => {
 		}
 		return null;
 	}
-	if ( topLevelLockedBlock ) {
+
+	if ( isContentLockedChild || isContentLockedParent ) {
 		return (
-			<BlockInspectorLockedBlocks
-				topLevelLockedBlock={ topLevelLockedBlock }
+			<BlockInspectorContentLockedUI
+				clientId={ selectedBlockClientId }
+				contentLockingParent={ contentLockingParent }
+				isContentLockedParent={ isContentLockedParent }
+				isContentLockedChild={ isContentLockedChild }
 			/>
 		);
 	}

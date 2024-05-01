@@ -473,6 +473,10 @@ export const getContentLockingParent = createSelector(
 	( state ) => [ state.blocks.parents, state.blockListSettings ]
 );
 
+export function getContentOnlyControlsBlocks( state ) {
+	return state.contentOnlyControlsBlocks;
+}
+
 /**
  * Retrieves the client ID of the block that is content locked but is
  * currently being temporarily edited as a non-locked block.

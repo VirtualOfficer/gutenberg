@@ -1,11 +1,18 @@
 /**
  * WordPress dependencies
  */
-import { sprintf, _n } from '@wordpress/i18n';
+import { sprintf, _n, __ } from '@wordpress/i18n';
 import { withSelect } from '@wordpress/data';
 import { serialize } from '@wordpress/blocks';
 import { count as wordCount } from '@wordpress/wordcount';
 import { copy } from '@wordpress/icons';
+/**
+ * Internal dependencies
+ */
+import { useBorderPanelLabel } from '../../hooks/border';
+import useInspectorControlsTabs from '../inspector-controls-tabs/use-inspector-controls-tabs';
+import { default as InspectorControls } from '../inspector-controls';
+import { default as InspectorControlsTabs } from '../inspector-controls-tabs';
 
 /**
  * Internal dependencies
@@ -45,3 +52,34 @@ export default withSelect( ( select ) => {
 		blocks: getMultiSelectedBlocks(),
 	};
 } )( MultiSelectionInspector );
+
+export function MultiSelectionControls( { blockType, blockName } ) {
+	const availableTabs = useInspectorControlsTabs( blockType?.name );
+	const showTabs = availableTabs?.length > 1;
+	const borderPanelLabel = useBorderPanelLabel( {
+		blockName,
+	} );
+
+	return showTabs ? (
+		<InspectorControlsTabs tabs={ availableTabs } />
+	) : (
+		<>
+			<InspectorControls.Slot />
+			<InspectorControls.Slot
+				group="color"
+				label={ __( 'Color' ) }
+				className="color-block-support-panel__inner-wrapper"
+			/>
+			<InspectorControls.Slot
+				group="typography"
+				label={ __( 'Typography' ) }
+			/>
+			<InspectorControls.Slot
+				group="dimensions"
+				label={ __( 'Dimensions' ) }
+			/>
+			<InspectorControls.Slot group="border" label={ borderPanelLabel } />
+			<InspectorControls.Slot group="styles" />
+		</>
+	);
+}
