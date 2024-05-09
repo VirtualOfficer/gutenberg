@@ -13,6 +13,21 @@ import { store as noticesStore } from '@wordpress/notices';
 import { store as blockEditorStore } from '../../../store';
 import { INSERTER_PATTERN_TYPES } from '../block-patterns-tab/utils';
 
+function useStartPatterns() {
+	// A pattern is a start pattern if it includes 'core/post-content' in its blockTypes,
+	// and it has no postTypes declared and the current post type is page or if
+	// the current post type is part of the postTypes declared.
+	const { blockPatternsWithPostContentBlockType } = useSelect( ( select ) => {
+		const { getPatternsByBlockTypes } = select( blockEditorStore );
+		return {
+			blockPatternsWithPostContentBlockType:
+				getPatternsByBlockTypes( 'core/post-content' ),
+		};
+	}, [] );
+
+	return blockPatternsWithPostContentBlockType;
+}
+
 /**
  * Retrieves the block patterns inserter state.
  *
@@ -40,8 +55,34 @@ const usePatternsState = ( onInsert, rootClientId, selectedCategory ) => {
 		[ rootClientId ]
 	);
 
+	const starterPatterns = useStartPatterns();
+
+	const newPatterns = useMemo(
+		() =>
+			patterns.map( ( pattern ) => {
+				if ( starterPatterns.includes( pattern ) ) {
+					return {
+						...pattern,
+						categories: [
+							...( pattern.categories ?? [] ),
+							'core/content',
+						],
+					};
+				}
+
+				return pattern;
+			} ),
+		[ patterns, starterPatterns ]
+	);
+
 	const allCategories = useMemo( () => {
-		const categories = [ ...patternCategories ];
+		const categories = [
+			{
+				name: 'core/content',
+				label: __( 'Starter content' ),
+			},
+			...patternCategories,
+		];
 		userPatternCategories?.forEach( ( userCategory ) => {
 			if (
 				! categories.find(
@@ -94,7 +135,7 @@ const usePatternsState = ( onInsert, rootClientId, selectedCategory ) => {
 		[ createSuccessNotice, onInsert, selectedCategory ]
 	);
 
-	return [ patterns, allCategories, onClickPattern ];
+	return [ newPatterns, allCategories, onClickPattern ];
 };
 
 export default usePatternsState;

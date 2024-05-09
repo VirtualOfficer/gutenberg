@@ -13,7 +13,7 @@ import { TEMPLATE_POST_TYPE } from '../../store/constants';
 function StartPageOptionsModal() {
 	const { setIsInserterOpened } = useDispatch( editorStore );
 	useEffect( () => {
-		setIsInserterOpened( { tab: 'patterns', category: 'all' } );
+		setIsInserterOpened( { tab: 'patterns', category: 'core/content' } );
 	}, [ setIsInserterOpened ] );
 	return null;
 }
