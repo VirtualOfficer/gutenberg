@@ -105,6 +105,11 @@ export function Draggable( {
 			JSON.stringify( transferData )
 		);
 
+		// If dragComponent is explicitly set to false then let the browser handle the drag image.
+		if ( dragComponent === false ) {
+			return;
+		}
+
 		const cloneWrapper = ownerDocument.createElement( 'div' );
 		// Reset position to 0,0. Natural stacking order will position this lower, even with a transform otherwise.
 		cloneWrapper.style.top = '0';
