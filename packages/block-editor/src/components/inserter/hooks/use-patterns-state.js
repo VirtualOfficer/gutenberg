@@ -17,15 +17,11 @@ function useStartPatterns() {
 	// A pattern is a start pattern if it includes 'core/post-content' in its blockTypes,
 	// and it has no postTypes declared and the current post type is page or if
 	// the current post type is part of the postTypes declared.
-	const { blockPatternsWithPostContentBlockType } = useSelect( ( select ) => {
-		const { getPatternsByBlockTypes } = select( blockEditorStore );
-		return {
-			blockPatternsWithPostContentBlockType:
-				getPatternsByBlockTypes( 'core/post-content' ),
-		};
-	}, [] );
-
-	return blockPatternsWithPostContentBlockType;
+	return useSelect( ( select ) =>
+		select( blockEditorStore ).getPatternsByBlockTypes(
+			'core/post-content'
+		)
+	);
 }
 
 /**

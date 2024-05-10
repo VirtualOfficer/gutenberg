@@ -2,7 +2,8 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect, useRegistry } from '@wordpress/data';
+import { store as blockEditorStore } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
@@ -11,10 +12,24 @@ import { store as editorStore } from '../../store';
 import { TEMPLATE_POST_TYPE } from '../../store/constants';
 
 function StartPageOptionsModal() {
-	const { setIsInserterOpened } = useDispatch( editorStore );
+	const registry = useRegistry();
+	// A pattern is a start pattern if it includes 'core/post-content' in its
+	// blockTypes, and it has no postTypes declared and the current post type is
+	// page or if the current post type is part of the postTypes declared.
+	const hasStarterPatterns = useSelect(
+		( select ) =>
+			!! select( blockEditorStore ).getPatternsByBlockTypes(
+				'core/post-content'
+			).length
+	);
 	useEffect( () => {
-		setIsInserterOpened( { tab: 'patterns', category: 'core/content' } );
-	}, [ setIsInserterOpened ] );
+		if ( hasStarterPatterns ) {
+			registry.dispatch( editorStore ).setIsInserterOpened( {
+				tab: 'patterns',
+				category: 'core/content',
+			} );
+		}
+	}, [ hasStarterPatterns, registry ] );
 	return null;
 }
 
