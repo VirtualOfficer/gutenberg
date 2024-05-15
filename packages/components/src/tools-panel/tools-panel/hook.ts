@@ -287,8 +287,8 @@ export function useToolsPanel(
 			const menuGroup = isShownByDefault ? 'default' : 'optional';
 			const hasValue = menuItems[ menuGroup ][ label ];
 
-			if ( ! hasValue ) onSelect?.();
-			else onDeselect?.();
+			const callback = ! hasValue ? onSelect : onDeselect;
+			callback?.();
 
 			const newMenuItems = {
 				...menuItems,
