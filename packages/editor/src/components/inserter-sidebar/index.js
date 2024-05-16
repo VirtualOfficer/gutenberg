@@ -34,32 +34,21 @@ export default function InserterSidebar() {
 			getInsertionPoint,
 			isPublishSidebarOpened,
 		} = unlock( select( editorStore ) );
-		const {
-			getBlockInsertionPoint,
-			getBlockRootClientId,
-			__unstableGetEditorMode,
-			getSettings,
-		} = select( blockEditorStore );
+		const { getBlockInsertionPoint, getSettings } =
+			select( blockEditorStore );
+		const { getSettings } = select( blockEditorStore );
 		const { get } = select( preferencesStore );
 		const { getActiveComplementaryArea } = select( interfaceStore );
-		const getBlockSectionRootClientId = () => {
-			if ( __unstableGetEditorMode() === 'zoom-out' ) {
-				const { sectionRootClientId } = unlock( getSettings() );
-				if ( sectionRootClientId ) {
-					return sectionRootClientId;
-				}
-			}
-			return getBlockRootClientId();
-		};
+		const { sectionRootClientId } = unlock( getSettings() );
 		return {
 			blockInsertionPoint: getBlockInsertionPoint(),
 			inserterSidebarToggleRef: getInserterSidebarToggleRef(),
 			insertionPoint: getInsertionPoint(),
 			showMostUsedBlocks: get( 'core', 'mostUsedBlocks' ),
-			blockSectionRootClientId: getBlockSectionRootClientId(),
 			sidebarIsOpened: !! (
 				getActiveComplementaryArea( 'core' ) || isPublishSidebarOpened()
 			),
+			blockSectionRootClientId: sectionRootClientId ?? '',
 		};
 	}, [] );
 	const { setIsInserterOpened } = useDispatch( editorStore );
@@ -91,7 +80,7 @@ export default function InserterSidebar() {
 				showInserterHelpPanel
 				shouldFocusBlock={ isMobileViewport }
 				rootClientId={
-					blockSectionRootClientId ?? blockInsertionPoint.rootClientId
+					insertionPoint.rootClientId ?? blockSectionRootClientId
 				}
 				__experimentalInsertionIndex={ blockInsertionPoint.index }
 				onSelect={ insertionPoint.onSelect }
