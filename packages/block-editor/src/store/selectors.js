@@ -36,6 +36,7 @@ import {
 	getTemporarilyEditingAsBlocks,
 	getTemporarilyEditingFocusModeToRevert,
 } from './private-selectors';
+import { canBindAttribute } from '../utils/bindings';
 
 /**
  * A block selection object.
@@ -111,22 +112,82 @@ export function isBlockValid( state, clientId ) {
 }
 
 /**
+ * Variable to avoid processing bindings recursively.
+ *
+ * @type {boolean}
+ */
+let isProcessingBindings;
+
+/**
  * Returns a block's attributes given its client ID, or null if no block exists with
  * the client ID.
+ *
+ * Process block bindings to modify the value of the attributes if needed.
  *
  * @param {Object} state    Editor state.
  * @param {string} clientId Block client ID.
  *
  * @return {Object?} Block attributes.
  */
-export function getBlockAttributes( state, clientId ) {
-	const block = state.blocks.byClientId.get( clientId );
-	if ( ! block ) {
-		return null;
-	}
+export const getBlockAttributes = createRegistrySelector(
+	( select ) => ( state, clientId ) => {
+		const block = state.blocks.byClientId.get( clientId );
+		if ( ! block ) {
+			return null;
+		}
 
-	return state.blocks.attributes.get( clientId );
-}
+		const blockAttributes = state.blocks.attributes.get( clientId );
+
+		// Change attribute values if bindings are present.
+		const bindings = blockAttributes?.metadata?.bindings;
+		if ( ! bindings || isProcessingBindings ) {
+			return blockAttributes;
+		}
+		isProcessingBindings = true;
+
+		const newAttributes = { ...blockAttributes };
+		const context = unlock( select( STORE_NAME ) ).getBlockContext(
+			clientId
+		);
+		const sources = unlock(
+			select( blocksStore )
+		).getAllBlockBindingsSources();
+
+		for ( const [ attributeName, boundAttribute ] of Object.entries(
+			bindings
+		) ) {
+			const source = sources[ boundAttribute.source ];
+			if (
+				! source?.getValue ||
+				! canBindAttribute( block.name, attributeName )
+			) {
+				continue;
+			}
+
+			const args = {
+				select,
+				context,
+				clientId,
+				attributeName,
+				args: boundAttribute.args,
+			};
+
+			newAttributes[ attributeName ] = source.getValue( args );
+
+			if ( newAttributes[ attributeName ] === undefined ) {
+				if ( attributeName === 'url' ) {
+					newAttributes[ attributeName ] = null;
+				} else {
+					newAttributes[ attributeName ] =
+						source.getPlaceholder?.( args );
+				}
+			}
+		}
+
+		isProcessingBindings = false;
+		return newAttributes;
+	}
+);
 
 /**
  * Returns a block given its client ID. This is a parsed copy of the block,

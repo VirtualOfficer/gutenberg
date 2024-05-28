@@ -187,6 +187,8 @@ _Returns_
 
 Returns a block's attributes given its client ID, or null if no block exists with the client ID.
 
+Process block bindings to modify the value of the attributes if needed.
+
 _Parameters_
 
 -   _state_ `Object`: Editor state.
@@ -1828,6 +1830,8 @@ _Returns_
 ### updateBlockAttributes
 
 Action that updates attributes of multiple blocks with the specified client IDs.
+
+Process block bindings to skip updating the bound attributes and run binding source setValue instead.
 
 _Parameters_
 
