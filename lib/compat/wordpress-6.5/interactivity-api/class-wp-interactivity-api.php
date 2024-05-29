@@ -191,12 +191,12 @@ if ( ! class_exists( 'WP_Interactivity_API' ) ) {
 
 			wp_register_script_module(
 				'@wordpress/interactivity',
-				includes_url( "js/dist/interactivity$suffix.js" )
+				includes_url( "js/dist/script-modules/interactivity$suffix.js" )
 			);
 
 			wp_register_script_module(
 				'@wordpress/interactivity-router',
-				includes_url( "js/dist/interactivity-router$suffix.js" ),
+				includes_url( "js/dist/script-modules/interactivity-router$suffix.js" ),
 				array( '@wordpress/interactivity' )
 			);
 		}

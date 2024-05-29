@@ -25,6 +25,7 @@
 	},
 	"main": "build/index.js",
 	"module": "build-module/index.js",
+	"wp-module": "build-module/wp-module.js",
 	"react-native": "src/index",
 	"types": "build-types",
 	"dependencies": {

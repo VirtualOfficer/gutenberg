@@ -15,23 +15,30 @@ const { baseConfig, plugins } = require( './shared' );
 
 module.exports = {
 	...baseConfig,
-	name: 'interactivity',
+	name: 'script-modules',
 	entry: {
-		index: './packages/interactivity',
-		debug: './packages/interactivity/src/debug',
-		router: './packages/interactivity-router',
-		navigation: './packages/block-library/src/navigation/view.js',
-		query: './packages/block-library/src/query/view.js',
-		image: './packages/block-library/src/image/view.js',
-		file: './packages/block-library/src/file/view.js',
-		search: './packages/block-library/src/search/view.js',
+		apiFetch: './packages/api-fetch',
+
+		'interactivity/index': './packages/interactivity',
+		'interactivity/debug': './packages/interactivity/src/debug',
+		'interactivity/router': './packages/interactivity-router',
+
+		'interactivity/file': './packages/block-library/src/file/view.js',
+		'interactivity/image': './packages/block-library/src/image/view.js',
+		'interactivity/navigation':
+			'./packages/block-library/src/navigation/view.js',
+		'interactivity/query': './packages/block-library/src/query/view.js',
+		'interactivity/search': './packages/block-library/src/search/view.js',
 	},
 	experiments: {
 		outputModule: true,
 	},
 	output: {
 		devtoolNamespace: 'wp',
-		filename: './build/interactivity/[name].min.js',
+		filename: ( pathData ) => {
+			console.log( pathData );
+			return './build/script-modules/[name].min.js';
+		},
 		library: {
 			type: 'module',
 		},
@@ -39,9 +46,11 @@ module.exports = {
 		environment: { module: true },
 		module: true,
 		chunkFormat: 'module',
+		asyncChunks: false,
 	},
 	resolve: {
 		extensions: [ '.js', '.ts', '.tsx' ],
+		mainFields: [ 'wp-module', 'module' ],
 	},
 	module: {
 		rules: [
