@@ -43,9 +43,15 @@ type BaseButtonProps = {
 	 */
 	children?: ReactNode;
 	/**
-	 * An accessible description for the button.
+	 * A visually hidden accessible description for the button.
 	 */
 	describedBy?: string;
+	/**
+	 * Whether to show the accessible description.
+	 *
+	 * @default false
+	 */
+	showDescription?: boolean;
 	/**
 	 * If provided, renders an Icon component inside the button.
 	 */
