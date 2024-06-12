@@ -480,12 +480,27 @@ export function useBlockSettings( name, parentLayout ) {
 	return useSettingsForBlockElement( rawSettings, name );
 }
 
+function resolveFlattenedProps( props ) {
+	let reconstructed = {};
+
+	for ( const key in props ) {
+		reconstructed = setImmutably( reconstructed, key, props[ key ] );
+	}
+
+	return reconstructed;
+}
+
 export function createBlockEditFilter( features ) {
 	// We don't want block controls to re-render when typing inside a block.
 	// `memo` will prevent re-renders unless props change, so only pass the
 	// needed props and not the whole attributes object.
 	features = features.map( ( settings ) => {
-		return { ...settings, Edit: memo( settings.edit ) };
+		return {
+			...settings,
+			Edit: memo( ( props ) =>
+				settings.edit( resolveFlattenedProps( props ) )
+			),
+		};
 	} );
 	const withBlockEditHooks = createHigherOrderComponent(
 		( OriginalBlockEdit ) => ( props ) => {
@@ -516,8 +531,12 @@ export function createBlockEditFilter( features ) {
 
 					const neededProps = {};
 					for ( const key of attributeKeys ) {
-						if ( props.attributes[ key ] ) {
-							neededProps[ key ] = props.attributes[ key ];
+						const value = getValueFromObjectPath(
+							props.attributes,
+							key
+						);
+						if ( value !== undefined ) {
+							neededProps[ key ] = value;
 						}
 					}
 
@@ -548,7 +567,7 @@ export function createBlockEditFilter( features ) {
 }
 
 function BlockProps( { index, useBlockProps, setAllWrapperProps, ...props } ) {
-	const wrapperProps = useBlockProps( props );
+	const wrapperProps = useBlockProps( resolveFlattenedProps( props ) );
 	const setWrapperProps = ( next ) =>
 		setAllWrapperProps( ( prev ) => {
 			const nextAll = [ ...prev ];
@@ -586,8 +605,12 @@ export function createBlockListBlockFilter( features ) {
 
 					const neededProps = {};
 					for ( const key of attributeKeys ) {
-						if ( props.attributes[ key ] ) {
-							neededProps[ key ] = props.attributes[ key ];
+						const value = getValueFromObjectPath(
+							props.attributes,
+							key
+						);
+						if ( value !== undefined ) {
+							neededProps[ key ] = value;
 						}
 					}
 
@@ -656,8 +679,9 @@ export function createBlockSaveFilter( features ) {
 
 			const neededAttributes = {};
 			for ( const key of attributeKeys ) {
-				if ( attributes[ key ] ) {
-					neededAttributes[ key ] = attributes[ key ];
+				const value = getValueFromObjectPath( attributes, key );
+				if ( value !== undefined ) {
+					neededAttributes[ key ] = value;
 				}
 			}
 
@@ -670,7 +694,7 @@ export function createBlockSaveFilter( features ) {
 				return accu;
 			}
 
-			return addSaveProps( accu, name, neededAttributes );
+			return addSaveProps( accu, name, attributes );
 		}, props );
 	}
 	addFilter(
