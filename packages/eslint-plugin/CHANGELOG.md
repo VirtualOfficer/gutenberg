@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+-   Upgrade @typescript-eslint packages ([#61138](https://github.com/WordPress/gutenberg/pull/61138)).
+
 ## 19.0.0 (2024-05-31)
 
 ### Breaking Changes
@@ -16,7 +18,6 @@
 ### Internal
 
 -   Replaced `classnames` package with the faster and smaller `clsx` package ([#61138](https://github.com/WordPress/gutenberg/pull/61138)).
--   Upgrade @typescript-eslint packages ([#61138](https://github.com/WordPress/gutenberg/pull/61138)).
 
 ## 18.0.0 (2024-05-02)
 
