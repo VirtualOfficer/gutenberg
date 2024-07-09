@@ -27,6 +27,7 @@ describe( 'getEntityRecord', () => {
 			baseURLParams: { context: 'edit' },
 		},
 	];
+	const registry = { batch: ( callback ) => callback() };
 
 	beforeEach( async () => {
 		triggerFetch.mockReset();
@@ -44,7 +45,11 @@ describe( 'getEntityRecord', () => {
 		// Provide response
 		triggerFetch.mockImplementation( () => POST_TYPE );
 
-		await getEntityRecord( 'root', 'postType', 'post' )( { dispatch } );
+		await getEntityRecord(
+			'root',
+			'postType',
+			'post'
+		)( { dispatch, registry } );
 
 		// Fetch request should have been issued.
 		expect( triggerFetch ).toHaveBeenCalledWith( {
@@ -92,7 +97,7 @@ describe( 'getEntityRecord', () => {
 			'postType',
 			'post',
 			query
-		)( { dispatch, select } );
+		)( { dispatch, select, registry } );
 
 		// Check resolution cache for an existing entity that fulfills the request with query.
 		expect( select.hasEntityRecords ).toHaveBeenCalledWith(
@@ -393,6 +398,7 @@ describe( 'canUser', () => {
 			select: () => ( {
 				hasStartedResolution: ( _, [ action ] ) => action === 'read',
 			} ),
+			batch: ( callback ) => callback(),
 		};
 
 		triggerFetch.mockImplementation( () => ( {
@@ -424,6 +430,7 @@ describe( 'canUser', () => {
 			select: () => ( {
 				hasStartedResolution: ( _, [ action ] ) => action === 'read',
 			} ),
+			batch: ( callback ) => callback(),
 		};
 
 		triggerFetch.mockImplementation( () => ( {
@@ -463,6 +470,7 @@ describe( 'canUser', () => {
 			select: () => ( {
 				hasStartedResolution: ( _, [ action ] ) => action === 'create',
 			} ),
+			batch: ( callback ) => callback(),
 		};
 
 		triggerFetch.mockImplementation( () => ( {
