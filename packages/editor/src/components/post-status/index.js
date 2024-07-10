@@ -210,7 +210,7 @@ export default function PostStatus() {
 							icon={ postStatusesInfo[ status ]?.icon }
 							aria-label={ sprintf(
 								// translators: %s: Current post status.
-								__( 'Change post status: %s' ),
+								__( 'Change status: %s' ),
 								postStatusesInfo[ status ]?.label
 							) }
 						>
