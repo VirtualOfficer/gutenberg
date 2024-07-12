@@ -283,15 +283,18 @@ export function useToolsPanel(
 				return;
 			}
 
-			const menuGroup = currentItem.isShownByDefault
-				? 'default'
-				: 'optional';
+			const { isShownByDefault, onDeselect, onSelect } = currentItem;
+			const menuGroup = isShownByDefault ? 'default' : 'optional';
+			const hasValue = menuItems[ menuGroup ][ label ];
+
+			const callback = ! hasValue ? onSelect : onDeselect;
+			callback?.();
 
 			const newMenuItems = {
 				...menuItems,
 				[ menuGroup ]: {
 					...menuItems[ menuGroup ],
-					[ label ]: ! menuItems[ menuGroup ][ label ],
+					[ label ]: ! hasValue,
 				},
 			};
 
