@@ -4,8 +4,9 @@
 import { useDispatch } from '@wordpress/data';
 import { cloneBlock } from '@wordpress/blocks';
 import {
+	Composite,
+	useCompositeStore,
 	VisuallyHidden,
-	privateApis as componentsPrivateApis,
 } from '@wordpress/components';
 
 import { useState } from '@wordpress/element';
@@ -20,13 +21,6 @@ import BlockPreview from '../block-preview';
 import SetupToolbar from './setup-toolbar';
 import usePatternsSetup from './use-patterns-setup';
 import { VIEWMODES } from './constants';
-import { unlock } from '../../lock-unlock';
-
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
 
 const SetupContent = ( {
 	viewMode,
@@ -92,7 +86,7 @@ function BlockPattern( { pattern, onSelect, showTitles } ) {
 	);
 	return (
 		<div className={ `${ baseClassName }__list-item` }>
-			<CompositeItem
+			<Composite.Item
 				render={
 					<div
 						aria-describedby={
@@ -120,7 +114,7 @@ function BlockPattern( { pattern, onSelect, showTitles } ) {
 						{ description }
 					</VisuallyHidden>
 				) }
-			</CompositeItem>
+			</Composite.Item>
 		</div>
 	);
 }

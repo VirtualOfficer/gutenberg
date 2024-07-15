@@ -13,7 +13,8 @@ import { useState, useMemo, useDeferredValue } from '@wordpress/element';
 import {
 	VisuallyHidden,
 	Icon,
-	privateApis as componentsPrivateApis,
+	Composite,
+	useCompositeStore,
 } from '@wordpress/components';
 import { search, check } from '@wordpress/icons';
 import { SVG, Circle } from '@wordpress/primitives';
@@ -21,14 +22,7 @@ import { SVG, Circle } from '@wordpress/primitives';
 /**
  * Internal dependencies
  */
-import { unlock } from '../../lock-unlock';
 import type { Filter, NormalizedFilter, View } from '../../types';
-
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
 
 interface SearchWidgetProps {
 	view: View;
@@ -107,19 +101,23 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 				__( 'List of: %1$s' ),
 				filter.name
 			) }
+			// @ts-expect-error check if this actually works, since `onFocusVisible`
+			// only works when `focusable` is `true`.
 			onFocusVisible={ () => {
 				if ( ! compositeStore.getState().activeId ) {
 					compositeStore.move( compositeStore.first() );
 				}
 			} }
-			render={ <Ariakit.CompositeTypeahead store={ compositeStore } /> }
+			// @ts-expect-error Typeahead is added to the package in a separate PR.
+			render={ <Composite.Typeahead /> }
 		>
 			{ filter.elements.map( ( element ) => (
-				<Ariakit.CompositeHover
+				// @ts-expect-error Hover is added to the package in a separate PR.
+				<Composite.Hover
 					store={ compositeStore }
 					key={ element.value }
 					render={
-						<CompositeItem
+						<Composite.Item
 							render={
 								<div
 									aria-label={ element.label }
@@ -192,7 +190,7 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 							</span>
 						) }
 					</span>
-				</Ariakit.CompositeHover>
+				</Composite.Hover>
 			) ) }
 		</Composite>
 	);

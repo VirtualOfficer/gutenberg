@@ -9,7 +9,8 @@ import {
 	FlexItem,
 	SearchControl,
 	TextHighlight,
-	privateApis as componentsPrivateApis,
+	Composite,
+	useCompositeStore,
 	__experimentalText as Text,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
@@ -20,14 +21,7 @@ import { useDebouncedInput } from '@wordpress/compose';
 /**
  * Internal dependencies
  */
-import { unlock } from '../../lock-unlock';
 import { mapToIHasNameAndId } from './utils';
-
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
 
 const EMPTY_ARRAY = [];
 
@@ -40,7 +34,7 @@ function SuggestionListItem( {
 	const baseCssClass =
 		'edit-site-custom-template-modal__suggestions_list__list-item';
 	return (
-		<CompositeItem
+		<Composite.Item
 			render={
 				<Button
 					role="option"
@@ -75,7 +69,7 @@ function SuggestionListItem( {
 					{ suggestion.link }
 				</Text>
 			) }
-		</CompositeItem>
+		</Composite.Item>
 	);
 }
 

@@ -8,6 +8,8 @@ import clsx from 'clsx';
  */
 import {
 	Disabled,
+	Composite,
+	useCompositeStore,
 	privateApis as componentsPrivateApis,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -45,12 +47,7 @@ const {
 } = unlock( blockEditorPrivateApis );
 const { mergeBaseAndUserConfigs } = unlock( editorPrivateApis );
 
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-	Tabs,
-} = unlock( componentsPrivateApis );
+const { Tabs } = unlock( componentsPrivateApis );
 
 // The content area of the Style Book is rendered within an iframe so that global styles
 // are applied to elements within the entire content area. To support elements that are
@@ -436,7 +433,7 @@ const Example = ( { id, title, blocks, isSelected, onClick } ) => {
 	return (
 		<div role="row">
 			<div role="gridcell">
-				<CompositeItem
+				<Composite.Item
 					className={ clsx( 'edit-site-style-book__example', {
 						'is-selected': isSelected,
 					} ) }
@@ -466,7 +463,7 @@ const Example = ( { id, title, blocks, isSelected, onClick } ) => {
 							</ExperimentalBlockEditorProvider>
 						</Disabled>
 					</div>
-				</CompositeItem>
+				</Composite.Item>
 			</div>
 		</div>
 	);
