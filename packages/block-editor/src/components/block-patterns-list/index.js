@@ -9,9 +9,9 @@ import clsx from 'clsx';
 import { cloneBlock } from '@wordpress/blocks';
 import { useEffect, useState, forwardRef, useMemo } from '@wordpress/element';
 import {
+	Composite,
 	VisuallyHidden,
 	Tooltip,
-	privateApis as componentsPrivateApis,
 	__experimentalHStack as HStack,
 } from '@wordpress/components';
 import { useInstanceId } from '@wordpress/compose';
@@ -21,17 +21,12 @@ import { Icon, symbol } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { unlock } from '../../lock-unlock';
 import BlockPreview from '../block-preview';
 import InserterDraggableBlocks from '../inserter-draggable-blocks';
 import BlockPatternsPaging from '../block-patterns-paging';
 import { INSERTER_PATTERN_TYPES } from '../inserter/block-patterns-tab/utils';
 
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
+const useCompositeStore = Composite.useStore;
 
 const WithToolTip = ( { showTooltip, title, children } ) => {
 	if ( showTooltip ) {
@@ -107,7 +102,7 @@ function BlockPattern( {
 						}
 						title={ pattern.title }
 					>
-						<CompositeItem
+						<Composite.Item
 							render={
 								<div
 									role="option"
@@ -176,7 +171,7 @@ function BlockPattern( {
 									{ pattern.description }
 								</VisuallyHidden>
 							) }
-						</CompositeItem>
+						</Composite.Item>
 					</WithToolTip>
 				</div>
 			) }
@@ -217,7 +212,7 @@ function BlockPatternsList(
 	}, [ setActiveId, shownPatterns, blockPatterns ] );
 
 	return (
-		<Composite
+		<Composite.Root
 			store={ compositeStore }
 			role="listbox"
 			className="block-editor-block-patterns-list"
@@ -243,7 +238,7 @@ function BlockPatternsList(
 				);
 			} ) }
 			{ pagingProps && <BlockPatternsPaging { ...pagingProps } /> }
-		</Composite>
+		</Composite.Root>
 	);
 }
 

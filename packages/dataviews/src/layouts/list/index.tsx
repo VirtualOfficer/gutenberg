@@ -2,10 +2,6 @@
  * External dependencies
  */
 import clsx from 'clsx';
-// TODO: use the @wordpress/components one once public
-// Import CompositeStore type, which is not exported from @wordpress/components.
-// eslint-disable-next-line no-restricted-imports
-import type { CompositeStore } from '@ariakit/react';
 
 /**
  * WordPress dependencies
@@ -18,6 +14,7 @@ import {
 	privateApis as componentsPrivateApis,
 	Spinner,
 	VisuallyHidden,
+	Composite,
 } from '@wordpress/components';
 import {
 	useCallback,
@@ -45,17 +42,13 @@ interface ListViewItemProps< Item > {
 	mediaField?: NormalizedField< Item >;
 	onSelect: ( item: Item ) => void;
 	primaryField?: NormalizedField< Item >;
-	store: CompositeStore;
+	store: Composite.Store;
 	visibleFields: NormalizedField< Item >[];
 }
 
-const {
-	useCompositeStoreV2: useCompositeStore,
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	CompositeRowV2: CompositeRow,
-	DropdownMenuV2: DropdownMenu,
-} = unlock( componentsPrivateApis );
+const useCompositeStore = Composite.useStore;
+
+const { DropdownMenuV2: DropdownMenu } = unlock( componentsPrivateApis );
 
 function ListItem< Item >( {
 	actions,
@@ -124,7 +117,7 @@ function ListItem< Item >( {
 	) : null;
 
 	return (
-		<CompositeRow
+		<Composite.Row
 			ref={ itemRef }
 			render={ <li /> }
 			role="row"
@@ -141,7 +134,7 @@ function ListItem< Item >( {
 				spacing={ 0 }
 			>
 				<div role="gridcell">
-					<CompositeItem
+					<Composite.Item
 						store={ store }
 						render={ <div /> }
 						role="button"
@@ -193,7 +186,7 @@ function ListItem< Item >( {
 								</div>
 							</VStack>
 						</HStack>
-					</CompositeItem>
+					</Composite.Item>
 				</div>
 				{ eligibleActions?.length > 0 && (
 					<HStack
@@ -207,7 +200,7 @@ function ListItem< Item >( {
 					>
 						{ primaryAction && 'RenderModal' in primaryAction && (
 							<div role="gridcell">
-								<CompositeItem
+								<Composite.Item
 									store={ store }
 									render={
 										<Button
@@ -232,13 +225,13 @@ function ListItem< Item >( {
 											}
 										/>
 									) }
-								</CompositeItem>
+								</Composite.Item>
 							</div>
 						) }
 						{ primaryAction &&
 							! ( 'RenderModal' in primaryAction ) && (
 								<div role="gridcell" key={ primaryAction.id }>
-									<CompositeItem
+									<Composite.Item
 										store={ store }
 										render={
 											<Button
@@ -262,7 +255,7 @@ function ListItem< Item >( {
 						<div role="gridcell">
 							<DropdownMenu
 								trigger={
-									<CompositeItem
+									<Composite.Item
 										store={ store }
 										render={
 											<Button
@@ -310,7 +303,7 @@ function ListItem< Item >( {
 					</HStack>
 				) }
 			</HStack>
-		</CompositeRow>
+		</Composite.Row>
 	);
 }
 
@@ -393,7 +386,7 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 	}
 
 	return (
-		<Composite
+		<Composite.Root
 			id={ baseId }
 			render={ <ul /> }
 			className="dataviews-view-list"
@@ -417,6 +410,6 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 					/>
 				);
 			} ) }
-		</Composite>
+		</Composite.Root>
 	);
 }
