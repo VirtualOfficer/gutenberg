@@ -5,6 +5,11 @@
  * tab stop for the whole Composite element. This means that it can behave as
  * a roving tabindex or aria-activedescendant container.
  *
+ * This file aims at providing component that are as close as possible to the
+ * original `reakit`-based implementation (which was removed from the codebase),
+ * although it is recommended that consumers of the package switch to the stable,
+ * un-prefixed, ariakit-based version of `Composite`.
+ *
  * @see https://ariakit.org/components/composite
  */
 
@@ -12,12 +17,13 @@
  * WordPress dependencies
  */
 import { forwardRef } from '@wordpress/element';
+import { useInstanceId } from '@wordpress/compose';
+import deprecated from '@wordpress/deprecated';
 
 /**
  * Internal dependencies
  */
 import * as Current from '../current';
-import { useInstanceId } from '@wordpress/compose';
 
 type Orientation = 'horizontal' | 'vertical';
 
@@ -73,7 +79,7 @@ export interface LegacyStateOptions {
 
 type Component = React.FunctionComponent< any >;
 
-type CompositeStore = ReturnType< typeof Current.useCompositeStore >;
+type CompositeStore = ReturnType< typeof Current.useStore >;
 type CompositeStoreState = { store: CompositeStore };
 export type CompositeState = CompositeStoreState &
 	Required< Pick< LegacyStateOptions, 'baseId' > >;
@@ -93,9 +99,9 @@ type CompositeComponent< C extends Component > = (
 ) => React.ReactElement;
 type CompositeComponentProps = CompositeState &
 	(
-		| ComponentProps< typeof Current.CompositeGroup >
-		| ComponentProps< typeof Current.CompositeItem >
-		| ComponentProps< typeof Current.CompositeRow >
+		| ComponentProps< typeof Current.Group >
+		| ComponentProps< typeof Current.Item >
+		| ComponentProps< typeof Current.Row >
 	);
 
 function mapLegacyStatePropsToComponentProps(
@@ -113,12 +119,32 @@ function mapLegacyStatePropsToComponentProps(
 	return legacyProps;
 }
 
+const mapLegacyDisplayNameToNewDisplayName = ( name: string ) => {
+	if ( ! /Composite/.test( name ) ) {
+		return name;
+	}
+
+	if ( name === 'Composite' ) {
+		return 'Composite.Root';
+	}
+
+	return name.replace( 'Composite', 'Composite.' );
+};
+
 function proxyComposite< C extends Component >(
 	ProxiedComponent: C | React.ForwardRefExoticComponent< C >,
 	propMap: Record< string, string > = {}
 ): CompositeComponent< C > {
 	const displayName = ProxiedComponent.displayName;
+
 	const Component = ( legacyProps: CompositeStateProps ) => {
+		deprecated( `wp.components.__unstable${ displayName }`, {
+			since: '6.7',
+			alternative: `${ mapLegacyDisplayNameToNewDisplayName(
+				displayName ?? ''
+			) }`,
+		} );
+
 		const { store, ...rest } =
 			mapLegacyStatePropsToComponentProps( legacyProps );
 		const props = rest as ComponentProps< C >;
@@ -145,25 +171,47 @@ function proxyComposite< C extends Component >(
 // provided role, and returning the appropriate component.
 const unproxiedCompositeGroup = forwardRef<
 	any,
-	React.ComponentPropsWithoutRef<
-		typeof Current.CompositeGroup | typeof Current.CompositeRow
-	>
+	React.ComponentPropsWithoutRef< typeof Current.Group | typeof Current.Row >
 >( ( { role, ...props }, ref ) => {
-	const Component =
-		role === 'row' ? Current.CompositeRow : Current.CompositeGroup;
+	const Component = role === 'row' ? Current.Row : Current.Group;
 	return <Component ref={ ref } role={ role } { ...props } />;
 } );
 unproxiedCompositeGroup.displayName = 'CompositeGroup';
 
-export const Composite = proxyComposite( Current.Composite, { baseId: 'id' } );
+/**
+ * _Note: please use the `Composite.Root` component instead._
+ *
+ * @deprecated
+ */
+export const Composite = proxyComposite( Current.Root, { baseId: 'id' } );
+/**
+ * _Note: please use the `Composite.Group` component instead._
+ *
+ * @deprecated
+ */
 export const CompositeGroup = proxyComposite( unproxiedCompositeGroup );
-export const CompositeItem = proxyComposite( Current.CompositeItem, {
+/**
+ * _Note: please use the `Composite.Item` component instead._
+ *
+ * @deprecated
+ */
+export const CompositeItem = proxyComposite( Current.Item, {
 	focusable: 'accessibleWhenDisabled',
 } );
 
+/**
+ * _Note: please use the `Composite.useStore` hook instead._
+ *
+ * @deprecated
+ */
 export function useCompositeState(
 	legacyStateOptions: LegacyStateOptions = {}
 ): CompositeState {
+	deprecated( `wp.components.__unstableUseCompositeState`, {
+		since: '6.7',
+		alternative: `Composite.useStore`,
+	} );
+
 	const {
 		baseId,
 		currentId: defaultActiveId,
@@ -178,7 +226,7 @@ export function useCompositeState(
 
 	return {
 		baseId: useInstanceId( Composite, 'composite', baseId ),
-		store: Current.useCompositeStore( {
+		store: Current.useStore( {
 			defaultActiveId,
 			rtl,
 			orientation,

@@ -10,25 +10,16 @@ import removeAccents from 'remove-accents';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useMemo, useDeferredValue } from '@wordpress/element';
-import {
-	VisuallyHidden,
-	Icon,
-	privateApis as componentsPrivateApis,
-} from '@wordpress/components';
+import { VisuallyHidden, Icon, Composite } from '@wordpress/components';
 import { search, check } from '@wordpress/icons';
 import { SVG, Circle } from '@wordpress/primitives';
 
 /**
  * Internal dependencies
  */
-import { unlock } from './lock-unlock';
 import type { Filter, NormalizedFilter, View } from './types';
 
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
+const useCompositeStore = Composite.useStore;
 
 interface SearchWidgetProps {
 	view: View;
@@ -98,7 +89,7 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 	);
 	const currentValue = getCurrentValue( filter, currentFilter );
 	return (
-		<Composite
+		<Composite.Root
 			store={ compositeStore }
 			role="listbox"
 			className="dataviews-search-widget-listbox"
@@ -115,11 +106,12 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 			render={ <Ariakit.CompositeTypeahead store={ compositeStore } /> }
 		>
 			{ filter.elements.map( ( element ) => (
+				// TODO: consider exporting Hover too?
 				<Ariakit.CompositeHover
 					store={ compositeStore }
 					key={ element.value }
 					render={
-						<CompositeItem
+						<Composite.Item
 							render={
 								<div
 									aria-label={ element.label }
@@ -194,7 +186,7 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 					</span>
 				</Ariakit.CompositeHover>
 			) ) }
-		</Composite>
+		</Composite.Root>
 	);
 }
 

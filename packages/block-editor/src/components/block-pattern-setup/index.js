@@ -3,10 +3,7 @@
  */
 import { useDispatch } from '@wordpress/data';
 import { cloneBlock } from '@wordpress/blocks';
-import {
-	VisuallyHidden,
-	privateApis as componentsPrivateApis,
-} from '@wordpress/components';
+import { Composite, VisuallyHidden } from '@wordpress/components';
 
 import { useState } from '@wordpress/element';
 import { useInstanceId } from '@wordpress/compose';
@@ -20,13 +17,8 @@ import BlockPreview from '../block-preview';
 import SetupToolbar from './setup-toolbar';
 import usePatternsSetup from './use-patterns-setup';
 import { VIEWMODES } from './constants';
-import { unlock } from '../../lock-unlock';
 
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
+const useCompositeStore = Composite.useStore;
 
 const SetupContent = ( {
 	viewMode,
@@ -64,7 +56,7 @@ const SetupContent = ( {
 
 	return (
 		<div className="block-editor-block-pattern-setup__grid">
-			<Composite
+			<Composite.Root
 				store={ compositeStore }
 				role="listbox"
 				className={ containerClass }
@@ -78,7 +70,7 @@ const SetupContent = ( {
 						showTitles={ showTitles }
 					/>
 				) ) }
-			</Composite>
+			</Composite.Root>
 		</div>
 	);
 };
@@ -92,7 +84,7 @@ function BlockPattern( { pattern, onSelect, showTitles } ) {
 	);
 	return (
 		<div className={ `${ baseClassName }__list-item` }>
-			<CompositeItem
+			<Composite.Item
 				render={
 					<div
 						aria-describedby={
@@ -120,7 +112,7 @@ function BlockPattern( { pattern, onSelect, showTitles } ) {
 						{ description }
 					</VisuallyHidden>
 				) }
-			</CompositeItem>
+			</Composite.Item>
 		</div>
 	);
 }

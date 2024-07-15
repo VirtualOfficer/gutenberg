@@ -11,35 +11,31 @@ import { isRTL } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	Composite,
-	CompositeGroup,
-	CompositeRow,
-	CompositeItem,
-	useCompositeStore,
-} from '..';
+import * as Composite from '..';
 import { UseCompositeStorePlaceholder, transform } from './utils';
 
 const meta: Meta< typeof UseCompositeStorePlaceholder > = {
-	title: 'Components/Composite (V2)',
+	title: 'Components/Composite',
 	component: UseCompositeStorePlaceholder,
 	subcomponents: {
 		// @ts-expect-error - See https://github.com/storybookjs/storybook/issues/23170
-		Composite,
+		Root: Composite.Root,
 		// @ts-expect-error - See https://github.com/storybookjs/storybook/issues/23170
-		CompositeGroup,
+		Group: Composite.Group,
 		// @ts-expect-error - See https://github.com/storybookjs/storybook/issues/23170
-		CompositeRow,
+		Row: Composite.Row,
 		// @ts-expect-error - See https://github.com/storybookjs/storybook/issues/23170
-		CompositeItem,
+		Item: Composite.Item,
 	},
-	tags: [ 'status-private' ],
 	parameters: {
 		docs: {
 			canvas: { sourceState: 'shown' },
 			source: { transform },
 			extractArgTypes: ( component: React.FunctionComponent ) => {
-				const name = component.displayName;
+				const name =
+					component.displayName === 'useStore'
+						? 'useCompositeStore'
+						: component.displayName;
 				const path = name
 					?.replace(
 						/([a-z])([A-Z])/g,
@@ -62,25 +58,29 @@ export default meta;
 
 export const Default: StoryFn< typeof Composite > = ( { ...initialState } ) => {
 	const rtl = isRTL();
-	const store = useCompositeStore( { rtl, ...initialState } );
+	const store = Composite.useStore( { rtl, ...initialState } );
 
 	return (
-		<Composite role="grid" store={ store } aria-label="Ariakit Composite">
-			<CompositeRow role="row">
-				<CompositeItem role="gridcell">Item A1</CompositeItem>
-				<CompositeItem role="gridcell">Item A2</CompositeItem>
-				<CompositeItem role="gridcell">Item A3</CompositeItem>
-			</CompositeRow>
-			<CompositeRow role="row">
-				<CompositeItem role="gridcell">Item B1</CompositeItem>
-				<CompositeItem role="gridcell">Item B2</CompositeItem>
-				<CompositeItem role="gridcell">Item B3</CompositeItem>
-			</CompositeRow>
-			<CompositeRow role="row">
-				<CompositeItem role="gridcell">Item C1</CompositeItem>
-				<CompositeItem role="gridcell">Item C2</CompositeItem>
-				<CompositeItem role="gridcell">Item C3</CompositeItem>
-			</CompositeRow>
-		</Composite>
+		<Composite.Root
+			role="grid"
+			store={ store }
+			aria-label="Ariakit Composite"
+		>
+			<Composite.Row role="row">
+				<Composite.Item role="gridcell">Item A1</Composite.Item>
+				<Composite.Item role="gridcell">Item A2</Composite.Item>
+				<Composite.Item role="gridcell">Item A3</Composite.Item>
+			</Composite.Row>
+			<Composite.Row role="row">
+				<Composite.Item role="gridcell">Item B1</Composite.Item>
+				<Composite.Item role="gridcell">Item B2</Composite.Item>
+				<Composite.Item role="gridcell">Item B3</Composite.Item>
+			</Composite.Row>
+			<Composite.Row role="row">
+				<Composite.Item role="gridcell">Item C1</Composite.Item>
+				<Composite.Item role="gridcell">Item C2</Composite.Item>
+				<Composite.Item role="gridcell">Item C3</Composite.Item>
+			</Composite.Row>
+		</Composite.Root>
 	);
 };
