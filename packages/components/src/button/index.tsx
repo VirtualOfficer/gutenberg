@@ -110,6 +110,7 @@ export function UnforwardedButton(
 		text,
 		variant,
 		describedBy,
+		showDescription,
 		...buttonOrAnchorProps
 	} = useDeprecatedProps( props );
 
@@ -159,6 +160,7 @@ export function UnforwardedButton(
 		'is-destructive': isDestructive,
 		'has-text': !! icon && ( hasChildren || text ),
 		'has-icon': !! icon,
+		'has-icon-position-top': iconPosition === 'top',
 	} );
 
 	const trulyDisabled = disabled && ! accessibleWhenDisabled;
@@ -222,7 +224,7 @@ export function UnforwardedButton(
 
 	const elementChildren = (
 		<>
-			{ icon && iconPosition === 'left' && (
+			{ icon && ( iconPosition === 'left' || iconPosition === 'top' ) && (
 				<Icon icon={ icon } size={ iconSize } />
 			) }
 			{ text && <>{ text }</> }
@@ -273,13 +275,15 @@ export function UnforwardedButton(
 		  }
 		: {};
 
+	const DescriptionComponent = showDescription ? 'span' : VisuallyHidden;
+
 	return (
 		<>
 			<Tooltip { ...tooltipProps }>{ element }</Tooltip>
 			{ describedBy && (
-				<VisuallyHidden>
+				<DescriptionComponent className="components-button__description">
 					<span id={ descriptionId }>{ describedBy }</span>
-				</VisuallyHidden>
+				</DescriptionComponent>
 			) }
 		</>
 	);

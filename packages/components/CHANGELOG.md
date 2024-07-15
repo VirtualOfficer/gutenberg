@@ -15,6 +15,7 @@
 
 ### Enhancements
 
+-   `Button`: Add Button support for iconPosition top and showDescription. ([#62412](https://github.com/WordPress/gutenberg/pull/62412))
 -   `CustomSelectControl`: Stabilize `__experimentalShowSelectedHint` and `options[]. __experimentalHint` props ([#63248](https://github.com/WordPress/gutenberg/pull/63248)).
 
 ## 28.3.0 (2024-07-10)
