@@ -157,12 +157,32 @@ const unproxiedCompositeGroup = forwardRef<
 } );
 unproxiedCompositeGroup.displayName = 'CompositeGroup';
 
+/**
+ * _Note: please use the `Composite.Root` component instead._
+ *
+ * @deprecated
+ */
 export const Composite = proxyComposite( Current.Root, { baseId: 'id' } );
+/**
+ * _Note: please use the `Composite.Group` component instead._
+ *
+ * @deprecated
+ */
 export const CompositeGroup = proxyComposite( unproxiedCompositeGroup );
+/**
+ * _Note: please use the `Composite.Item` component instead._
+ *
+ * @deprecated
+ */
 export const CompositeItem = proxyComposite( Current.Item, {
 	focusable: 'accessibleWhenDisabled',
 } );
 
+/**
+ * _Note: please use the `Composite.useStore` hook instead._
+ *
+ * @deprecated
+ */
 export function useCompositeState(
 	legacyStateOptions: LegacyStateOptions = {}
 ): CompositeState {
