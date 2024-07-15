@@ -17,12 +17,13 @@
  * WordPress dependencies
  */
 import { forwardRef } from '@wordpress/element';
+import { useInstanceId } from '@wordpress/compose';
+import deprecated from '@wordpress/deprecated';
 
 /**
  * Internal dependencies
  */
 import * as Current from '../current';
-import { useInstanceId } from '@wordpress/compose';
 
 type Orientation = 'horizontal' | 'vertical';
 
@@ -118,12 +119,32 @@ function mapLegacyStatePropsToComponentProps(
 	return legacyProps;
 }
 
+const mapLegacyDisplayNameToNewDisplayName = ( name: string ) => {
+	if ( ! /Composite/.test( name ) ) {
+		return name;
+	}
+
+	if ( name === 'Composite' ) {
+		return 'Composite.Root';
+	}
+
+	return name.replace( 'Composite', 'Composite.' );
+};
+
 function proxyComposite< C extends Component >(
 	ProxiedComponent: C | React.ForwardRefExoticComponent< C >,
 	propMap: Record< string, string > = {}
 ): CompositeComponent< C > {
 	const displayName = ProxiedComponent.displayName;
+
 	const Component = ( legacyProps: CompositeStateProps ) => {
+		deprecated( `wp.components.__unstable${ displayName }`, {
+			since: '6.7',
+			alternative: `${ mapLegacyDisplayNameToNewDisplayName(
+				displayName ?? ''
+			) }`,
+		} );
+
 		const { store, ...rest } =
 			mapLegacyStatePropsToComponentProps( legacyProps );
 		const props = rest as ComponentProps< C >;
@@ -186,6 +207,11 @@ export const CompositeItem = proxyComposite( Current.Item, {
 export function useCompositeState(
 	legacyStateOptions: LegacyStateOptions = {}
 ): CompositeState {
+	deprecated( `wp.components.__unstableUseCompositeState`, {
+		since: '6.7',
+		alternative: `Composite.useStore`,
+	} );
+
 	const {
 		baseId,
 		currentId: defaultActiveId,
