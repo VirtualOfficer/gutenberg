@@ -30,6 +30,7 @@ const {
 	getBlockJsonModuleFields,
 	getBlockJsonScriptFields,
 } = require( './block-json' );
+const { PhpFilePathsPlugin } = require( './php-file-paths-plugin' );
 
 module.exports = {
 	fromProjectRoot,
@@ -57,5 +58,6 @@ module.exports = {
 	hasPostCSSConfig,
 	hasPrettierConfig,
 	hasProjectFile,
+	PhpFilePathsPlugin,
 	spawnScript,
 };
