@@ -20,7 +20,12 @@ const BackButtonSlot = ( { children } ) => {
 		return children;
 	}
 
-	return <Slot fillProps={ { length: ! fills ? 0 : fills.length } } />;
+	return (
+		<Slot
+			bubblesVirtually
+			fillProps={ { length: ! fills ? 0 : fills.length } }
+		/>
+	);
 };
 BackButton.Slot = BackButtonSlot;
 
