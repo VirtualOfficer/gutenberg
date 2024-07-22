@@ -36,7 +36,10 @@ import { privateApis as blockLibraryPrivateApis } from '@wordpress/block-library
 import { addQueryArgs } from '@wordpress/url';
 import { decodeEntities } from '@wordpress/html-entities';
 import { store as coreStore } from '@wordpress/core-data';
-import { SlotFillProvider } from '@wordpress/components';
+import {
+	SlotFillProvider,
+	__unstableUseNavigateRegions as useNavigateRegions,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -253,6 +256,8 @@ function Layout( {
 		document.body.classList.remove( 'show-icon-labels' );
 	}
 
+	const navigateRegionsProps = useNavigateRegions();
+
 	const className = clsx( 'edit-post-layout', 'is-mode-' + mode, {
 		'has-metaboxes': hasActiveMetaboxes,
 	} );
@@ -327,55 +332,62 @@ function Layout( {
 			id: initialPostId,
 		};
 	}, [ initialPostType, initialPostId ] );
+
 	return (
 		<SlotFillProvider>
 			<ErrorBoundary>
 				<CommandMenu />
 				<WelcomeGuide postType={ currentPost.postType } />
-				<Editor
-					settings={ editorSettings }
-					initialEdits={ initialEdits }
-					postType={ currentPost.postType }
-					postId={ currentPost.postId }
-					templateId={ templateId }
-					className={ className }
-					styles={ styles }
-					forceIsDirty={ hasActiveMetaboxes }
-					contentRef={ paddingAppenderRef }
-					disableIframe={ ! shouldIframe }
-					// We should auto-focus the canvas (title) on load.
-					// eslint-disable-next-line jsx-a11y/no-autofocus
-					autoFocus={ ! isWelcomeGuideVisible }
-					onActionPerformed={ onActionPerformed }
-					extraSidebarPanels={
-						! isEditingTemplate && <MetaBoxes location="side" />
-					}
-					extraContent={
-						! isDistractionFree &&
-						showMetaBoxes && (
-							<div className="edit-post-layout__metaboxes">
-								<MetaBoxes location="normal" />
-								<MetaBoxes location="advanced" />
-							</div>
-						)
-					}
+				<div
+					className={ navigateRegionsProps.className }
+					{ ...navigateRegionsProps }
+					ref={ navigateRegionsProps.ref }
 				>
-					<PostLockedModal />
-					<EditorInitialization />
-					<FullscreenMode isActive={ isFullscreenActive } />
-					<BrowserURL hasHistory={ hasHistory } />
-					<UnsavedChangesWarning />
-					<AutosaveMonitor />
-					<LocalAutosaveMonitor />
-					<EditPostKeyboardShortcuts />
-					<EditorKeyboardShortcutsRegister />
-					<BlockKeyboardShortcuts />
-					<InitPatternModal />
-					<PluginArea onError={ onPluginAreaError } />
-					<PostEditorMoreMenu />
-					<BackButton initialPost={ initialPost } />
-					<EditorSnackbars />
-				</Editor>
+					<Editor
+						settings={ editorSettings }
+						initialEdits={ initialEdits }
+						postType={ currentPost.postType }
+						postId={ currentPost.postId }
+						templateId={ templateId }
+						className={ className }
+						styles={ styles }
+						forceIsDirty={ hasActiveMetaboxes }
+						contentRef={ paddingAppenderRef }
+						disableIframe={ ! shouldIframe }
+						// We should auto-focus the canvas (title) on load.
+						// eslint-disable-next-line jsx-a11y/no-autofocus
+						autoFocus={ ! isWelcomeGuideVisible }
+						onActionPerformed={ onActionPerformed }
+						extraSidebarPanels={
+							! isEditingTemplate && <MetaBoxes location="side" />
+						}
+						extraContent={
+							! isDistractionFree &&
+							showMetaBoxes && (
+								<div className="edit-post-layout__metaboxes">
+									<MetaBoxes location="normal" />
+									<MetaBoxes location="advanced" />
+								</div>
+							)
+						}
+					>
+						<PostLockedModal />
+						<EditorInitialization />
+						<FullscreenMode isActive={ isFullscreenActive } />
+						<BrowserURL hasHistory={ hasHistory } />
+						<UnsavedChangesWarning />
+						<AutosaveMonitor />
+						<LocalAutosaveMonitor />
+						<EditPostKeyboardShortcuts />
+						<EditorKeyboardShortcutsRegister />
+						<BlockKeyboardShortcuts />
+						<InitPatternModal />
+						<PluginArea onError={ onPluginAreaError } />
+						<PostEditorMoreMenu />
+						<BackButton initialPost={ initialPost } />
+						<EditorSnackbars />
+					</Editor>
+				</div>
 			</ErrorBoundary>
 		</SlotFillProvider>
 	);
