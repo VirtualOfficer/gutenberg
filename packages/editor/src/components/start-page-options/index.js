@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { useSelect, useRegistry } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 
 /**
@@ -35,12 +35,14 @@ export default function StartPageOptions() {
 		[]
 	);
 
+	const { setIsInserterOpened } = useDispatch( editorStore );
+	const { __unstableSetEditorMode } = useDispatch( blockEditorStore );
+
 	useEffect( () => {
 		// Should reset the start page state when navigating to a new page/post.
 		setIsClosed( false );
 	}, [ postType, postId ] );
 
-	const registry = useRegistry();
 	// A pattern is a start pattern if it includes 'core/post-content' in its
 	// blockTypes, and it has no postTypes declared and the current post type is
 	// page or if the current post type is part of the postTypes declared.
@@ -55,11 +57,16 @@ export default function StartPageOptions() {
 		shouldEnableStartPage && ! isClosed && hasStarterPatterns;
 	useEffect( () => {
 		if ( showInserterOnNewPage ) {
-			registry.dispatch( editorStore ).setIsInserterOpened( {
+			setIsInserterOpened( {
 				tab: 'patterns',
 				category: 'core/content',
 			} );
+			__unstableSetEditorMode( 'zoom-out' );
 		}
-	}, [ showInserterOnNewPage, registry ] );
+	}, [
+		showInserterOnNewPage,
+		setIsInserterOpened,
+		__unstableSetEditorMode,
+	] );
 	return null;
 }
