@@ -11,7 +11,35 @@ import { store as blockEditorStore } from '@wordpress/block-editor';
 import { store as editorStore } from '../../store';
 import { TEMPLATE_POST_TYPE } from '../../store/constants';
 
-function StartPageOptionsModal() {
+export default function StartPageOptions() {
+	const [ isClosed, setIsClosed ] = useState( false );
+	const { shouldEnableStartPage, postType, postId } = useSelect(
+		( select ) => {
+			const {
+				isEditedPostDirty,
+				isEditedPostEmpty,
+				getCurrentPostType,
+				getCurrentPostId,
+			} = select( editorStore );
+			const _postType = getCurrentPostType();
+
+			return {
+				shouldEnableStartPage:
+					! isEditedPostDirty() &&
+					isEditedPostEmpty() &&
+					TEMPLATE_POST_TYPE !== _postType,
+				postType: _postType,
+				postId: getCurrentPostId(),
+			};
+		},
+		[]
+	);
+
+	useEffect( () => {
+		// Should reset the start page state when navigating to a new page/post.
+		setIsClosed( false );
+	}, [ postType, postId ] );
+
 	const registry = useRegistry();
 	// A pattern is a start pattern if it includes 'core/post-content' in its
 	// blockTypes, and it has no postTypes declared and the current post type is
@@ -22,46 +50,16 @@ function StartPageOptionsModal() {
 				'core/post-content'
 			).length
 	);
+
+	const showInserterOnNewPage =
+		shouldEnableStartPage && ! isClosed && hasStarterPatterns;
 	useEffect( () => {
-		if ( hasStarterPatterns ) {
+		if ( showInserterOnNewPage ) {
 			registry.dispatch( editorStore ).setIsInserterOpened( {
 				tab: 'patterns',
 				category: 'core/content',
 			} );
 		}
-	}, [ hasStarterPatterns, registry ] );
+	}, [ showInserterOnNewPage, registry ] );
 	return null;
-}
-
-export default function StartPageOptions() {
-	const [ isClosed, setIsClosed ] = useState( false );
-	const { shouldEnableModal, postType, postId } = useSelect( ( select ) => {
-		const {
-			isEditedPostDirty,
-			isEditedPostEmpty,
-			getCurrentPostType,
-			getCurrentPostId,
-		} = select( editorStore );
-		const _postType = getCurrentPostType();
-
-		return {
-			shouldEnableModal:
-				! isEditedPostDirty() &&
-				isEditedPostEmpty() &&
-				TEMPLATE_POST_TYPE !== _postType,
-			postType: _postType,
-			postId: getCurrentPostId(),
-		};
-	}, [] );
-
-	useEffect( () => {
-		// Should reset the modal state when navigating to a new page/post.
-		setIsClosed( false );
-	}, [ postType, postId ] );
-
-	if ( ! shouldEnableModal || isClosed ) {
-		return null;
-	}
-
-	return <StartPageOptionsModal onClose={ () => setIsClosed( true ) } />;
 }
