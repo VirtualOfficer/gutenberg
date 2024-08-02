@@ -21,6 +21,7 @@ import {
 	didFilter,
 	actions,
 	filters,
+	applyAsyncFilters,
 } from '..';
 
 function filterA( str ) {
@@ -942,4 +943,18 @@ test( 'checking hasFilter with named callbacks and removeAllActions', () => {
 	removeAllFilters( 'test.filter' );
 	expect( hasFilter( 'test.filter', 'my_callback' ) ).toBe( false );
 	expect( hasFilter( 'test.filter', 'my_second_callback' ) ).toBe( false );
+} );
+
+test( 'async filter', async () => {
+	addFilter( 'test.async.filter', 'callback_plus1', ( value ) => {
+		return new Promise( ( r ) => setTimeout( () => r( value + 1 ), 10 ) );
+	} );
+	addFilter( 'test.async.filter', 'callback_times2', ( value ) => {
+		return new Promise( ( r ) => setTimeout( () => r( value * 2 ), 10 ) );
+	} );
+
+	expect( await applyAsyncFilters( 'test.async.filter', 2 ) ).toBe( 6 );
+	expect(
+		await applyAsyncFilters( 'test.async.filter', Promise.resolve( 2 ) )
+	).toBe( 6 );
 } );
