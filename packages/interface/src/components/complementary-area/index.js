@@ -302,7 +302,7 @@ function ComplementaryArea( {
 					smallScreenTitle={ smallScreenTitle }
 					toggleButtonProps={ {
 						label: closeLabel,
-						size: 'small',
+						size: 'compact',
 						shortcut: toggleShortcut,
 						scope,
 						identifier,
