@@ -42,42 +42,43 @@ function createRunHook( hooks, storeKey, returnFirstArg, async ) {
 			currentIndex: 0,
 		};
 
-		hooksStore.__current.add( hookInfo );
-
-		const runner = async
-			? async function () {
-					let result = returnFirstArg ? args[ 0 ] : undefined;
+		async function asyncRunner() {
+			try {
+				hooksStore.__current.add( hookInfo );
+				let result = returnFirstArg ? args[ 0 ] : undefined;
+				while ( hookInfo.currentIndex < handlers.length ) {
+					const handler = handlers[ hookInfo.currentIndex ];
+					result = await handler.callback.apply( null, args );
 					if ( returnFirstArg ) {
-						args[ 0 ] = await result; // resolve the potential promise that was passed as arg;
+						args[ 0 ] = result;
 					}
-					while ( hookInfo.currentIndex < handlers.length ) {
-						const handler = handlers[ hookInfo.currentIndex ];
-						result = await handler.callback.apply( null, args );
-						if ( returnFirstArg ) {
-							args[ 0 ] = result;
-						}
-						hookInfo.currentIndex++;
+					hookInfo.currentIndex++;
+				}
+				return returnFirstArg ? result : undefined;
+			} finally {
+				hooksStore.__current.delete( hookInfo );
+			}
+		}
+
+		function syncRunner() {
+			try {
+				hooksStore.__current.add( hookInfo );
+				let result = returnFirstArg ? args[ 0 ] : undefined;
+				while ( hookInfo.currentIndex < handlers.length ) {
+					const handler = handlers[ hookInfo.currentIndex ];
+					result = handler.callback.apply( null, args );
+					if ( returnFirstArg ) {
+						args[ 0 ] = result;
 					}
-					return returnFirstArg ? result : undefined;
-			  }
-			: function () {
-					let result = returnFirstArg ? args[ 0 ] : undefined;
-					while ( hookInfo.currentIndex < handlers.length ) {
-						const handler = handlers[ hookInfo.currentIndex ];
-						result = handler.callback.apply( null, args );
-						if ( returnFirstArg ) {
-							args[ 0 ] = result;
-						}
-						hookInfo.currentIndex++;
-					}
-					return returnFirstArg ? result : undefined;
-			  };
+					hookInfo.currentIndex++;
+				}
+				return returnFirstArg ? result : undefined;
+			} finally {
+				hooksStore.__current.delete( hookInfo );
+			}
+		}
 
-		const rv = runner();
-
-		hooksStore.__current.delete( hookInfo );
-
-		return rv;
+		return ( async ? asyncRunner : syncRunner )();
 	};
 }
 

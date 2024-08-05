@@ -12,7 +12,9 @@ import {
 	removeAllActions,
 	removeAllFilters,
 	doAction,
+	doAsyncAction,
 	applyFilters,
+	applyAsyncFilters,
 	currentAction,
 	currentFilter,
 	doingAction,
@@ -21,7 +23,6 @@ import {
 	didFilter,
 	actions,
 	filters,
-	applyAsyncFilters,
 } from '..';
 
 function filterA( str ) {
@@ -945,16 +946,85 @@ test( 'checking hasFilter with named callbacks and removeAllActions', () => {
 	expect( hasFilter( 'test.filter', 'my_second_callback' ) ).toBe( false );
 } );
 
-test( 'async filter', async () => {
-	addFilter( 'test.async.filter', 'callback_plus1', ( value ) => {
-		return new Promise( ( r ) => setTimeout( () => r( value + 1 ), 10 ) );
-	} );
-	addFilter( 'test.async.filter', 'callback_times2', ( value ) => {
-		return new Promise( ( r ) => setTimeout( () => r( value * 2 ), 10 ) );
+describe( 'async filter', () => {
+	test( 'runs all registered handlers', async () => {
+		addFilter( 'test.async.filter', 'callback_plus1', ( value ) => {
+			return new Promise( ( r ) =>
+				setTimeout( () => r( value + 1 ), 10 )
+			);
+		} );
+		addFilter( 'test.async.filter', 'callback_times2', ( value ) => {
+			return new Promise( ( r ) =>
+				setTimeout( () => r( value * 2 ), 10 )
+			);
+		} );
+
+		expect( await applyAsyncFilters( 'test.async.filter', 2 ) ).toBe( 6 );
 	} );
 
-	expect( await applyAsyncFilters( 'test.async.filter', 2 ) ).toBe( 6 );
-	expect(
-		await applyAsyncFilters( 'test.async.filter', Promise.resolve( 2 ) )
-	).toBe( 6 );
+	test( 'aborts when handler throws an error', async () => {
+		const sqrt = jest.fn( async ( value ) => {
+			if ( value < 0 ) {
+				throw new Error( 'cannot pass negative value to sqrt' );
+			}
+			return Math.sqrt( value );
+		} );
+
+		const plus1 = jest.fn( async ( value ) => {
+			return value + 1;
+		} );
+
+		addFilter( 'test.async.filter', 'callback_sqrt', sqrt );
+		addFilter( 'test.async.filter', 'callback_plus1', plus1 );
+
+		await expect(
+			applyAsyncFilters( 'test.async.filter', -1 )
+		).rejects.toThrow( 'cannot pass negative value to sqrt' );
+		expect( sqrt ).toHaveBeenCalledTimes( 1 );
+		expect( plus1 ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'async action', () => {
+	test( 'runs all registered handlers sequentially', async () => {
+		const outputs = [];
+		const action1 = async () => {
+			outputs.push( 1 );
+			await new Promise( ( r ) => setTimeout( () => r(), 10 ) );
+			outputs.push( 2 );
+		};
+
+		const action2 = async () => {
+			outputs.push( 3 );
+			await new Promise( ( r ) => setTimeout( () => r(), 10 ) );
+			outputs.push( 4 );
+		};
+
+		addAction( 'test.async.action', 'action1', action1 );
+		addAction( 'test.async.action', 'action2', action2 );
+
+		await doAsyncAction( 'test.async.action' );
+		expect( outputs ).toEqual( [ 1, 2, 3, 4 ] );
+	} );
+
+	test( 'aborts when handler throws an error', async () => {
+		const outputs = [];
+		const action1 = async () => {
+			throw new Error( 'aborting' );
+		};
+
+		const action2 = async () => {
+			outputs.push( 3 );
+			await new Promise( ( r ) => setTimeout( () => r(), 10 ) );
+			outputs.push( 4 );
+		};
+
+		addAction( 'test.async.action', 'action1', action1 );
+		addAction( 'test.async.action', 'action2', action2 );
+
+		await expect( doAsyncAction( 'test.async.action' ) ).rejects.toThrow(
+			'aborting'
+		);
+		expect( outputs ).toEqual( [] );
+	} );
 } );
