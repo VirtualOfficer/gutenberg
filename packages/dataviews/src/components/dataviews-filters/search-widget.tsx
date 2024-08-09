@@ -108,11 +108,9 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 					compositeStore.move( compositeStore.first() );
 				}
 			} }
-			// @ts-expect-error Typeahead is added to the package in a separate PR.
 			render={ <Composite.Typeahead /> }
 		>
 			{ filter.elements.map( ( element ) => (
-				// @ts-expect-error Hover is added to the package in a separate PR.
 				<Composite.Hover
 					store={ compositeStore }
 					key={ element.value }
