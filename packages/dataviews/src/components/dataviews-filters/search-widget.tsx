@@ -112,7 +112,6 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 		>
 			{ filter.elements.map( ( element ) => (
 				<Composite.Hover
-					store={ compositeStore }
 					key={ element.value }
 					render={
 						<Composite.Item
