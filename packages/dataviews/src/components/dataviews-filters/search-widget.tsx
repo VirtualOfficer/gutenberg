@@ -101,9 +101,10 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 				__( 'List of: %1$s' ),
 				filter.name
 			) }
-			// @ts-expect-error check if this actually works, since `onFocusVisible`
-			// only works when `focusable` is `true`.
 			onFocusVisible={ () => {
+				// `onFocusVisible` needs the `Composite` component to be focusable,
+				// which is implicitly achieved via the `virtualFocus: true` option
+				// in the `useCompositeStore` hook.
 				if ( ! compositeStore.getState().activeId ) {
 					compositeStore.move( compositeStore.first() );
 				}
