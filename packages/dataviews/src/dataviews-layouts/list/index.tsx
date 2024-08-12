@@ -255,6 +255,9 @@ function ListItem< Item >( {
 							<DropdownMenu
 								trigger={
 									<Composite.Item
+										// @ts-expect-error Passing the store here is necessary
+										// in order to override the dropdown menu's store.
+										store={ store }
 										render={
 											<Button
 												size="small"
