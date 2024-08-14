@@ -15,7 +15,7 @@ import { store as blockDirectoryStore } from '../../store';
 const noop = () => {};
 
 function DownloadableBlocksList( { items, onHover = noop, onSelect } ) {
-	const composite = useCompositeStore();
+	const compositeStore = useCompositeStore();
 	const { installBlockType } = useDispatch( blockDirectoryStore );
 
 	if ( ! items.length ) {
@@ -24,7 +24,7 @@ function DownloadableBlocksList( { items, onHover = noop, onSelect } ) {
 
 	return (
 		<Composite
-			store={ composite }
+			store={ compositeStore }
 			role="listbox"
 			className="block-directory-downloadable-blocks-list"
 			aria-label={ __( 'Blocks available for install' ) }
@@ -33,7 +33,6 @@ function DownloadableBlocksList( { items, onHover = noop, onSelect } ) {
 				return (
 					<DownloadableBlockListItem
 						key={ item.id }
-						composite={ composite }
 						onClick={ () => {
 							// Check if the block is registered (`getBlockType`
 							// will return an object). If so, insert the block.
