@@ -119,6 +119,8 @@ function VisualEditor( {
 		isDesignPostType,
 		postType,
 		isPreview,
+		siteIsRTL,
+		siteLang,
 	} = useSelect( ( select ) => {
 		const {
 			getCurrentPostId,
@@ -128,10 +130,11 @@ function VisualEditor( {
 			getRenderingMode,
 			getDeviceType,
 		} = select( editorStore );
-		const { getPostType, canUser, getEditedEntityRecord } =
+		const { getPostType, canUser, getEntityRecord, getEditedEntityRecord } =
 			select( coreStore );
 		const postTypeSlug = getCurrentPostType();
 		const _renderingMode = getRenderingMode();
+		const siteData = getEntityRecord( 'root', '__unstableBase' );
 		let _wrapperBlockName;
 
 		if ( postTypeSlug === PATTERN_POST_TYPE ) {
@@ -174,6 +177,8 @@ function VisualEditor( {
 			isFocusedEntity: !! editorSettings.onNavigateToPreviousEntityRecord,
 			postType: postTypeSlug,
 			isPreview: editorSettings.__unstableIsPreviewMode,
+			siteIsRTL: !! siteData?.is_rtl,
+			siteLang: siteData?.language,
 		};
 	}, [] );
 	const { isCleanNewPost } = useSelect( editorStore );
@@ -405,6 +410,8 @@ function VisualEditor( {
 					styles={ iframeStyles }
 					height="100%"
 					iframeProps={ {
+						lang: siteLang,
+						dir: siteIsRTL ? 'rtl' : 'ltr',
 						...iframeProps,
 						...zoomOutProps,
 						style: {
