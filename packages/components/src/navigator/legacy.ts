@@ -1,8 +1,172 @@
-// TODO: wrap in component, add JSDocs, add deprecation
-
-export { Navigator as NavigatorProvider } from './navigator';
-export { NavigatorScreen } from './navigator-screen';
-export { NavigatorButton } from './navigator-button';
-export { NavigatorBackButton } from './navigator-back-button';
-export { NavigatorToParentButton } from './navigator-to-parent-button';
+/**
+ * Internal dependencies
+ */
+import { Navigator as InternalNavigator } from './navigator';
+import { NavigatorScreen as InternalNavigatorScreen } from './navigator-screen';
+import { NavigatorButton as InternalNavigatorButton } from './navigator-button';
+import { NavigatorBackButton as InternalNavigatorBackButton } from './navigator-back-button';
+import { NavigatorToParentButton as InternalNavigatorToParentButton } from './navigator-to-parent-button';
 export { useNavigator } from './use-navigator';
+
+/**
+ * The `NavigatorProvider` component allows rendering nested views/panels/menus
+ * (via the `NavigatorScreen` component and navigate between these different
+ * view (via the `NavigatorButton` and `NavigatorBackButton` components or the
+ * `useNavigator` hook).
+ *
+ * ```jsx
+ * import {
+ *   __experimentalNavigatorProvider as NavigatorProvider,
+ *   __experimentalNavigatorScreen as NavigatorScreen,
+ *   __experimentalNavigatorButton as NavigatorButton,
+ *   __experimentalNavigatorBackButton as NavigatorBackButton,
+ * } from '@wordpress/components';
+ *
+ * const MyNavigation = () => (
+ *   <NavigatorProvider initialPath="/">
+ *     <NavigatorScreen path="/">
+ *       <p>This is the home screen.</p>
+ *        <NavigatorButton path="/child">
+ *          Navigate to child screen.
+ *       </NavigatorButton>
+ *     </NavigatorScreen>
+ *
+ *     <NavigatorScreen path="/child">
+ *       <p>This is the child screen.</p>
+ *       <NavigatorBackButton>
+ *         Go back
+ *       </NavigatorBackButton>
+ *     </NavigatorScreen>
+ *   </NavigatorProvider>
+ * );
+ * ```
+ */
+export const NavigatorProvider = Object.assign( InternalNavigator, {
+	displayName: 'NavigatorProvider',
+} );
+
+/**
+ * The `NavigatorScreen` component represents a single view/screen/panel and
+ * should be used in combination with the `NavigatorProvider`, the
+ * `NavigatorButton` and the `NavigatorBackButton` components (or the `useNavigator`
+ * hook).
+ *
+ * @example
+ * ```jsx
+ * import {
+ *   __experimentalNavigatorProvider as NavigatorProvider,
+ *   __experimentalNavigatorScreen as NavigatorScreen,
+ *   __experimentalNavigatorButton as NavigatorButton,
+ *   __experimentalNavigatorBackButton as NavigatorBackButton,
+ * } from '@wordpress/components';
+ *
+ * const MyNavigation = () => (
+ *   <NavigatorProvider initialPath="/">
+ *     <NavigatorScreen path="/">
+ *       <p>This is the home screen.</p>
+ *        <NavigatorButton path="/child">
+ *          Navigate to child screen.
+ *       </NavigatorButton>
+ *     </NavigatorScreen>
+ *
+ *     <NavigatorScreen path="/child">
+ *       <p>This is the child screen.</p>
+ *       <NavigatorBackButton>
+ *         Go back
+ *       </NavigatorBackButton>
+ *     </NavigatorScreen>
+ *   </NavigatorProvider>
+ * );
+ * ```
+ */
+export const NavigatorScreen = Object.assign( InternalNavigatorScreen, {
+	displayName: 'NavigatorScreen',
+} );
+
+/**
+ * The `NavigatorButton` component can be used to navigate to a screen and should
+ * be used in combination with the `NavigatorProvider`, the `NavigatorScreen`
+ * and the `NavigatorBackButton` components (or the `useNavigator` hook).
+ *
+ * @example
+ * ```jsx
+ * import {
+ *   __experimentalNavigatorProvider as NavigatorProvider,
+ *   __experimentalNavigatorScreen as NavigatorScreen,
+ *   __experimentalNavigatorButton as NavigatorButton,
+ *   __experimentalNavigatorBackButton as NavigatorBackButton,
+ * } from '@wordpress/components';
+ *
+ * const MyNavigation = () => (
+ *   <NavigatorProvider initialPath="/">
+ *     <NavigatorScreen path="/">
+ *       <p>This is the home screen.</p>
+ *        <NavigatorButton path="/child">
+ *          Navigate to child screen.
+ *       </NavigatorButton>
+ *     </NavigatorScreen>
+ *
+ *     <NavigatorScreen path="/child">
+ *       <p>This is the child screen.</p>
+ *       <NavigatorBackButton>
+ *         Go back
+ *       </NavigatorBackButton>
+ *     </NavigatorScreen>
+ *   </NavigatorProvider>
+ * );
+ * ```
+ */
+export const NavigatorButton = Object.assign( InternalNavigatorButton, {
+	displayName: 'NavigatorButton',
+} );
+
+/**
+ * The `NavigatorBackButton` component can be used to navigate to a screen and
+ * should be used in combination with the `NavigatorProvider`, the
+ * `NavigatorScreen` and the `NavigatorButton` components (or the `useNavigator`
+ * hook).
+ *
+ * @example
+ * ```jsx
+ * import {
+ *   __experimentalNavigatorProvider as NavigatorProvider,
+ *   __experimentalNavigatorScreen as NavigatorScreen,
+ *   __experimentalNavigatorButton as NavigatorButton,
+ *   __experimentalNavigatorBackButton as NavigatorBackButton,
+ * } from '@wordpress/components';
+ *
+ * const MyNavigation = () => (
+ *   <NavigatorProvider initialPath="/">
+ *     <NavigatorScreen path="/">
+ *       <p>This is the home screen.</p>
+ *        <NavigatorButton path="/child">
+ *          Navigate to child screen.
+ *       </NavigatorButton>
+ *     </NavigatorScreen>
+ *
+ *     <NavigatorScreen path="/child">
+ *       <p>This is the child screen.</p>
+ *       <NavigatorBackButton>
+ *         Go back (to parent)
+ *       </NavigatorBackButton>
+ *     </NavigatorScreen>
+ *   </NavigatorProvider>
+ * );
+ * ```
+ */
+export const NavigatorBackButton = Object.assign( InternalNavigatorBackButton, {
+	displayName: 'NavigatorBackButton',
+} );
+
+/**
+ * _Note: this component is deprecated. Please use the `NavigatorBackButton`
+ * component instead._
+ *
+ * @deprecated
+ */
+export const NavigatorToParentButton = Object.assign(
+	InternalNavigatorToParentButton,
+	{
+		displayName: 'NavigatorToParentButton',
+	}
+);
