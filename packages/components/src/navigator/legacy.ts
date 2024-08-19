@@ -1,3 +1,5 @@
+// TODO: wrap in component, add JSDocs, add deprecation
+
 export { Navigator as NavigatorProvider } from './navigator';
 export { NavigatorScreen } from './navigator-screen';
 export { NavigatorButton } from './navigator-button';
