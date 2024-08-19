@@ -3,7 +3,7 @@
  */
 import { css, keyframes } from '@emotion/react';
 
-export const navigatorProviderWrapper = css`
+export const navigatorWrapper = css`
 	/* Prevents horizontal overflow while animating screen transitions */
 	overflow-x: hidden;
 	/* Mark this subsection of the DOM as isolated, providing performance benefits
