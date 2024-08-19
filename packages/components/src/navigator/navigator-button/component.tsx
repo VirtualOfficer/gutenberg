@@ -53,5 +53,3 @@ export const NavigatorButton = contextConnect(
 	UnconnectedNavigatorButton,
 	'NavigatorButton'
 );
-
-export default NavigatorButton;
