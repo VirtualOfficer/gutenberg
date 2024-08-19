@@ -77,14 +77,7 @@ export const Default: StoryObj< typeof Navigator > = {
 								</Navigator.Button>
 
 								<Dropdown
-									renderToggle={ ( {
-										isOpen,
-										onToggle,
-									}: {
-										// TODO: remove once `Dropdown` is refactored to TypeScript
-										isOpen: boolean;
-										onToggle: () => void;
-									} ) => (
+									renderToggle={ ( { isOpen, onToggle } ) => (
 										<Button
 											onClick={ onToggle }
 											aria-expanded={ isOpen }
