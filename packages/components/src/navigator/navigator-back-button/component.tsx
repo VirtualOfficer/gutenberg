@@ -23,9 +23,8 @@ function UnconnectedNavigatorBackButton(
 
 /**
  * The `Navigator.BackButton` component can be used to navigate to a screen and
- * should be used in combination with the `Navigator`, the
- * `Navigator.Screen` and the `Navigator.Button` components, and the `useNavigator`
- * hook.
+ * should be used in combination with the `Navigator`, the `Navigator.Screen`
+ * and the `Navigator.Button` components, and the `useNavigator` hook.
  *
  * @example
  * ```jsx
