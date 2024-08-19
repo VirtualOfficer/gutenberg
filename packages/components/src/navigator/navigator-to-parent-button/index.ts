@@ -1,1 +1,1 @@
-export { default as NavigatorToParentButton } from './component';
+export { NavigatorToParentButton } from './component';
