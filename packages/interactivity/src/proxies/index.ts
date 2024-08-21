@@ -3,3 +3,4 @@
  */
 export { proxifyState, peek } from './state';
 export { proxifyStore } from './store';
+export { proxifyContext } from './context';
