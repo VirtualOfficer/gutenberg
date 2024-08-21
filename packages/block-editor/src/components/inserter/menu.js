@@ -33,6 +33,7 @@ import useInsertionPoint from './hooks/use-insertion-point';
 import { store as blockEditorStore } from '../../store';
 import TabbedSidebar from '../tabbed-sidebar';
 import { useZoomOut } from '../../hooks/use-zoom-out';
+import { usePatternCategories } from './block-patterns-tab/use-pattern-categories';
 import { unlock } from '../../lock-unlock';
 
 const NOOP = () => {};
@@ -67,8 +68,11 @@ function InserterMenu(
 	const [ filterValue, setFilterValue, delayedFilterValue ] =
 		useDebouncedInput( __experimentalFilterValue );
 	const [ hoveredItem, setHoveredItem ] = useState( null );
+	const categories = usePatternCategories( rootClientId );
 	const [ selectedPatternCategory, setSelectedPatternCategory ] = useState(
-		__experimentalInitialCategory
+		categories.find(
+			( category ) => category.name === __experimentalInitialCategory
+		)
 	);
 	const [ patternFilter, setPatternFilter ] = useState( 'all' );
 	const [ selectedMediaCategory, setSelectedMediaCategory ] =
@@ -251,6 +255,7 @@ function InserterMenu(
 				onInsert={ onInsertPattern }
 				onSelectCategory={ onClickPatternCategory }
 				selectedCategory={ selectedPatternCategory }
+				categories={ categories }
 			>
 				{ showPatternPanel && (
 					<PatternCategoryPreviews
