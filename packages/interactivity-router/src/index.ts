@@ -14,8 +14,8 @@ const {
 	initialVdom,
 	toVdom,
 	render,
-	parseInitialData,
-	populateInitialData,
+	parseServerData,
+	populateServerData,
 	batch,
 } = privateApis(
 	'I acknowledge that using private APIs means my theme or plugin will inevitably break in the next version of WordPress.'
@@ -106,14 +106,14 @@ const regionsToVdom: RegionsToVdom = async ( dom, { vdom } = {} ) => {
 		} );
 	}
 	const title = dom.querySelector( 'title' )?.innerText;
-	const initialData = parseInitialData( dom );
+	const initialData = parseServerData( dom );
 	return { regions, head, title, initialData };
 };
 
 // Render all interactive regions contained in the given page.
 const renderRegions = ( page: Page ) => {
 	batch( async () => {
-		populateInitialData( page.initialData );
+		populateServerData( page.initialData );
 		if ( globalThis.IS_GUTENBERG_PLUGIN ) {
 			if ( navigationMode === 'fullPage' ) {
 				// Once this code is tested and more mature, the head should be updated for region based navigation as well.
