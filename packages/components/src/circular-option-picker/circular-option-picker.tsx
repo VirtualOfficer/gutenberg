@@ -88,7 +88,6 @@ function ListboxCircularOptionPicker(
 
 	const contextValue = useMemo(
 		() => ( {
-			// Maybe add a flag?
 			baseId,
 		} ),
 		[ baseId ]
