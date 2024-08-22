@@ -23,11 +23,9 @@ import { useDebouncedInput } from '@wordpress/compose';
 import { unlock } from '../../lock-unlock';
 import { mapToIHasNameAndId } from './utils';
 
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
+const { CompositeV2: Composite, CompositeItemV2: CompositeItem } = unlock(
+	componentsPrivateApis
+);
 
 const EMPTY_ARRAY = [];
 
@@ -120,7 +118,6 @@ function useSearchSuggestions( entityForSuggestions, search ) {
 }
 
 function SuggestionList( { entityForSuggestions, onSelect } ) {
-	const composite = useCompositeStore( { orientation: 'vertical' } );
 	const [ search, setSearch, debouncedSearch ] = useDebouncedInput();
 	const suggestions = useSearchSuggestions(
 		entityForSuggestions,
@@ -144,7 +141,7 @@ function SuggestionList( { entityForSuggestions, onSelect } ) {
 			) }
 			{ !! suggestions?.length && (
 				<Composite
-					store={ composite }
+					orientation="vertical"
 					role="listbox"
 					className="edit-site-custom-template-modal__suggestions_list"
 					aria-label={ __( 'Suggestions list' ) }
