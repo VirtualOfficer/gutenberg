@@ -7,7 +7,15 @@ import clsx from 'clsx';
  * WordPress dependencies
  */
 import { cloneBlock } from '@wordpress/blocks';
-import { useEffect, useState, forwardRef, useMemo } from '@wordpress/element';
+import {
+	useEffect,
+	useState,
+	forwardRef,
+	useMemo,
+	useContext,
+	useCallback,
+	useRef,
+} from '@wordpress/element';
 import {
 	VisuallyHidden,
 	Tooltip,
@@ -27,11 +35,9 @@ import InserterDraggableBlocks from '../inserter-draggable-blocks';
 import BlockPatternsPaging from '../block-patterns-paging';
 import { INSERTER_PATTERN_TYPES } from '../inserter/block-patterns-tab/utils';
 
-const {
-	CompositeV2: Composite,
-	CompositeItemV2: CompositeItem,
-	useCompositeStoreV2: useCompositeStore,
-} = unlock( componentsPrivateApis );
+const { CompositeV2: Composite, CompositeItemV2: CompositeItem } = unlock(
+	componentsPrivateApis
+);
 
 const WithToolTip = ( { showTooltip, title, children } ) => {
 	if ( showTooltip ) {
@@ -190,6 +196,15 @@ function BlockPatternPlaceholder() {
 	);
 }
 
+function CompositeStoreGetter( { children, onStoreChange } ) {
+	const context = useContext( Composite.Context );
+	const compositeStore = context?.store;
+	useEffect( () => {
+		onStoreChange( compositeStore );
+	}, [ onStoreChange, compositeStore ] );
+	return children;
+}
+
 function BlockPatternsList(
 	{
 		isDraggable,
@@ -206,43 +221,47 @@ function BlockPatternsList(
 	},
 	ref
 ) {
-	const compositeStore = useCompositeStore( { orientation } );
-	const { setActiveId } = compositeStore;
+	const setActiveIdRef = useRef();
+	const onStoreChange = useCallback( ( store ) => {
+		setActiveIdRef.current = store?.setActiveId;
+	}, [] );
 
 	useEffect( () => {
-		// We reset the active composite item whenever the
-		// available patterns change, to make sure that
-		// focus is put back to the start.
-		setActiveId( undefined );
-	}, [ setActiveId, shownPatterns, blockPatterns ] );
+		// Reset the active composite item whenever the available patterns change,
+		// to make sure that Composite widget can receive focus correctly when its
+		// composite items change. The first composite item will receive focus.
+		setActiveIdRef.current?.( undefined );
+	}, [ shownPatterns, blockPatterns ] );
 
 	return (
 		<Composite
-			store={ compositeStore }
+			orientation={ orientation }
 			role="listbox"
 			className="block-editor-block-patterns-list"
 			aria-label={ label }
 			ref={ ref }
 		>
-			{ blockPatterns.map( ( pattern ) => {
-				const isShown = shownPatterns.includes( pattern );
-				return isShown ? (
-					<BlockPattern
-						key={ pattern.name }
-						id={ pattern.name }
-						pattern={ pattern }
-						onClick={ onClickPattern }
-						onHover={ onHover }
-						isDraggable={ isDraggable }
-						showTitle={ showTitle }
-						showTooltip={ showTitlesAsTooltip }
-						category={ category }
-					/>
-				) : (
-					<BlockPatternPlaceholder key={ pattern.name } />
-				);
-			} ) }
-			{ pagingProps && <BlockPatternsPaging { ...pagingProps } /> }
+			<CompositeStoreGetter onStoreChange={ onStoreChange }>
+				{ blockPatterns.map( ( pattern ) => {
+					const isShown = shownPatterns.includes( pattern );
+					return isShown ? (
+						<BlockPattern
+							key={ pattern.name }
+							id={ pattern.name }
+							pattern={ pattern }
+							onClick={ onClickPattern }
+							onHover={ onHover }
+							isDraggable={ isDraggable }
+							showTitle={ showTitle }
+							showTooltip={ showTitlesAsTooltip }
+							category={ category }
+						/>
+					) : (
+						<BlockPatternPlaceholder key={ pattern.name } />
+					);
+				} ) }
+				{ pagingProps && <BlockPatternsPaging { ...pagingProps } /> }
+			</CompositeStoreGetter>
 		</Composite>
 	);
 }
