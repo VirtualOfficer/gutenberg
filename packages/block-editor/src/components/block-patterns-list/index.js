@@ -13,8 +13,6 @@ import {
 	forwardRef,
 	useMemo,
 	useContext,
-	useCallback,
-	useRef,
 } from '@wordpress/element';
 import {
 	VisuallyHidden,
@@ -196,12 +194,19 @@ function BlockPatternPlaceholder() {
 	);
 }
 
-function CompositeStoreGetter( { children, onStoreChange } ) {
+function BlockPatternsListContentWrapper( {
+	children,
+	shownPatterns,
+	blockPatterns,
+} ) {
 	const context = useContext( Composite.Context );
-	const compositeStore = context?.store;
+	const setActiveId = context?.store?.setActiveId;
 	useEffect( () => {
-		onStoreChange( compositeStore );
-	}, [ onStoreChange, compositeStore ] );
+		// Reset the active composite item whenever the available patterns change,
+		// to make sure that Composite widget can receive focus correctly when its
+		// composite items change. The first composite item will receive focus.
+		setActiveId?.( undefined );
+	}, [ setActiveId, shownPatterns, blockPatterns ] );
 	return children;
 }
 
@@ -221,18 +226,6 @@ function BlockPatternsList(
 	},
 	ref
 ) {
-	const setActiveIdRef = useRef();
-	const onStoreChange = useCallback( ( store ) => {
-		setActiveIdRef.current = store?.setActiveId;
-	}, [] );
-
-	useEffect( () => {
-		// Reset the active composite item whenever the available patterns change,
-		// to make sure that Composite widget can receive focus correctly when its
-		// composite items change. The first composite item will receive focus.
-		setActiveIdRef.current?.( undefined );
-	}, [ shownPatterns, blockPatterns ] );
-
 	return (
 		<Composite
 			orientation={ orientation }
@@ -241,7 +234,10 @@ function BlockPatternsList(
 			aria-label={ label }
 			ref={ ref }
 		>
-			<CompositeStoreGetter onStoreChange={ onStoreChange }>
+			<BlockPatternsListContentWrapper
+				shownPatterns={ shownPatterns }
+				blockPatterns={ blockPatterns }
+			>
 				{ blockPatterns.map( ( pattern ) => {
 					const isShown = shownPatterns.includes( pattern );
 					return isShown ? (
@@ -261,7 +257,7 @@ function BlockPatternsList(
 					);
 				} ) }
 				{ pagingProps && <BlockPatternsPaging { ...pagingProps } /> }
-			</CompositeStoreGetter>
+			</BlockPatternsListContentWrapper>
 		</Composite>
 	);
 }
