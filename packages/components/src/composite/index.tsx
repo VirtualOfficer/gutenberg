@@ -121,7 +121,9 @@ export const Composite = Object.assign(
 		 * </Composite>
 		 * ```
 		 */
-		Group: CompositeGroup,
+		Group: Object.assign( CompositeGroup, {
+			displayName: 'Composite.Group',
+		} ),
 		/**
 		 * Renders a label in a composite group. This component must be wrapped with
 		 * `Composite.Group` so the `aria-labelledby` prop is properly set on the
@@ -140,7 +142,9 @@ export const Composite = Object.assign(
 		 * </Composite>
 		 * ```
 		 */
-		GroupLabel: CompositeGroupLabel,
+		GroupLabel: Object.assign( CompositeGroupLabel, {
+			displayName: 'Composite.GroupLabel',
+		} ),
 		/**
 		 * Renders a composite item.
 		 *
@@ -155,7 +159,9 @@ export const Composite = Object.assign(
 		 * </Composite>
 		 * ```
 		 */
-		Item: CompositeItem,
+		Item: Object.assign( CompositeItem, {
+			displayName: 'Composite.Item',
+		} ),
 		/**
 		 * Renders a composite row. Wrapping `Composite.Item` elements within
 		 * `Composite.Row` will create a two-dimensional composite widget, such as a
@@ -179,7 +185,9 @@ export const Composite = Object.assign(
 		 * </Composite>
 		 * ```
 		 */
-		Row: CompositeRow,
+		Row: Object.assign( CompositeRow, {
+			displayName: 'Composite.Row',
+		} ),
 		/**
 		 * Renders an element in a composite widget that receives focus on mouse move
 		 * and loses focus to the composite base element on mouse leave. This should
@@ -199,7 +207,9 @@ export const Composite = Object.assign(
 		 * </Composite>
 		 * ```
 		 */
-		Hover: CompositeHover,
+		Hover: Object.assign( CompositeHover, {
+			displayName: 'Composite.Hover',
+		} ),
 		/**
 		 * Renders a component that adds typeahead functionality to composite
 		 * components. Hitting printable character keys will move focus to the next
@@ -215,7 +225,9 @@ export const Composite = Object.assign(
 		 * </Composite>
 		 * ```
 		 */
-		Typeahead: CompositeTypeahead,
+		Typeahead: Object.assign( CompositeTypeahead, {
+			displayName: 'Composite.Typeahead',
+		} ),
 		/**
 		 * The React context used by the composite components. It can be used by
 		 * to access the composite store, and to forward the context when composite
@@ -230,6 +242,8 @@ export const Composite = Object.assign(
 		 * const compositeContext = useContext( Composite.Context );
 		 * ```
 		 */
-		Context: CompositeContext,
+		Context: Object.assign( CompositeContext, {
+			displayName: 'Composite.Context',
+		} ),
 	}
 );
