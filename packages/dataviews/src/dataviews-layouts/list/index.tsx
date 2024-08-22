@@ -317,23 +317,33 @@ function ListItem< Item >( {
 	);
 }
 
-// TODO: remove Ariakit.CompositeStore types when the Composite component
-// is public and includes its own types
-function CompositeStoreGetter( {
+function ViewListWrapper( {
 	children,
-	onStoreChange,
 }: {
-	children: React.ReactNode;
-	onStoreChange: ( store?: Ariakit.CompositeStore ) => void;
+	children: ( store?: Ariakit.CompositeStore ) => React.ReactNode;
 } ) {
 	const { store: compositeStore } =
 		( useContext( Composite.Context ) as
 			| { store: Ariakit.CompositeStore }
 			| undefined ) ?? {};
+
+	// Manage focused item, when the active one is removed from the list.
+	const isActiveIdInList = Ariakit.useStoreState(
+		compositeStore,
+		( state ) => state?.items.some( ( item ) => item.id === state.activeId )
+	);
 	useEffect( () => {
-		onStoreChange( compositeStore );
-	}, [ onStoreChange, compositeStore ] );
-	return children;
+		if ( compositeStore && ! isActiveIdInList ) {
+			// Prefer going down, except if there is no item below (last item), then go up (last item in list).
+			if ( compositeStore.down() ) {
+				compositeStore.move( compositeStore.down() );
+			} else if ( compositeStore.up() ) {
+				compositeStore.move( compositeStore.up() );
+			}
+		}
+	}, [ compositeStore, isActiveIdInList ] );
+
+	return children( compositeStore );
 }
 
 export default function ViewList< Item >( props: ViewListProps< Item > ) {
@@ -376,32 +386,6 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 		[ baseId, getItemId ]
 	);
 
-	const compositeStoreRef = useRef< Ariakit.CompositeStore >();
-	const onStoreChange = useCallback<
-		NonNullable<
-			React.ComponentProps< typeof CompositeStoreGetter >
-		>[ 'onStoreChange' ]
-	>( ( store ) => {
-		compositeStoreRef.current = store;
-	}, [] );
-
-	// Manage focused item, when the active one is removed from the list.
-	const isActiveIdInList = Ariakit.useStoreState(
-		compositeStoreRef.current,
-		( state ) => state?.items.some( ( item ) => item.id === state.activeId )
-	);
-	useEffect( () => {
-		const store = compositeStoreRef.current;
-		if ( store && ! isActiveIdInList ) {
-			// Prefer going down, except if there is no item below (last item), then go up (last item in list).
-			if ( store.down() ) {
-				store.move( store.down() );
-			} else if ( store.up() ) {
-				store.move( store.up() );
-			}
-		}
-	}, [ isActiveIdInList ] );
-
 	const hasData = data?.length;
 	if ( ! hasData ) {
 		return (
@@ -426,25 +410,27 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 			role="grid"
 			defaultActiveId={ getItemDomId( selectedItem ) }
 		>
-			<CompositeStoreGetter onStoreChange={ onStoreChange }>
-				{ data.map( ( item ) => {
-					const id = getItemDomId( item );
-					return (
-						<ListItem
-							key={ id }
-							id={ id }
-							actions={ actions }
-							item={ item }
-							isSelected={ item === selectedItem }
-							onSelect={ onSelect }
-							mediaField={ mediaField }
-							primaryField={ primaryField }
-							store={ compositeStoreRef.current }
-							visibleFields={ visibleFields }
-						/>
-					);
-				} ) }
-			</CompositeStoreGetter>
+			<ViewListWrapper>
+				{ ( store ) =>
+					data.map( ( item ) => {
+						const id = getItemDomId( item );
+						return (
+							<ListItem
+								key={ id }
+								id={ id }
+								actions={ actions }
+								item={ item }
+								isSelected={ item === selectedItem }
+								onSelect={ onSelect }
+								mediaField={ mediaField }
+								primaryField={ primaryField }
+								store={ store }
+								visibleFields={ visibleFields }
+							/>
+						);
+					} )
+				}
+			</ViewListWrapper>
 		</Composite>
 	);
 }
