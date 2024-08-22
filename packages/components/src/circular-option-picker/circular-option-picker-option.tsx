@@ -47,8 +47,8 @@ function UnforwardedOptionAsOption(
 		className?: string;
 		isSelected?: boolean;
 		compositeStore: NonNullable<
-			React.ComponentProps< typeof Composite >[ 'store' ]
-		>;
+			React.ContextType< typeof Composite.Context >
+		>[ 'store' ];
 	},
 	forwardedRef: ForwardedRef< any >
 ) {
@@ -83,9 +83,8 @@ export function Option( {
 	tooltipText,
 	...additionalProps
 }: OptionProps ) {
-	const { baseId, compositeStore } = useContext(
-		CircularOptionPickerContext
-	);
+	const { baseId } = useContext( CircularOptionPickerContext );
+	const compositeContext = useContext( Composite.Context );
 	const id = useInstanceId(
 		Option,
 		baseId || 'components-circular-option-picker__option'
@@ -97,10 +96,10 @@ export function Option( {
 		...additionalProps,
 	};
 
-	const optionControl = compositeStore ? (
+	const optionControl = compositeContext?.store ? (
 		<OptionAsOption
 			{ ...commonProps }
-			compositeStore={ compositeStore }
+			compositeStore={ compositeContext?.store }
 			isSelected={ isSelected }
 		/>
 	) : (

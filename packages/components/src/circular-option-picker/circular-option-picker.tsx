@@ -8,13 +8,13 @@ import clsx from 'clsx';
  */
 import { useInstanceId } from '@wordpress/compose';
 import { isRTL } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { CircularOptionPickerContext } from './circular-option-picker-context';
 import { Composite } from '../composite';
-import { useCompositeStore } from '../composite/store';
 import type {
 	CircularOptionPickerProps,
 	ListboxCircularOptionPickerProps,
@@ -86,23 +86,22 @@ function ListboxCircularOptionPicker(
 		...additionalProps
 	} = props;
 
-	const compositeStore = useCompositeStore( {
-		focusLoop: loop,
-		rtl: isRTL(),
-	} );
-
-	const compositeContext = {
-		baseId,
-		compositeStore,
-	};
+	const contextValue = useMemo(
+		() => ( {
+			// Maybe add a flag?
+			baseId,
+		} ),
+		[ baseId ]
+	);
 
 	return (
 		<div className={ className }>
-			<CircularOptionPickerContext.Provider value={ compositeContext }>
+			<CircularOptionPickerContext.Provider value={ contextValue }>
 				<Composite
 					{ ...additionalProps }
 					id={ baseId }
-					store={ compositeStore }
+					focusLoop={ loop }
+					rtl={ isRTL() }
 					role="listbox"
 				>
 					{ options }
@@ -119,9 +118,16 @@ function ButtonsCircularOptionPicker(
 ) {
 	const { actions, options, children, baseId, ...additionalProps } = props;
 
+	const contextValue = useMemo(
+		() => ( {
+			baseId,
+		} ),
+		[ baseId ]
+	);
+
 	return (
 		<div { ...additionalProps } id={ baseId }>
-			<CircularOptionPickerContext.Provider value={ { baseId } }>
+			<CircularOptionPickerContext.Provider value={ contextValue }>
 				{ options }
 				{ children }
 				{ actions }
