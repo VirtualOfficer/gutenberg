@@ -38,10 +38,9 @@ import type { CompositeProps } from './types';
  *
  * @example
  * ```jsx
- * import { Composite, useCompositeStore } from '@wordpress/components';
+ * import { Composite } from '@wordpress/components';
  *
- * const store = useCompositeStore();
- * <Composite store={store}>
+ * <Composite>
  *   <Composite.Item>Item 1</Composite.Item>
  *   <Composite.Item>Item 2</Composite.Item>
  * </Composite>
@@ -111,10 +110,9 @@ export const Composite = Object.assign(
 		 *
 		 * @example
 		 * ```jsx
-		 * import { Composite, useCompositeStore } from '@wordpress/components';
+		 * import { Composite } from '@wordpress/components';
 		 *
-		 * const store = useCompositeStore();
-		 * <Composite store={store}>
+		 * <Composite>
 		 *   <Composite.Group>
 		 *     <Composite.GroupLabel>Label</Composite.GroupLabel>
 		 *     <Composite.Item>Item 1</Composite.Item>
@@ -131,10 +129,9 @@ export const Composite = Object.assign(
 		 *
 		 * @example
 		 * ```jsx
-		 * import { Composite, useCompositeStore } from '@wordpress/components';
+		 * import { Composite } from '@wordpress/components';
 		 *
-		 * const store = useCompositeStore();
-		 * <Composite store={store}>
+		 * <Composite>
 		 *   <Composite.Group>
 		 *     <Composite.GroupLabel>Label</Composite.GroupLabel>
 		 *     <Composite.Item>Item 1</Composite.Item>
@@ -149,10 +146,9 @@ export const Composite = Object.assign(
 		 *
 		 * @example
 		 * ```jsx
-		 * import { Composite, useCompositeStore } from '@wordpress/components';
+		 * import { Composite } from '@wordpress/components';
 		 *
-		 * const store = useCompositeStore();
-		 * <Composite store={store}>
+		 * <Composite>
 		 *   <Composite.Item>Item 1</Composite.Item>
 		 *   <Composite.Item>Item 2</Composite.Item>
 		 *   <Composite.Item>Item 3</Composite.Item>
@@ -167,10 +163,9 @@ export const Composite = Object.assign(
 		 *
 		 * @example
 		 * ```jsx
-		 * import { Composite, useCompositeStore } from '@wordpress/components';
+		 * import { Composite } from '@wordpress/components';
 		 *
-		 * const store = useCompositeStore();
-		 * <Composite store={store}>
+		 * <Composite>
 		 *   <Composite.Row>
 		 *     <Composite.Item>Item 1.1</Composite.Item>
 		 *     <Composite.Item>Item 1.2</Composite.Item>
@@ -192,10 +187,9 @@ export const Composite = Object.assign(
 		 *
 		 * @example
 		 * ```jsx
-		 * import { Composite, useCompositeStore } from '@wordpress/components';
+		 * import { Composite } from '@wordpress/components';
 		 *
-		 * const store = useCompositeStore();
-		 * <Composite store={store}>
+		 * <Composite>
 		 *   <Composite.Hover render={ <Composite.Item /> }>
 		 *     Item 1
 		 *   </Composite.Hover>
@@ -213,10 +207,9 @@ export const Composite = Object.assign(
 		 *
 		 * @example
 		 * ```jsx
-		 * import { Composite, useCompositeStore } from '@wordpress/components';
+		 * import { Composite } from '@wordpress/components';
 		 *
-		 * const store = useCompositeStore();
-		 * <Composite store={store} render={ <CompositeTypeahead /> }>
+		 * <Composite render={ <CompositeTypeahead /> }>
 		 *   <Composite.Item>Item 1</Composite.Item>
 		 *   <Composite.Item>Item 2</Composite.Item>
 		 * </Composite>
