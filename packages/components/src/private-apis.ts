@@ -17,6 +17,8 @@ lock( privateApis, {
 	CompositeGroupV2: Composite.Group,
 	CompositeItemV2: Composite.Item,
 	CompositeRowV2: Composite.Row,
+	CompositeHoverV2: Composite.Hover,
+	CompositeTypeaheadV2: Composite.Typeahead,
 	__experimentalPopoverLegacyPositionToPlacement,
 	createPrivateSlotFill,
 	ComponentsContext,

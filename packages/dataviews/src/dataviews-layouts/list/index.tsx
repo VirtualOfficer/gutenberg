@@ -4,10 +4,7 @@
 import clsx from 'clsx';
 // TODO: use the @wordpress/components one once public
 // eslint-disable-next-line no-restricted-imports
-import { useStoreState } from '@ariakit/react';
-// Import CompositeStore type, which is not exported from @wordpress/components.
-// eslint-disable-next-line no-restricted-imports
-import type { CompositeStore } from '@ariakit/react';
+import * as Ariakit from '@ariakit/react';
 
 /**
  * WordPress dependencies
@@ -27,6 +24,7 @@ import {
 	useMemo,
 	useRef,
 	useState,
+	useContext,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
@@ -50,12 +48,11 @@ interface ListViewItemProps< Item > {
 	mediaField?: NormalizedField< Item >;
 	onSelect: ( item: Item ) => void;
 	primaryField?: NormalizedField< Item >;
-	store: CompositeStore;
+	store?: Ariakit.CompositeStore;
 	visibleFields: NormalizedField< Item >[];
 }
 
 const {
-	useCompositeStoreV2: useCompositeStore,
 	CompositeV2: Composite,
 	CompositeItemV2: CompositeItem,
 	CompositeRowV2: CompositeRow,
@@ -147,7 +144,6 @@ function ListItem< Item >( {
 			>
 				<div role="gridcell">
 					<CompositeItem
-						store={ store }
 						render={ <div /> }
 						role="button"
 						id={ id }
@@ -213,7 +209,6 @@ function ListItem< Item >( {
 						{ primaryAction && 'RenderModal' in primaryAction && (
 							<div role="gridcell">
 								<CompositeItem
-									store={ store }
 									render={
 										<Button
 											label={ primaryActionLabel }
@@ -244,7 +239,6 @@ function ListItem< Item >( {
 							! ( 'RenderModal' in primaryAction ) && (
 								<div role="gridcell" key={ primaryAction.id }>
 									<CompositeItem
-										store={ store }
 										render={
 											<Button
 												label={ primaryActionLabel }
@@ -268,7 +262,6 @@ function ListItem< Item >( {
 							<DropdownMenu
 								trigger={
 									<CompositeItem
-										store={ store }
 										render={
 											<Button
 												size="small"
@@ -276,24 +269,29 @@ function ListItem< Item >( {
 												label={ __( 'Actions' ) }
 												accessibleWhenDisabled
 												disabled={ ! actions.length }
-												onKeyDown={ ( event: {
-													key: string;
-													preventDefault: () => void;
-												} ) => {
+												// Prevent the default behavior (open dropdown menu)
+												// and instead move the composite item selection.
+												// https://github.com/ariakit/ariakit/issues/3768
+												onKeyDown={ (
+													event: React.KeyboardEvent< HTMLButtonElement >
+												) => {
+													if ( ! store ) {
+														return;
+													}
+
 													if (
 														event.key ===
 														'ArrowDown'
 													) {
-														// Prevent the default behaviour (open dropdown menu) and go down.
 														event.preventDefault();
 														store.move(
 															store.down()
 														);
 													}
+
 													if (
 														event.key === 'ArrowUp'
 													) {
-														// Prevent the default behavior (open dropdown menu) and go up.
 														event.preventDefault();
 														store.move(
 															store.up()
@@ -317,6 +315,25 @@ function ListItem< Item >( {
 			</HStack>
 		</CompositeRow>
 	);
+}
+
+// TODO: remove Ariakit.CompositeStore types when the Composite component
+// is public and includes its own types
+function CompositeStoreGetter( {
+	children,
+	onStoreChange,
+}: {
+	children: React.ReactNode;
+	onStoreChange: ( store?: Ariakit.CompositeStore ) => void;
+} ) {
+	const { store: compositeStore } =
+		( useContext( Composite.Context ) as
+			| { store: Ariakit.CompositeStore }
+			| undefined ) ?? {};
+	useEffect( () => {
+		onStoreChange( compositeStore );
+	}, [ onStoreChange, compositeStore ] );
+	return children;
 }
 
 export default function ViewList< Item >( props: ViewListProps< Item > ) {
@@ -359,20 +376,23 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 		[ baseId, getItemId ]
 	);
 
-	const store = useCompositeStore( {
-		defaultActiveId: getItemDomId( selectedItem ),
-	} ) as CompositeStore; // TODO, remove once composite APIs are public
+	const compositeStoreRef = useRef< Ariakit.CompositeStore >();
+	const onStoreChange = useCallback<
+		NonNullable<
+			React.ComponentProps< typeof CompositeStoreGetter >
+		>[ 'onStoreChange' ]
+	>( ( store ) => {
+		compositeStoreRef.current = store;
+	}, [] );
 
 	// Manage focused item, when the active one is removed from the list.
-	const isActiveIdInList = useStoreState(
-		store,
-		( state: { items: any[]; activeId: any } ) =>
-			state.items.some(
-				( item: { id: any } ) => item.id === state.activeId
-			)
+	const isActiveIdInList = Ariakit.useStoreState(
+		compositeStoreRef.current,
+		( state ) => state?.items.some( ( item ) => item.id === state.activeId )
 	);
 	useEffect( () => {
-		if ( ! isActiveIdInList ) {
+		const store = compositeStoreRef.current;
+		if ( store && ! isActiveIdInList ) {
 			// Prefer going down, except if there is no item below (last item), then go up (last item in list).
 			if ( store.down() ) {
 				store.move( store.down() );
@@ -404,25 +424,27 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 			render={ <ul /> }
 			className="dataviews-view-list"
 			role="grid"
-			store={ store }
+			defaultActiveId={ getItemDomId( selectedItem ) }
 		>
-			{ data.map( ( item ) => {
-				const id = getItemDomId( item );
-				return (
-					<ListItem
-						key={ id }
-						id={ id }
-						actions={ actions }
-						item={ item }
-						isSelected={ item === selectedItem }
-						onSelect={ onSelect }
-						mediaField={ mediaField }
-						primaryField={ primaryField }
-						store={ store }
-						visibleFields={ visibleFields }
-					/>
-				);
-			} ) }
+			<CompositeStoreGetter onStoreChange={ onStoreChange }>
+				{ data.map( ( item ) => {
+					const id = getItemDomId( item );
+					return (
+						<ListItem
+							key={ id }
+							id={ id }
+							actions={ actions }
+							item={ item }
+							isSelected={ item === selectedItem }
+							onSelect={ onSelect }
+							mediaField={ mediaField }
+							primaryField={ primaryField }
+							store={ compositeStoreRef.current }
+							visibleFields={ visibleFields }
+						/>
+					);
+				} ) }
+			</CompositeStoreGetter>
 		</Composite>
 	);
 }
