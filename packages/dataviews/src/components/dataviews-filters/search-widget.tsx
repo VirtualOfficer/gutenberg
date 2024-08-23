@@ -8,13 +8,13 @@ import removeAccents from 'remove-accents';
 /**
  * WordPress dependencies
  */
+import { useInstanceId } from '@wordpress/compose';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	useState,
 	useMemo,
 	useDeferredValue,
 	useRef,
-	useId,
 } from '@wordpress/element';
 import {
 	VisuallyHidden,
@@ -99,14 +99,17 @@ function computeCompositeItemId(
 }
 
 function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
-	// When we have no or just one operator, we can set the first item as active.
-	// We do that by passing `undefined` to `defaultActiveId`. Otherwise, we set it to `null`,
-	// so the first item is not selected, since the focus is on the operators control.
-	const uid = useId();
+	const baseId = useInstanceId( ListBox, 'dataviews-filter-list-box' );
 
 	const [ activeCompositeId, setActiveCompositeId ] = useState<
 		string | null | undefined
-	>( filter.operators?.length === 1 ? undefined : null );
+	>(
+		// When we have no or just one operator, we can set the first item as active.
+		// We do that by setting the initial `activeId` to `undefined`.Otherwise,
+		// we set it to `null`, so the first item is not selected,
+		// since the focus is on the operators control.
+		filter.operators?.length === 1 ? undefined : null
+	);
 	const firstCompositeElementRef = useRef< HTMLElement | null >( null );
 
 	const currentFilter = view.filters?.find(
@@ -133,7 +136,7 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 				// in the `useCompositeStore` hook.
 				if ( ! activeCompositeId && filter.elements.length ) {
 					setActiveCompositeId(
-						computeCompositeItemId( uid, filter.elements[ 0 ] )
+						computeCompositeItemId( baseId, filter.elements[ 0 ] )
 					);
 				}
 			} }
@@ -145,7 +148,7 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 					key={ element.value }
 					render={
 						<CompositeItem
-							id={ computeCompositeItemId( uid, element ) }
+							id={ computeCompositeItemId( baseId, element ) }
 							render={
 								<div
 									aria-label={ element.label }
