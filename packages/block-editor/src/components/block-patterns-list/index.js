@@ -7,13 +7,7 @@ import clsx from 'clsx';
  * WordPress dependencies
  */
 import { cloneBlock } from '@wordpress/blocks';
-import {
-	useEffect,
-	useState,
-	forwardRef,
-	useMemo,
-	useContext,
-} from '@wordpress/element';
+import { useEffect, useState, forwardRef, useMemo } from '@wordpress/element';
 import {
 	VisuallyHidden,
 	Tooltip,
