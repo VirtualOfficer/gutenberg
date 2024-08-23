@@ -59,6 +59,13 @@ export default {
 			context?.postId
 		)?.meta?.[ args.key ];
 
+		// Check that custom fields metabox is not enabled.
+		const areCustomFieldsEnabled =
+			select( editorStore ).getEditorSettings().enableCustomFields;
+		if ( areCustomFieldsEnabled ) {
+			return false;
+		}
+
 		if ( ! isFieldExposed ) {
 			return false;
 		}
