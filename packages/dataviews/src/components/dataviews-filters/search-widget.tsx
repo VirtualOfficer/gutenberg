@@ -14,9 +14,7 @@ import {
 	useMemo,
 	useDeferredValue,
 	useRef,
-	useCallback,
-	useEffect,
-	useContext,
+	useId,
 } from '@wordpress/element';
 import {
 	VisuallyHidden,
@@ -93,49 +91,35 @@ const getNewValue = (
 	return [ value ];
 };
 
-// TODO: remove Ariakit.CompositeStore types when the Composite component
-// is public and includes its own types
-function CompositeStoreGetter( {
-	children,
-	onStoreChange,
-}: {
-	children: React.ReactNode;
-	onStoreChange: ( store?: Ariakit.CompositeStore ) => void;
-} ) {
-	const { store: compositeStore } =
-		( useContext( Composite.Context ) as
-			| { store: Ariakit.CompositeStore }
-			| undefined ) ?? {};
-	useEffect( () => {
-		onStoreChange( compositeStore );
-	}, [ onStoreChange, compositeStore ] );
-	return children;
+function computeCompositeItemId(
+	prefix: string,
+	filterElement: NormalizedFilter[ 'elements' ][ number ]
+) {
+	return `${ prefix }-${ filterElement.value }`;
 }
 
 function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
-	const compositeStoreRef = useRef< Ariakit.CompositeStore >();
-	const onStoreChange = useCallback<
-		NonNullable<
-			React.ComponentProps< typeof CompositeStoreGetter >
-		>[ 'onStoreChange' ]
-	>( ( store ) => {
-		compositeStoreRef.current = store;
-	}, [] );
+	// When we have no or just one operator, we can set the first item as active.
+	// We do that by passing `undefined` to `defaultActiveId`. Otherwise, we set it to `null`,
+	// so the first item is not selected, since the focus is on the operators control.
+	const uid = useId();
+
+	const [ activeCompositeId, setActiveCompositeId ] = useState<
+		string | null | undefined
+	>( filter.operators?.length === 1 ? undefined : null );
+	const firstCompositeElementRef = useRef< HTMLElement | null >( null );
 
 	const currentFilter = view.filters?.find(
 		( f ) => f.field === filter.field
 	);
 	const currentValue = getCurrentValue( filter, currentFilter );
+
 	return (
 		<Composite
 			virtualFocus
 			focusLoop
-			defaultActiveId={
-				// When we have no or just one operator, we can set the first item as active.
-				// We do that by passing `undefined` to `defaultActiveId`. Otherwise, we set it to `null`,
-				// so the first item is not selected, since the focus is on the operators control.
-				filter.operators?.length === 1 ? undefined : null
-			}
+			activeId={ activeCompositeId }
+			setActiveId={ setActiveCompositeId }
 			role="listbox"
 			className="dataviews-filters__search-widget-listbox"
 			aria-label={ sprintf(
@@ -147,91 +131,88 @@ function ListBox( { view, filter, onChangeView }: SearchWidgetProps ) {
 				// `onFocusVisible` needs the `Composite` component to be focusable,
 				// which is implicitly achieved via the `virtualFocus: true` option
 				// in the `useCompositeStore` hook.
-				const compositeStore = compositeStoreRef.current;
-				if ( ! compositeStore ) {
-					return;
-				}
-				if ( ! compositeStore.getState().activeId ) {
-					compositeStore.move( compositeStore.first() );
+				if ( ! activeCompositeId && filter.elements.length ) {
+					setActiveCompositeId(
+						computeCompositeItemId( uid, filter.elements[ 0 ] )
+					);
 				}
 			} }
 			render={ <CompositeTypeahead /> }
 		>
-			<CompositeStoreGetter onStoreChange={ onStoreChange }>
-				{ filter.elements.map( ( element ) => (
-					<CompositeHover
-						key={ element.value }
-						render={
-							<CompositeItem
-								render={
-									<div
-										aria-label={ element.label }
-										role="option"
-										className="dataviews-filters__search-widget-listitem"
-									/>
-								}
-								onClick={ () => {
-									const newFilters = currentFilter
-										? [
-												...( view.filters ?? [] ).map(
-													( _filter ) => {
-														if (
-															_filter.field ===
-															filter.field
-														) {
-															return {
-																..._filter,
-																operator:
-																	currentFilter.operator ||
-																	filter
-																		.operators[ 0 ],
-																value: getNewValue(
-																	filter,
-																	currentFilter,
-																	element.value
-																),
-															};
-														}
-														return _filter;
+			{ filter.elements.map( ( element, index ) => (
+				<CompositeHover
+					ref={ index === 0 ? firstCompositeElementRef : undefined }
+					key={ element.value }
+					render={
+						<CompositeItem
+							id={ computeCompositeItemId( uid, element ) }
+							render={
+								<div
+									aria-label={ element.label }
+									role="option"
+									className="dataviews-filters__search-widget-listitem"
+								/>
+							}
+							onClick={ () => {
+								const newFilters = currentFilter
+									? [
+											...( view.filters ?? [] ).map(
+												( _filter ) => {
+													if (
+														_filter.field ===
+														filter.field
+													) {
+														return {
+															..._filter,
+															operator:
+																currentFilter.operator ||
+																filter
+																	.operators[ 0 ],
+															value: getNewValue(
+																filter,
+																currentFilter,
+																element.value
+															),
+														};
 													}
+													return _filter;
+												}
+											),
+									  ]
+									: [
+											...( view.filters ?? [] ),
+											{
+												field: filter.field,
+												operator: filter.operators[ 0 ],
+												value: getNewValue(
+													filter,
+													currentFilter,
+													element.value
 												),
-										  ]
-										: [
-												...( view.filters ?? [] ),
-												{
-													field: filter.field,
-													operator:
-														filter.operators[ 0 ],
-													value: getNewValue(
-														filter,
-														currentFilter,
-														element.value
-													),
-												},
-										  ];
-									onChangeView( {
-										...view,
-										page: 1,
-										filters: newFilters,
-									} );
-								} }
-							/>
-						}
-					>
-						<span className="dataviews-filters__search-widget-listitem-check">
-							{ filter.singleSelection &&
-								currentValue === element.value && (
-									<Icon icon={ radioCheck } />
-								) }
-							{ ! filter.singleSelection &&
-								currentValue.includes( element.value ) && (
-									<Icon icon={ check } />
-								) }
-						</span>
-						<span>{ element.label }</span>
-					</CompositeHover>
-				) ) }
-			</CompositeStoreGetter>
+											},
+									  ];
+								onChangeView( {
+									...view,
+									page: 1,
+									filters: newFilters,
+								} );
+							} }
+						/>
+					}
+				>
+					<span className="dataviews-filters__search-widget-listitem-check">
+						{ filter.singleSelection &&
+							currentValue === element.value && (
+								<Icon icon={ radioCheck } />
+							) }
+						{ ! filter.singleSelection &&
+							currentValue.includes( element.value ) && (
+								<Icon icon={ check } />
+							) }
+					</span>
+					<span>{ element.label }</span>
+				</CompositeHover>
+			) ) }
 		</Composite>
 	);
 }
