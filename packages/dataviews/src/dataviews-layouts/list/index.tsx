@@ -2,9 +2,6 @@
  * External dependencies
  */
 import clsx from 'clsx';
-// TODO: use the @wordpress/components one once public
-// eslint-disable-next-line no-restricted-imports
-import * as Ariakit from '@ariakit/react';
 
 /**
  * WordPress dependencies
@@ -24,7 +21,6 @@ import {
 	useMemo,
 	useRef,
 	useState,
-	useContext,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
@@ -48,8 +44,9 @@ interface ListViewItemProps< Item > {
 	mediaField?: NormalizedField< Item >;
 	onSelect: ( item: Item ) => void;
 	primaryField?: NormalizedField< Item >;
-	store?: Ariakit.CompositeStore;
 	visibleFields: NormalizedField< Item >[];
+	selectPreviousItemDropdownTrigger: () => void;
+	selectNextItemDropdownTrigger: () => void;
 }
 
 const {
@@ -67,8 +64,9 @@ function ListItem< Item >( {
 	mediaField,
 	onSelect,
 	primaryField,
-	store,
 	visibleFields,
+	selectPreviousItemDropdownTrigger,
+	selectNextItemDropdownTrigger,
 }: ListViewItemProps< Item > ) {
 	const registry = useRegistry();
 	const itemRef = useRef< HTMLElement >( null );
@@ -209,6 +207,7 @@ function ListItem< Item >( {
 						{ primaryAction && 'RenderModal' in primaryAction && (
 							<div role="gridcell">
 								<CompositeItem
+									id={ `${ id }-${ primaryAction.id }` }
 									render={
 										<Button
 											label={ primaryActionLabel }
@@ -239,6 +238,7 @@ function ListItem< Item >( {
 							! ( 'RenderModal' in primaryAction ) && (
 								<div role="gridcell" key={ primaryAction.id }>
 									<CompositeItem
+										id={ `${ id }-${ primaryAction.id }` }
 										render={
 											<Button
 												label={ primaryActionLabel }
@@ -262,6 +262,7 @@ function ListItem< Item >( {
 							<DropdownMenu
 								trigger={
 									<CompositeItem
+										id={ `${ id }-dropdown` }
 										render={
 											<Button
 												size="small"
@@ -275,27 +276,19 @@ function ListItem< Item >( {
 												onKeyDown={ (
 													event: React.KeyboardEvent< HTMLButtonElement >
 												) => {
-													if ( ! store ) {
-														return;
-													}
-
 													if (
 														event.key ===
 														'ArrowDown'
 													) {
 														event.preventDefault();
-														store.move(
-															store.down()
-														);
+														selectNextItemDropdownTrigger();
 													}
 
 													if (
 														event.key === 'ArrowUp'
 													) {
 														event.preventDefault();
-														store.move(
-															store.up()
-														);
+														selectPreviousItemDropdownTrigger();
 													}
 												} }
 											/>
@@ -317,35 +310,6 @@ function ListItem< Item >( {
 	);
 }
 
-function ViewListWrapper( {
-	children,
-}: {
-	children: ( store?: Ariakit.CompositeStore ) => React.ReactNode;
-} ) {
-	const { store: compositeStore } =
-		( useContext( Composite.Context ) as
-			| { store: Ariakit.CompositeStore }
-			| undefined ) ?? {};
-
-	// Manage focused item, when the active one is removed from the list.
-	const isActiveIdInList = Ariakit.useStoreState(
-		compositeStore,
-		( state ) => state?.items.some( ( item ) => item.id === state.activeId )
-	);
-	useEffect( () => {
-		if ( compositeStore && ! isActiveIdInList ) {
-			// Prefer going down, except if there is no item below (last item), then go up (last item in list).
-			if ( compositeStore.down() ) {
-				compositeStore.move( compositeStore.down() );
-			} else if ( compositeStore.up() ) {
-				compositeStore.move( compositeStore.up() );
-			}
-		}
-	}, [ compositeStore, isActiveIdInList ] );
-
-	return children( compositeStore );
-}
-
 export default function ViewList< Item >( props: ViewListProps< Item > ) {
 	const {
 		actions,
@@ -358,8 +322,24 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 		view,
 	} = props;
 	const baseId = useInstanceId( ViewList, 'view-list' );
+
+	const getItemDomId = useCallback(
+		( item?: Item ) =>
+			item ? `${ baseId }-${ getItemId( item ) }` : undefined,
+		[ baseId, getItemId ]
+	);
+
 	const selectedItem = data?.findLast( ( item ) =>
 		selection.includes( getItemId( item ) )
+	);
+	const onSelect = ( item: Item ) =>
+		onChangeSelection( [ getItemId( item ) ] );
+
+	const [ activeCompositeId, setActiveCompositeId ] = useState<
+		string | null | undefined
+	>(
+		// By default, the active composite item is the selected one.
+		getItemDomId( selectedItem )
 	);
 
 	const mediaField = fields.find(
@@ -377,14 +357,58 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 			)
 	);
 
-	const onSelect = ( item: Item ) =>
-		onChangeSelection( [ getItemId( item ) ] );
+	const activeItemIndex = data.findIndex( ( item ) => {
+		const itemCompositeIdPrefix = getItemDomId( item );
+		return (
+			!! itemCompositeIdPrefix &&
+			activeCompositeId?.startsWith( itemCompositeIdPrefix )
+		);
+	} );
+	const isActiveIdInList = activeItemIndex !== -1;
 
-	const getItemDomId = useCallback(
-		( item?: Item ) =>
-			item ? `${ baseId }-${ getItemId( item ) }` : undefined,
-		[ baseId, getItemId ]
-	);
+	const firstDataitem = data?.[ 0 ];
+	useEffect( () => {
+		if ( ! isActiveIdInList && firstDataitem ) {
+			// Prefer going down, except if there is no item below (last item), then go up (last item in list).
+			// if ( compositeStore.down() ) {
+			// 	compositeStore.move( compositeStore.down() );
+			// } else if ( compositeStore.up() ) {
+			// 	compositeStore.move( compositeStore.up() );
+			// }
+
+			// TODO: better next active item selection logic (up/down),
+			// instead of always picking first item.
+			const nextCompositeActiveId = getItemDomId( firstDataitem );
+			setActiveCompositeId( nextCompositeActiveId );
+			(
+				document.querySelector( `#${ nextCompositeActiveId }` ) as
+					| HTMLElement
+					| undefined
+			 )?.focus();
+		}
+	}, [ firstDataitem, getItemDomId, isActiveIdInList ] );
+
+	const selectItemDropdownTrigger = ( itemIndex: number ) => {
+		const item = data[ itemIndex ];
+		const nextCompositeActiveId = `${ getItemDomId( item ) }-dropdown`;
+		setActiveCompositeId( nextCompositeActiveId );
+		(
+			document.querySelector( `#${ nextCompositeActiveId }` ) as
+				| HTMLElement
+				| undefined
+		 )?.focus();
+	};
+
+	const selectPreviousItemDropdownTrigger = () => {
+		selectItemDropdownTrigger(
+			Math.min( data.length - 1, Math.max( 0, activeItemIndex - 1 ) )
+		);
+	};
+	const selectNextItemDropdownTrigger = () => {
+		selectItemDropdownTrigger(
+			Math.min( data.length - 1, Math.max( 0, activeItemIndex + 1 ) )
+		);
+	};
 
 	const hasData = data?.length;
 	if ( ! hasData ) {
@@ -408,29 +432,31 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 			render={ <ul /> }
 			className="dataviews-view-list"
 			role="grid"
-			defaultActiveId={ getItemDomId( selectedItem ) }
+			activeId={ activeCompositeId }
+			setActiveId={ setActiveCompositeId }
 		>
-			<ViewListWrapper>
-				{ ( store ) =>
-					data.map( ( item ) => {
-						const id = getItemDomId( item );
-						return (
-							<ListItem
-								key={ id }
-								id={ id }
-								actions={ actions }
-								item={ item }
-								isSelected={ item === selectedItem }
-								onSelect={ onSelect }
-								mediaField={ mediaField }
-								primaryField={ primaryField }
-								store={ store }
-								visibleFields={ visibleFields }
-							/>
-						);
-					} )
-				}
-			</ViewListWrapper>
+			{ data.map( ( item ) => {
+				const id = getItemDomId( item );
+				return (
+					<ListItem
+						key={ id }
+						id={ id }
+						actions={ actions }
+						item={ item }
+						isSelected={ item === selectedItem }
+						onSelect={ onSelect }
+						mediaField={ mediaField }
+						primaryField={ primaryField }
+						visibleFields={ visibleFields }
+						selectPreviousItemDropdownTrigger={
+							selectPreviousItemDropdownTrigger
+						}
+						selectNextItemDropdownTrigger={
+							selectNextItemDropdownTrigger
+						}
+					/>
+				);
+			} ) }
 		</Composite>
 	);
 }
