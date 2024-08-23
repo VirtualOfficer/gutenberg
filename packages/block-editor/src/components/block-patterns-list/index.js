@@ -188,6 +188,12 @@ function BlockPattern( {
 	);
 }
 
+function BlockPatternPlaceholder() {
+	return (
+		<div className="block-editor-block-patterns-list__item is-placeholder" />
+	);
+}
+
 function BlockPatternsList(
 	{
 		isDraggable,
