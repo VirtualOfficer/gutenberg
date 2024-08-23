@@ -188,28 +188,6 @@ function BlockPattern( {
 	);
 }
 
-function BlockPatternPlaceholder() {
-	return (
-		<div className="block-editor-block-patterns-list__item is-placeholder" />
-	);
-}
-
-function BlockPatternsListContentWrapper( {
-	children,
-	shownPatterns,
-	blockPatterns,
-} ) {
-	const context = useContext( Composite.Context );
-	const setActiveId = context?.store?.setActiveId;
-	useEffect( () => {
-		// Reset the active composite item whenever the available patterns change,
-		// to make sure that Composite widget can receive focus correctly when its
-		// composite items change. The first composite item will receive focus.
-		setActiveId?.( undefined );
-	}, [ setActiveId, shownPatterns, blockPatterns ] );
-	return children;
-}
-
 function BlockPatternsList(
 	{
 		isDraggable,
@@ -226,6 +204,18 @@ function BlockPatternsList(
 	},
 	ref
 ) {
+	const [ activeCompositeId, setActiveCompositeId ] = useState( undefined );
+
+	useEffect( () => {
+		// Reset the active composite item whenever the available patterns change,
+		// to make sure that Composite widget can receive focus correctly when its
+		// composite items change. The first composite item will receive focus.
+		const firstCompositeItemId = blockPatterns.find( ( pattern ) =>
+			shownPatterns.includes( pattern )
+		)?.name;
+		setActiveCompositeId( firstCompositeItemId );
+	}, [ shownPatterns, blockPatterns ] );
+
 	return (
 		<Composite
 			orientation={ orientation }
@@ -233,31 +223,28 @@ function BlockPatternsList(
 			className="block-editor-block-patterns-list"
 			aria-label={ label }
 			ref={ ref }
+			activeId={ activeCompositeId }
+			setActiveId={ setActiveCompositeId }
 		>
-			<BlockPatternsListContentWrapper
-				shownPatterns={ shownPatterns }
-				blockPatterns={ blockPatterns }
-			>
-				{ blockPatterns.map( ( pattern ) => {
-					const isShown = shownPatterns.includes( pattern );
-					return isShown ? (
-						<BlockPattern
-							key={ pattern.name }
-							id={ pattern.name }
-							pattern={ pattern }
-							onClick={ onClickPattern }
-							onHover={ onHover }
-							isDraggable={ isDraggable }
-							showTitle={ showTitle }
-							showTooltip={ showTitlesAsTooltip }
-							category={ category }
-						/>
-					) : (
-						<BlockPatternPlaceholder key={ pattern.name } />
-					);
-				} ) }
-				{ pagingProps && <BlockPatternsPaging { ...pagingProps } /> }
-			</BlockPatternsListContentWrapper>
+			{ blockPatterns.map( ( pattern ) => {
+				const isShown = shownPatterns.includes( pattern );
+				return isShown ? (
+					<BlockPattern
+						key={ pattern.name }
+						id={ pattern.name }
+						pattern={ pattern }
+						onClick={ onClickPattern }
+						onHover={ onHover }
+						isDraggable={ isDraggable }
+						showTitle={ showTitle }
+						showTooltip={ showTitlesAsTooltip }
+						category={ category }
+					/>
+				) : (
+					<BlockPatternPlaceholder key={ pattern.name } />
+				);
+			} ) }
+			{ pagingProps && <BlockPatternsPaging { ...pagingProps } /> }
 		</Composite>
 	);
 }
