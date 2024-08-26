@@ -8,7 +8,7 @@ import clsx from 'clsx';
  */
 import { useInstanceId } from '@wordpress/compose';
 import { isRTL } from '@wordpress/i18n';
-import { useMemo } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -86,11 +86,17 @@ function ListboxCircularOptionPicker(
 		...additionalProps
 	} = props;
 
+	const [ activeId, setActiveId ] = useState< string | null | undefined >(
+		undefined
+	);
+
 	const contextValue = useMemo(
 		() => ( {
 			baseId,
+			activeId,
+			setActiveId,
 		} ),
-		[ baseId ]
+		[ baseId, activeId, setActiveId ]
 	);
 
 	return (
@@ -102,6 +108,8 @@ function ListboxCircularOptionPicker(
 					focusLoop={ loop }
 					rtl={ isRTL() }
 					role="listbox"
+					activeId={ activeId }
+					setActiveId={ setActiveId }
 				>
 					{ options }
 				</Composite>

@@ -2,14 +2,13 @@
  * External dependencies
  */
 import clsx from 'clsx';
-import { useStoreState } from '@ariakit/react';
 import type { ForwardedRef } from 'react';
 
 /**
  * WordPress dependencies
  */
 import { useInstanceId } from '@wordpress/compose';
-import { forwardRef, useContext } from '@wordpress/element';
+import { forwardRef, useContext, useEffect } from '@wordpress/element';
 import { Icon, check } from '@wordpress/icons';
 
 /**
@@ -46,18 +45,18 @@ function UnforwardedOptionAsOption(
 		id: string;
 		className?: string;
 		isSelected?: boolean;
-		compositeStore: NonNullable<
-			React.ContextType< typeof Composite.Context >
-		>[ 'store' ];
 	},
 	forwardedRef: ForwardedRef< any >
 ) {
-	const { id, isSelected, compositeStore, ...additionalProps } = props;
-	const activeId = useStoreState( compositeStore, 'activeId' );
+	const { id, isSelected, ...additionalProps } = props;
 
-	if ( isSelected && ! activeId ) {
-		compositeStore.setActiveId( id );
-	}
+	const { setActiveId, activeId } = useContext( CircularOptionPickerContext );
+
+	useEffect( () => {
+		if ( isSelected && ! activeId ) {
+			window.setTimeout( () => setActiveId?.( id ), 0 );
+		}
+	}, [ isSelected, setActiveId, activeId, id ] );
 
 	return (
 		<Composite.Item
@@ -83,8 +82,7 @@ export function Option( {
 	tooltipText,
 	...additionalProps
 }: OptionProps ) {
-	const { baseId } = useContext( CircularOptionPickerContext );
-	const compositeContext = useContext( Composite.Context );
+	const { baseId, setActiveId } = useContext( CircularOptionPickerContext );
 	const id = useInstanceId(
 		Option,
 		baseId || 'components-circular-option-picker__option'
@@ -96,12 +94,9 @@ export function Option( {
 		...additionalProps,
 	};
 
-	const optionControl = compositeContext?.store ? (
-		<OptionAsOption
-			{ ...commonProps }
-			compositeStore={ compositeContext?.store }
-			isSelected={ isSelected }
-		/>
+	const isListbox = setActiveId !== undefined;
+	const optionControl = isListbox ? (
+		<OptionAsOption { ...commonProps } isSelected={ isSelected } />
 	) : (
 		<OptionAsButton { ...commonProps } isPressed={ isSelected } />
 	);

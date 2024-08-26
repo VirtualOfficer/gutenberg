@@ -124,4 +124,6 @@ export type OptionProps = Omit<
 
 export type CircularOptionPickerContextProps = {
 	baseId?: string;
+	activeId?: string | null | undefined;
+	setActiveId?: ( newId: string | null | undefined ) => void;
 };
