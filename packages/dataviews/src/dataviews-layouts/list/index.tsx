@@ -6,7 +6,7 @@ import clsx from 'clsx';
 /**
  * WordPress dependencies
  */
-import { useInstanceId } from '@wordpress/compose';
+import { useInstanceId, usePrevious } from '@wordpress/compose';
 import {
 	__experimentalHStack as HStack,
 	__experimentalVStack as VStack,
@@ -364,21 +364,28 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 			activeCompositeId?.startsWith( itemCompositeIdPrefix )
 		);
 	} );
+	const previousActiveItemIndex = usePrevious( activeItemIndex );
 	const isActiveIdInList = activeItemIndex !== -1;
 
-	const firstDataitem = data?.[ 0 ];
 	useEffect( () => {
-		if ( ! isActiveIdInList && firstDataitem ) {
-			// Prefer going down, except if there is no item below (last item), then go up (last item in list).
-			// if ( compositeStore.down() ) {
-			// 	compositeStore.move( compositeStore.down() );
-			// } else if ( compositeStore.up() ) {
-			// 	compositeStore.move( compositeStore.up() );
-			// }
+		if ( ! isActiveIdInList ) {
+			// Prefer going down, except if there is no item below (last item),
+			// then go up (last item in list).
+			// By picking previousActiveItemIndex as the next item index, we are
+			// basically picking the item after the deleted one.
+			// Clamping between 0 and data.length - 1 to avoid out of bounds.
+			const nextActiveDataItem =
+				data[
+					Math.max(
+						0,
+						Math.min(
+							previousActiveItemIndex ?? 0,
+							data.length - 1
+						)
+					)
+				];
 
-			// TODO: better next active item selection logic (up/down),
-			// instead of always picking first item.
-			const nextCompositeActiveId = getItemDomId( firstDataitem );
+			const nextCompositeActiveId = getItemDomId( nextActiveDataItem );
 			setActiveCompositeId( nextCompositeActiveId );
 			(
 				document.querySelector( `#${ nextCompositeActiveId }` ) as
@@ -386,7 +393,7 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 					| undefined
 			 )?.focus();
 		}
-	}, [ firstDataitem, getItemDomId, isActiveIdInList ] );
+	}, [ data, previousActiveItemIndex, getItemDomId, isActiveIdInList ] );
 
 	const selectItemDropdownTrigger = ( itemIndex: number ) => {
 		const item = data[ itemIndex ];
