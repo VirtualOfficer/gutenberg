@@ -8,10 +8,7 @@ import { css } from '@emotion/react';
  * Internal dependencies
  */
 import { COLORS, CONFIG } from '../../utils';
-import type {
-	AlignmentMatrixControlProps,
-	AlignmentMatrixControlCellProps,
-} from '../types';
+import type { AlignmentMatrixControlProps } from '../types';
 
 export const rootBase = () => {
 	return css`
@@ -49,45 +46,6 @@ export const Row = styled.div`
 	grid-template-columns: repeat( 3, 1fr );
 `;
 
-const pointActive = ( {
-	isActive,
-}: Pick< AlignmentMatrixControlCellProps, 'isActive' > ) => {
-	const boxShadow = isActive ? `0 0 0 2px ${ COLORS.gray[ 900 ] }` : null;
-	const pointColor = isActive ? COLORS.gray[ 900 ] : COLORS.gray[ 400 ];
-	const pointColorHover = isActive ? COLORS.gray[ 900 ] : COLORS.theme.accent;
-
-	return css`
-		box-shadow: ${ boxShadow };
-		color: ${ pointColor };
-
-		*:hover > & {
-			color: ${ pointColorHover };
-		}
-	`;
-};
-
-export const pointBase = (
-	props: Pick< AlignmentMatrixControlCellProps, 'isActive' >
-) => {
-	return css`
-		background: currentColor;
-		box-sizing: border-box;
-		display: grid;
-		margin: auto;
-		@media not ( prefers-reduced-motion ) {
-			transition: all 120ms linear;
-		}
-
-		${ pointActive( props ) }
-	`;
-};
-
-export const Point = styled.span`
-	height: 6px;
-	width: 6px;
-	${ pointBase }
-`;
-
 export const Cell = styled.span`
 	appearance: none;
 	border: none;
@@ -99,4 +57,36 @@ export const Cell = styled.span`
 	align-items: center;
 	justify-content: center;
 	padding: 0;
+`;
+
+const pointActive = css`
+	color: ${ COLORS.gray[ 400 ] };
+
+	${ Cell }[data-active-item] & {
+		box-shadow: 0 0 0 2px ${ COLORS.gray[ 900 ] };
+		color: ${ COLORS.gray[ 900 ] };
+	}
+
+	${ Cell }:not([data-active-item]):hover & {
+		color: ${ COLORS.theme.accent };
+	}
+`;
+
+export const pointBase = css`
+	background: currentColor;
+	box-sizing: border-box;
+	display: grid;
+	margin: auto;
+
+	@media not ( prefers-reduced-motion ) {
+		transition: all 120ms linear;
+	}
+`;
+
+export const Point = styled.span`
+	height: 6px;
+	width: 6px;
+
+	${ pointBase }
+	${ pointActive }
 `;

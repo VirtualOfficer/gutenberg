@@ -50,8 +50,13 @@ function AlignmentMatrixControlIcon( {
 				const isActive = alignIndex === index;
 
 				return (
-					<Cell key={ align }>
-						<Point isActive={ isActive } />
+					<Cell
+						key={ align }
+						// Use `data-active-item` so that the same styles
+						// from the standard `Cell` component can be applied too.
+						data-active-item={ isActive ? 'true' : undefined }
+					>
+						<Point />
 					</Cell>
 				);
 			} ) }

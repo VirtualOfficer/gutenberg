@@ -3,16 +3,14 @@
  */
 import type * as Ariakit from '@ariakit/react';
 
-export type CompositeContextProps =
-	| {
-			/**
-			 * Object returned by the `useCompositeStore` hook.
-			 */
-			store: Ariakit.CompositeStore;
-	  }
-	| undefined;
+export type CompositeContextProps = {
+	/**
+	 * The component store, used for advanced usage of the component.
+	 */
+	store?: unknown;
+};
 
-export type CompositeStoreProps = {
+type CompositeStoreProps = {
 	/**
 	 * The current active item `id`. The active item is the element within the
 	 * composite widget that has either DOM or virtual focus (in case
@@ -128,11 +126,7 @@ export type CompositeStoreProps = {
 	rtl?: Ariakit.CompositeStoreProps[ 'rtl' ];
 };
 
-export type CompositeProps = {
-	/**
-	 * Object returned by the `useCompositeStore` hook.
-	 */
-	store: Ariakit.CompositeStore;
+export type CompositeProps = CompositeStoreProps & {
 	/**
 	 * Allows the component to be rendered as a different HTML element or React
 	 * component. The value can be a React element or a function that takes in the
