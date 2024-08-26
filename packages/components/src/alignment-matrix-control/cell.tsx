@@ -1,14 +1,4 @@
 /**
- * External dependencies
- */
-import { useStoreState } from '@ariakit/react';
-
-/**
- * WordPress dependencies
- */
-import { useContext } from '@wordpress/element';
-
-/**
  * Internal dependencies
  */
 import { Composite } from '../composite';
@@ -29,10 +19,6 @@ export default function Cell( {
 }: WordPressComponentProps< AlignmentMatrixControlCellProps, 'span', false > ) {
 	const tooltipText = ALIGNMENT_LABEL[ value ];
 
-	const compositeContext = useContext( Composite.Context );
-
-	const activeId = useStoreState( compositeContext?.store, 'activeId' );
-
 	return (
 		<Tooltip text={ tooltipText }>
 			<Composite.Item
@@ -43,10 +29,7 @@ export default function Cell( {
 			otherwise it'll announce the content as "blank". So we use a visually
 			hidden element instead of aria-label. */ }
 				<VisuallyHidden>{ value }</VisuallyHidden>
-				<Point
-					isActive={ activeId !== undefined && activeId === id }
-					role="presentation"
-				/>
+				<Point role="presentation" />
 			</Composite.Item>
 		</Tooltip>
 	);

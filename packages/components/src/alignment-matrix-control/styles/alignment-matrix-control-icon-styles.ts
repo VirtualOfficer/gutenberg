@@ -12,10 +12,7 @@ import {
 	pointBase,
 	Cell as CellBase,
 } from './alignment-matrix-control-styles';
-import type {
-	AlignmentMatrixControlIconProps,
-	AlignmentMatrixControlCellProps,
-} from '../types';
+import type { AlignmentMatrixControlIconProps } from '../types';
 
 const rootSize = () => {
 	const padding = 1.5;
@@ -52,20 +49,13 @@ export const Root = styled.div`
 	${ rootPointerEvents };
 `;
 
-const pointActive = ( {
-	isActive,
-}: Pick< AlignmentMatrixControlCellProps, 'isActive' > ) => {
-	const boxShadow = isActive ? `0 0 0 1px currentColor` : null;
+const pointActive = css`
+	color: currentColor;
 
-	return css`
-		box-shadow: ${ boxShadow };
-		color: currentColor;
-
-		*:hover > & {
-			color: currentColor;
-		}
-	`;
-};
+	${ CellBase }[data-active-item] & {
+		box-shadow: 0 0 0 1px currentColor;
+	}
+`;
 
 export const Point = styled.span`
 	height: 2px;

@@ -92,8 +92,8 @@ export function AlignmentMatrixControl( {
 				<Composite.Row render={ <Row role="row" /> } key={ index }>
 					{ cells.map( ( cell ) => (
 						<Cell
-							key={ cell }
 							id={ getItemId( baseId, cell ) }
+							key={ cell }
 							value={ cell }
 						/>
 					) ) }

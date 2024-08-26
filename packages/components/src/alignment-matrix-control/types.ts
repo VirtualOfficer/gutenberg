@@ -49,6 +49,5 @@ export type AlignmentMatrixControlIconProps = Pick<
 };
 
 export type AlignmentMatrixControlCellProps = {
-	isActive?: boolean;
 	value: NonNullable< AlignmentMatrixControlProps[ 'value' ] >;
 };
