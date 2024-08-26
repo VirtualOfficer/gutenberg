@@ -38,7 +38,7 @@ import type { Action, NormalizedField, ViewListProps } from '../../types';
 
 interface ListViewItemProps< Item > {
 	actions: Action< Item >[];
-	id?: string;
+	id: string;
 	isSelected: boolean;
 	item: Item;
 	mediaField?: NormalizedField< Item >;
@@ -55,6 +55,10 @@ const {
 	CompositeRowV2: CompositeRow,
 	DropdownMenuV2: DropdownMenu,
 } = unlock( componentsPrivateApis );
+
+function computeDropdownTriggerCompositeId( domId: string ) {
+	return `${ domId }-dropdown`;
+}
 
 function ListItem< Item >( {
 	actions,
@@ -262,7 +266,9 @@ function ListItem< Item >( {
 							<DropdownMenu
 								trigger={
 									<CompositeItem
-										id={ `${ id }-dropdown` }
+										id={ computeDropdownTriggerCompositeId(
+											id
+										) }
 										render={
 											<Button
 												size="small"
@@ -324,8 +330,13 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 	const baseId = useInstanceId( ViewList, 'view-list' );
 
 	const getItemDomId = useCallback(
-		( item?: Item ) =>
-			item ? `${ baseId }-${ getItemId( item ) }` : undefined,
+		( item?: Item ) => {
+			if ( ! item ) {
+				return;
+			}
+
+			return `${ baseId }-${ getItemId( item ) }`;
+		},
 		[ baseId, getItemId ]
 	);
 
@@ -397,7 +408,12 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 
 	const selectItemDropdownTrigger = ( itemIndex: number ) => {
 		const item = data[ itemIndex ];
-		const nextCompositeActiveId = `${ getItemDomId( item ) }-dropdown`;
+		const itemDomId = getItemDomId( item );
+		if ( ! itemDomId ) {
+			return;
+		}
+		const nextCompositeActiveId =
+			computeDropdownTriggerCompositeId( itemDomId );
 		setActiveCompositeId( nextCompositeActiveId );
 		(
 			document.querySelector( `#${ nextCompositeActiveId }` ) as
@@ -443,7 +459,9 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 			setActiveId={ setActiveCompositeId }
 		>
 			{ data.map( ( item ) => {
-				const id = getItemDomId( item );
+				// Since `item` is guaranteed not to be undefined, we can safely
+				// let typescript know that `id` is not undefined either.
+				const id = getItemDomId( item )!;
 				return (
 					<ListItem
 						key={ id }
