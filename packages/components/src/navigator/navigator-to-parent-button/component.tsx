@@ -24,14 +24,9 @@ function UnconnectedNavigatorToParentButton(
 }
 
 /**
- * _Note: this component is deprecated. Please use the `NavigatorBackButton`
- * component instead._
- *
  * @deprecated
  */
 export const NavigatorToParentButton = contextConnect(
 	UnconnectedNavigatorToParentButton,
-	'NavigatorToParentButton'
+	'Navigator.ToParentButton'
 );
-
-export default NavigatorToParentButton;

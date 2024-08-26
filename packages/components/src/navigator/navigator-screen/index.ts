@@ -1,1 +1,1 @@
-export { default as NavigatorScreen } from './component';
+export { NavigatorScreen } from './component';

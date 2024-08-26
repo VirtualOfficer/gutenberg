@@ -1,1 +1,1 @@
-export { default as NavigatorButton } from './component';
+export { NavigatorButton } from './component';

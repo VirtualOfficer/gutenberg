@@ -1104,21 +1104,15 @@
 		"parent": "components"
 	},
 	{
-		"title": "NavigatorProvider",
-		"slug": "navigator-provider",
-		"markdown_source": "../packages/components/src/navigator/navigator-provider/README.md",
-		"parent": "components"
-	},
-	{
 		"title": "NavigatorScreen",
 		"slug": "navigator-screen",
 		"markdown_source": "../packages/components/src/navigator/navigator-screen/README.md",
 		"parent": "components"
 	},
 	{
-		"title": "NavigatorToParentButton",
-		"slug": "navigator-to-parent-button",
-		"markdown_source": "../packages/components/src/navigator/navigator-to-parent-button/README.md",
+		"title": "Navigator",
+		"slug": "navigator",
+		"markdown_source": "../packages/components/src/navigator/navigator/README.md",
 		"parent": "components"
 	},
 	{

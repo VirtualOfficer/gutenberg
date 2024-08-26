@@ -8,6 +8,7 @@
 
 ### Enhancements
 
+-   `Navigator`: stabilize APIs ([#64613](https://github.com/WordPress/gutenberg/pull/64613)).
 -   `ColorPicker`: Adopt radius scale ([#64693](https://github.com/WordPress/gutenberg/pull/64693)).
 -   `CustomSelectControl V2`: Adopt radius scale ([#64693](https://github.com/WordPress/gutenberg/pull/64693)).
 -   `DateTime`: Adopt radius scale ([#64693](https://github.com/WordPress/gutenberg/pull/64693)).

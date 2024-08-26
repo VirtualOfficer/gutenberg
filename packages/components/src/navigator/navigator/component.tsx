@@ -20,7 +20,7 @@ import { View } from '../../view';
 import { NavigatorContext } from '../context';
 import * as styles from '../styles';
 import type {
-	NavigatorProviderProps,
+	NavigatorProps,
 	NavigatorLocation,
 	NavigatorContext as NavigatorContextType,
 	NavigateOptions,
@@ -204,8 +204,8 @@ function routerReducer(
 	};
 }
 
-function UnconnectedNavigatorProvider(
-	props: WordPressComponentProps< NavigatorProviderProps, 'div' >,
+function UnconnectedNavigator(
+	props: WordPressComponentProps< NavigatorProps, 'div' >,
 	forwardedRef: ForwardedRef< any >
 ) {
 	const {
@@ -213,7 +213,7 @@ function UnconnectedNavigatorProvider(
 		children,
 		className,
 		...otherProps
-	} = useContextSystem( props, 'NavigatorProvider' );
+	} = useContextSystem( props, 'Navigator' );
 
 	const [ routerState, dispatch ] = useReducer(
 		routerReducer,
@@ -266,7 +266,7 @@ function UnconnectedNavigatorProvider(
 
 	const cx = useCx();
 	const classes = useMemo(
-		() => cx( styles.navigatorProviderWrapper, className ),
+		() => cx( styles.navigatorWrapper, className ),
 		[ className, cx ]
 	);
 
@@ -279,42 +279,4 @@ function UnconnectedNavigatorProvider(
 	);
 }
 
-/**
- * The `NavigatorProvider` component allows rendering nested views/panels/menus
- * (via the `NavigatorScreen` component and navigate between these different
- * view (via the `NavigatorButton` and `NavigatorBackButton` components or the
- * `useNavigator` hook).
- *
- * ```jsx
- * import {
- *   __experimentalNavigatorProvider as NavigatorProvider,
- *   __experimentalNavigatorScreen as NavigatorScreen,
- *   __experimentalNavigatorButton as NavigatorButton,
- *   __experimentalNavigatorBackButton as NavigatorBackButton,
- * } from '@wordpress/components';
- *
- * const MyNavigation = () => (
- *   <NavigatorProvider initialPath="/">
- *     <NavigatorScreen path="/">
- *       <p>This is the home screen.</p>
- *        <NavigatorButton path="/child">
- *          Navigate to child screen.
- *       </NavigatorButton>
- *     </NavigatorScreen>
- *
- *     <NavigatorScreen path="/child">
- *       <p>This is the child screen.</p>
- *       <NavigatorBackButton>
- *         Go back
- *       </NavigatorBackButton>
- *     </NavigatorScreen>
- *   </NavigatorProvider>
- * );
- * ```
- */
-export const NavigatorProvider = contextConnect(
-	UnconnectedNavigatorProvider,
-	'NavigatorProvider'
-);
-
-export default NavigatorProvider;
+export const Navigator = contextConnect( UnconnectedNavigator, 'Navigator' );
