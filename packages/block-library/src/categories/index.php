@@ -23,6 +23,7 @@ function render_block_core_categories( $attributes ) {
 		'hierarchical' => ! empty( $attributes['showHierarchy'] ),
 		'orderby'      => 'name',
 		'show_count'   => ! empty( $attributes['showPostCounts'] ),
+		'taxonomy'     => $attributes['taxonomy'],
 		'title_li'     => '',
 		'hide_empty'   => empty( $attributes['showEmpty'] ),
 	);
