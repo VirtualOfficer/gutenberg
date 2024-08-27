@@ -35,6 +35,7 @@ const ComplementaryAreaHeader = ( {
 							{ smallScreenTitle }
 						</Truncate>
 					</h2>
+					{ toggleButton }
 				</div>
 			) }
 			<div
@@ -46,7 +47,7 @@ const ComplementaryAreaHeader = ( {
 				tabIndex={ -1 }
 			>
 				{ children }
-				{ toggleButton }
+				{ ( ! smallScreenTitle || ! isMobileViewport ) && toggleButton }
 			</div>
 		</>
 	);
