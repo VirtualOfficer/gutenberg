@@ -552,6 +552,22 @@ export default function Image( {
 
 	const showBlockControls = showUrlInput || allowCrop || showCoverControls;
 
+	const ReplaceMediaToolbarItem = () => (
+		<MediaReplaceFlow
+			mediaId={ id }
+			mediaURL={ url }
+			allowedTypes={ ALLOWED_MEDIA_TYPES }
+			accept="image/*"
+			onSelect={ onSelectImage }
+			onSelectURL={ onSelectURL }
+			onError={ onUploadError }
+		>
+			<MenuItem onClick={ () => onSelectImage( undefined ) }>
+				{ __( 'Reset' ) }
+			</MenuItem>
+		</MediaReplaceFlow>
+	);
+
 	const controls = (
 		<>
 			{ showBlockControls && (
@@ -588,23 +604,14 @@ export default function Image( {
 					) }
 				</BlockControls>
 			) }
-			{ isSingleSelected && ! isEditingImage && ! lockUrlControls && (
-				<BlockControls group="other">
-					<MediaReplaceFlow
-						mediaId={ id }
-						mediaURL={ url }
-						allowedTypes={ ALLOWED_MEDIA_TYPES }
-						accept="image/*"
-						onSelect={ onSelectImage }
-						onSelectURL={ onSelectURL }
-						onError={ onUploadError }
-					>
-						<MenuItem onClick={ () => onSelectImage( undefined ) }>
-							{ __( 'Reset' ) }
-						</MenuItem>
-					</MediaReplaceFlow>
-				</BlockControls>
-			) }
+			{ isSingleSelected &&
+				! isEditingImage &&
+				! lockUrlControls &&
+				! isContentOnlyMode && (
+					<BlockControls group="other">
+						<ReplaceMediaToolbarItem />
+					</BlockControls>
+				) }
 			{ isSingleSelected && externalBlob && (
 				<BlockControls>
 					<ToolbarGroup>
@@ -620,108 +627,129 @@ export default function Image( {
 				// Add some extra controls for content attributes when content only mode is active.
 				// With content only mode active, the inspector is hidden, so users need another way
 				// to edit these attributes.
-				<BlockControls group="other">
-					<Dropdown
-						popoverProps={ { position: 'bottom right' } }
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<ToolbarButton
-								onClick={ onToggle }
-								aria-haspopup="true"
-								aria-expanded={ isOpen }
-								onKeyDown={ ( event ) => {
-									if ( ! isOpen && event.keyCode === DOWN ) {
-										event.preventDefault();
-										onToggle();
-									}
-								} }
-							>
-								{ _x(
-									'Alt',
-									'Alternative text for an image. Block toolbar label, a low character count is preferred.'
+				<>
+					{ isSingleSelected &&
+						! isEditingImage &&
+						! lockUrlControls && (
+							// Put Replace in its own area so it has borders around it.
+							<BlockControls group="inline">
+								<ReplaceMediaToolbarItem />
+							</BlockControls>
+						) }
+
+					<BlockControls group="other">
+						<ToolbarGroup>
+							<Dropdown
+								popoverProps={ { position: 'bottom right' } }
+								renderToggle={ ( { isOpen, onToggle } ) => (
+									<ToolbarButton
+										onClick={ onToggle }
+										aria-haspopup="true"
+										aria-expanded={ isOpen }
+										onKeyDown={ ( event ) => {
+											if (
+												! isOpen &&
+												event.keyCode === DOWN
+											) {
+												event.preventDefault();
+												onToggle();
+											}
+										} }
+									>
+										{ _x(
+											'Alt',
+											'Alternative text for an image. Block toolbar label, a low character count is preferred.'
+										) }
+									</ToolbarButton>
 								) }
-							</ToolbarButton>
-						) }
-						renderContent={ () => (
-							<TextareaControl
-								className="wp-block-image__toolbar_content_textarea"
-								label={ __( 'Alternative text' ) }
-								value={ alt || '' }
-								onChange={ updateAlt }
-								disabled={ lockAltControls }
-								help={
-									lockAltControls ? (
-										<>{ lockAltControlsMessage }</>
-									) : (
-										<>
-											<ExternalLink
-												href={
-													// translators: Localized tutorial, if one exists. W3C Web Accessibility Initiative link has list of existing translations.
-													__(
-														'https://www.w3.org/WAI/tutorials/images/decision-tree/'
-													)
-												}
-											>
-												{ __(
-													'Describe the purpose of the image.'
-												) }
-											</ExternalLink>
-											<br />
-											{ __(
-												'Leave empty if decorative.'
-											) }
-										</>
-									)
-								}
-								__nextHasNoMarginBottom
+								renderContent={ () => (
+									<TextareaControl
+										className="wp-block-image__toolbar_content_textarea"
+										label={ __( 'Alternative text' ) }
+										value={ alt || '' }
+										onChange={ updateAlt }
+										disabled={ lockAltControls }
+										help={
+											lockAltControls ? (
+												<>{ lockAltControlsMessage }</>
+											) : (
+												<>
+													<ExternalLink
+														href={
+															// translators: Localized tutorial, if one exists. W3C Web Accessibility Initiative link has list of existing translations.
+															__(
+																'https://www.w3.org/WAI/tutorials/images/decision-tree/'
+															)
+														}
+													>
+														{ __(
+															'Describe the purpose of the image.'
+														) }
+													</ExternalLink>
+													<br />
+													{ __(
+														'Leave empty if decorative.'
+													) }
+												</>
+											)
+										}
+										__nextHasNoMarginBottom
+									/>
+								) }
 							/>
-						) }
-					/>
-					<Dropdown
-						popoverProps={ { position: 'bottom right' } }
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<ToolbarButton
-								onClick={ onToggle }
-								aria-haspopup="true"
-								aria-expanded={ isOpen }
-								onKeyDown={ ( event ) => {
-									if ( ! isOpen && event.keyCode === DOWN ) {
-										event.preventDefault();
-										onToggle();
-									}
-								} }
-							>
-								{ __( 'Title' ) }
-							</ToolbarButton>
-						) }
-						renderContent={ () => (
-							<TextControl
-								__next40pxDefaultSize
-								className="wp-block-image__toolbar_content_textarea"
-								__nextHasNoMarginBottom
-								label={ __( 'Title attribute' ) }
-								value={ title || '' }
-								onChange={ onSetTitle }
-								disabled={ lockTitleControls }
-								help={
-									lockTitleControls ? (
-										<>{ lockTitleControlsMessage }</>
-									) : (
-										<>
-											{ __(
-												'Describe the role of this image on the page.'
-											) }
-											<ExternalLink href="https://www.w3.org/TR/html52/dom.html#the-title-attribute">
-												{ __(
-													'(Note: many devices and browsers do not display this text.)'
-												) }
-											</ExternalLink>
-										</>
-									)
-								}
+							<Dropdown
+								popoverProps={ { position: 'bottom right' } }
+								renderToggle={ ( { isOpen, onToggle } ) => (
+									<ToolbarButton
+										onClick={ onToggle }
+										aria-haspopup="true"
+										aria-expanded={ isOpen }
+										onKeyDown={ ( event ) => {
+											if (
+												! isOpen &&
+												event.keyCode === DOWN
+											) {
+												event.preventDefault();
+												onToggle();
+											}
+										} }
+									>
+										{ __( 'Title' ) }
+									</ToolbarButton>
+								) }
+								renderContent={ () => (
+									<TextControl
+										__next40pxDefaultSize
+										className="wp-block-image__toolbar_content_textarea"
+										__nextHasNoMarginBottom
+										label={ __( 'Title attribute' ) }
+										value={ title || '' }
+										onChange={ onSetTitle }
+										disabled={ lockTitleControls }
+										help={
+											lockTitleControls ? (
+												<>
+													{ lockTitleControlsMessage }
+												</>
+											) : (
+												<>
+													{ __(
+														'Describe the role of this image on the page.'
+													) }
+													<ExternalLink href="https://www.w3.org/TR/html52/dom.html#the-title-attribute">
+														{ __(
+															'(Note: many devices and browsers do not display this text.)'
+														) }
+													</ExternalLink>
+												</>
+											)
+										}
+									/>
+								) }
 							/>
-						) }
-					/>
-				</BlockControls>
+						</ToolbarGroup>
+					</BlockControls>
+				</>
 			) }
 			<InspectorControls>
 				<ToolsPanel
