@@ -14,18 +14,21 @@ function gutenberg_reregister_interactivity_script_modules() {
 	wp_deregister_script_module( '@wordpress/interactivity' );
 	wp_deregister_script_module( '@wordpress/interactivity-router' );
 
+	$experiments = get_option( 'gutenberg-experiments' );
+	$full_page_navigation_enabled = isset( $experiments['gutenberg-full-page-client-side-navigation'] );
+
 	wp_register_script_module(
 		'@wordpress/interactivity',
 		gutenberg_url( '/build/interactivity/' . ( SCRIPT_DEBUG ? 'debug.min.js' : 'index.min.js' ) ),
 		array(),
-		$default_version
+		$full_page_navigation_enabled ? null : $default_version
 	);
 
 	wp_register_script_module(
 		'@wordpress/interactivity-router',
 		gutenberg_url( '/build/interactivity/router.min.js' ),
 		array( '@wordpress/interactivity' ),
-		$default_version
+		$full_page_navigation_enabled ? null : $default_version
 	);
 }
 
