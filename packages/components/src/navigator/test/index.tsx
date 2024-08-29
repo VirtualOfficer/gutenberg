@@ -480,7 +480,7 @@ describe( 'Navigator', () => {
 	] );
 	// Mock `matchMedia` so that all animations are skipped.
 	const mockedMatchMedia = jest.fn( ( query: string ) => {
-		if ( query === '(prefers-reduced-motion)' ) {
+		if ( /prefers-reduced-motion/.test( query ) ) {
 			return { matches: true } as ReturnType< typeof window.matchMedia >;
 		}
 
