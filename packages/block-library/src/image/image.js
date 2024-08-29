@@ -109,7 +109,7 @@ export default function Image( {
 	clientId,
 	blockEditingMode,
 	parentLayoutType,
-	getContainerWidth,
+	maxContentWidth,
 } ) {
 	const {
 		url = '',
@@ -971,8 +971,11 @@ export default function Image( {
 				} }
 				showHandle={ isSingleSelected }
 				minWidth={ minWidth }
-				maxWidth="100%"
+				maxWidth={ maxContentWidth || '100%' }
 				minHeight={ minHeight }
+				maxHeight={
+					maxContentWidth ? maxContentWidth / ratio : undefined
+				}
 				lockAspectRatio={ ratio }
 				enable={ {
 					top: false,
@@ -984,14 +987,25 @@ export default function Image( {
 				onResizeStop={ ( event, direction, elt ) => {
 					onResizeStop();
 
-					const maxContentWidth = getContainerWidth();
+					let maxWidth = maxContentWidth;
+					if ( ! maxWidth ) {
+						const parentElement = elt.parentElement;
+						const parentBox = parentElement.getBoundingClientRect();
+						const parentStyle =
+							parentElement.ownerDocument.defaultView.getComputedStyle(
+								parentElement
+							);
+						maxWidth =
+							parentBox.width -
+							parseFloat( parentStyle.paddingInline );
+					}
 
 					// Clear hardcoded width if the resized width is close to the max-content width.
 					if (
 						// Only do this if the image is bigger than the container to prevent it from being squished.
 						// TODO: Remove this check if the image support setting 100% width.
-						naturalWidth >= maxContentWidth &&
-						Math.abs( elt.offsetWidth - maxContentWidth ) < 10
+						naturalWidth >= maxWidth &&
+						Math.abs( elt.offsetWidth - maxWidth ) < 10
 					) {
 						setAttributes( {
 							width: undefined,

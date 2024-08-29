@@ -19,10 +19,11 @@ import {
 	__experimentalGetShadowClassesAndStyles as getShadowClassesAndStyles,
 	useBlockEditingMode,
 } from '@wordpress/block-editor';
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useEffect, useRef, useState, cloneElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { image as icon, plugins as pluginsIcon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
+import { useResizeObserver } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -108,7 +109,9 @@ export function ImageEdit( {
 		metadata,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
-	const containerRef = useRef();
+
+	const [ contentResizeListener, { width: containerWidth } ] =
+		useResizeObserver();
 
 	const altRef = useRef();
 	useEffect( () => {
@@ -293,10 +296,7 @@ export function ImageEdit( {
 				Object.keys( borderProps.style ).length > 0 ),
 	} );
 
-	const blockProps = useBlockProps( {
-		ref: containerRef,
-		className: classes,
-	} );
+	const blockProps = useBlockProps( { className: classes } );
 
 	// Much of this description is duplicated from MediaPlaceholder.
 	const { lockUrlControls = false, lockUrlControlsMessage } = useSelect(
@@ -368,36 +368,66 @@ export function ImageEdit( {
 	};
 
 	return (
-		<figure { ...blockProps }>
-			<Image
-				temporaryURL={ temporaryURL }
-				attributes={ attributes }
-				setAttributes={ setAttributes }
-				isSingleSelected={ isSingleSelected }
-				insertBlocksAfter={ insertBlocksAfter }
-				onReplace={ onReplace }
-				onSelectImage={ onSelectImage }
-				onSelectURL={ onSelectURL }
-				onUploadError={ onUploadError }
-				context={ context }
-				clientId={ clientId }
-				blockEditingMode={ blockEditingMode }
-				parentLayoutType={ parentLayout?.type }
-				getContainerWidth={ () => containerRef.current.offsetWidth }
-			/>
-			<MediaPlaceholder
-				icon={ <BlockIcon icon={ icon } /> }
-				onSelect={ onSelectImage }
-				onSelectURL={ onSelectURL }
-				onError={ onUploadError }
-				placeholder={ placeholder }
-				accept="image/*"
-				allowedTypes={ ALLOWED_MEDIA_TYPES }
-				value={ { id, src } }
-				mediaPreview={ mediaPreview }
-				disableMediaButtons={ temporaryURL || url }
-			/>
-		</figure>
+		<>
+			<figure { ...blockProps }>
+				<Image
+					temporaryURL={ temporaryURL }
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					isSingleSelected={ isSingleSelected }
+					insertBlocksAfter={ insertBlocksAfter }
+					onReplace={ onReplace }
+					onSelectImage={ onSelectImage }
+					onSelectURL={ onSelectURL }
+					onUploadError={ onUploadError }
+					context={ context }
+					clientId={ clientId }
+					blockEditingMode={ blockEditingMode }
+					parentLayoutType={ parentLayout?.type }
+					maxContentWidth={ align ? containerWidth : undefined }
+				/>
+				<MediaPlaceholder
+					icon={ <BlockIcon icon={ icon } /> }
+					onSelect={ onSelectImage }
+					onSelectURL={ onSelectURL }
+					onError={ onUploadError }
+					placeholder={ placeholder }
+					accept="image/*"
+					allowedTypes={ ALLOWED_MEDIA_TYPES }
+					value={ { id, src } }
+					mediaPreview={ mediaPreview }
+					disableMediaButtons={ temporaryURL || url }
+				/>
+			</figure>
+			{
+				// Only render the resize observer if the image is aligned,
+				// because 100% width won't work with aligned elements (table and float).
+				[ 'left', 'right', 'center' ].includes( align ) ? (
+					// The listener cannot be placed as the first element as it will break the in-between inserter.
+					// See https://github.com/WordPress/gutenberg/blob/71134165868298fc15e22896d0c28b41b3755ff7/packages/block-editor/src/components/block-list/use-in-between-inserter.js#L120
+					// A trick to take the padding of the parent into account when calculating the max width.
+					<div
+						aria-hidden="true"
+						style={ {
+							position: 'absolute',
+							boxSizing: 'border-box',
+							inset: 0,
+							width: '100%',
+							height: 0,
+							paddingInline: 'inherit',
+							margin: 0,
+						} }
+					>
+						{ cloneElement( contentResizeListener, {
+							style: {
+								...contentResizeListener.props.style,
+								position: 'relative',
+							},
+						} ) }
+					</div>
+				) : null
+			}
+		</>
 	);
 }
 
