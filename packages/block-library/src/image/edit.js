@@ -12,8 +12,8 @@ import { Placeholder } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import {
 	BlockIcon,
-	MediaPlaceholder,
 	useBlockProps,
+	MediaPlaceholder,
 	store as blockEditorStore,
 	__experimentalUseBorderProps as useBorderProps,
 	__experimentalGetShadowClassesAndStyles as getShadowClassesAndStyles,
@@ -108,6 +108,7 @@ export function ImageEdit( {
 		align,
 		metadata,
 	} = attributes;
+
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 
 	const [ contentResizeListener, { width: containerWidth } ] =
