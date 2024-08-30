@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+-   Fixed the issue with having 5 high severity vulnerabilities by upgrading the `puppeteer-core` package to the latest major version `^23.1.0` ([#64597](https://github.com/WordPress/gutenberg/pull/64597)).
+
 ## 28.6.0 (2024-08-21)
 
 ## 28.5.0 (2024-08-07)
