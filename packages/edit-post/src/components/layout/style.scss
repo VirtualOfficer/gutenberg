@@ -11,6 +11,10 @@
 	&:not(details) {
 		padding-top: 23px;
 		max-height: 100%;
+		// flex-basis doesn’t seem needed except that it works around an issue in Safari
+		// where the element can lack any dimensions if no user size is set and the
+		// viewport height changes cause the component to switch from the details element.
+		flex-basis: auto;
 
 		&:not(.has-user-size) {
 			max-height: 50% !important;
