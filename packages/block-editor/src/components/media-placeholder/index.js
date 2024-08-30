@@ -378,7 +378,7 @@ export function MediaPlaceholder( {
 		}
 
 		return (
-			<DropZone onFilesDrop={ onFilesUpload } onHTMLDrop={ onHTMLDrop } />
+			<DropZone onFilesDrop={ onFilesUpload } onHTMLDrop={ onHTMLDrop } accept = { accept } />
 		);
 	};
 
