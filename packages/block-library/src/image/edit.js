@@ -110,7 +110,7 @@ export function ImageEdit( {
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 
-	const [ contentResizeListener, { width: containerWidth } ] =
+	const [ contentResizeListener, { width: maxContentWidth } ] =
 		useResizeObserver();
 
 	const altRef = useRef();
@@ -384,7 +384,7 @@ export function ImageEdit( {
 					clientId={ clientId }
 					blockEditingMode={ blockEditingMode }
 					parentLayoutType={ parentLayout?.type }
-					maxContentWidth={ align ? containerWidth : undefined }
+					maxContentWidth={ maxContentWidth }
 				/>
 				<MediaPlaceholder
 					icon={ <BlockIcon icon={ icon } /> }
@@ -400,32 +400,18 @@ export function ImageEdit( {
 				/>
 			</figure>
 			{
-				// Only render the resize observer if the image is aligned,
-				// because 100% width won't work with aligned elements (table and float).
-				[ 'left', 'right', 'center' ].includes( align ) ? (
-					// The listener cannot be placed as the first element as it will break the in-between inserter.
-					// See https://github.com/WordPress/gutenberg/blob/71134165868298fc15e22896d0c28b41b3755ff7/packages/block-editor/src/components/block-list/use-in-between-inserter.js#L120
-					// A trick to take the padding of the parent into account when calculating the max width.
-					<div
-						aria-hidden="true"
-						style={ {
-							position: 'absolute',
-							boxSizing: 'border-box',
-							inset: 0,
-							width: '100%',
+				// The listener cannot be placed as the first element as it will break the in-between inserter.
+				// See https://github.com/WordPress/gutenberg/blob/71134165868298fc15e22896d0c28b41b3755ff7/packages/block-editor/src/components/block-list/use-in-between-inserter.js#L120
+				isSingleSelected &&
+					cloneElement( contentResizeListener, {
+						// Some themes set max-width on blocks.
+						className: 'wp-block',
+						style: {
+							...contentResizeListener.props.style,
 							height: 0,
-							paddingInline: 'inherit',
 							margin: 0,
-						} }
-					>
-						{ cloneElement( contentResizeListener, {
-							style: {
-								...contentResizeListener.props.style,
-								position: 'relative',
-							},
-						} ) }
-					</div>
-				) : null
+						},
+					} )
 			}
 		</>
 	);
