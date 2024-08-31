@@ -53,7 +53,7 @@ body:
       id: existing
       attributes:
           label: Please confirm that you have searched existing issues in the repo.
-          description: You can do this by searching https://github.com/WordPress/gutenberg/issues and making sure the bug is not related to another plugin.
+          description: You can do this by searching https://github.com/VirtualOfficer/gutenberg/issues and making sure the bug is not related to another plugin.
           options:
               - label: 'Yes'
                 required: true
