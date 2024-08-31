@@ -25,6 +25,7 @@ module.exports = {
 		image: './packages/block-library/src/image/view.js',
 		file: './packages/block-library/src/file/view.js',
 		search: './packages/block-library/src/search/view.js',
+		accordionGroup: './packages/block-library/src/accordion-group/view.js',
 	},
 	experiments: {
 		outputModule: true,
