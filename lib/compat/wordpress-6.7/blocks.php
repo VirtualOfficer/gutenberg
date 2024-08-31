@@ -43,3 +43,58 @@ function gutenberg_filter_block_type_metadata_settings_allow_variations_php_file
 	return $settings;
 }
 add_filter( 'block_type_metadata_settings', 'gutenberg_filter_block_type_metadata_settings_allow_variations_php_file', 10, 2 );
+
+/**
+ * Filter the query vars (tax_query) for the Query Loop block to support post formats.
+ *
+ * @param array    $query The query vars.
+ * @param WP_Block $block Block instance.
+ * @return array   The filtered query vars.
+ */
+function gutenberg_filter_query_loop_block_query_vars_post_format( $query, $block ) {
+	if ( isset( $block->context['query']['format'] ) &&
+		! empty( $block->context['query']['format'] ) ) {
+
+		$formats   = $block->context['query']['format'];
+		$tax_query = array( 'relation' => 'OR' );
+
+		// The default post format, 'standard', is not saved in the database.
+		// If 'standard' is part of the request, the query needs to exclude the formats.
+		if ( in_array( 'standard', $formats, true ) ) {
+			$tax_query[] = array(
+				'taxonomy' => 'post_format',
+				'field'    => 'slug',
+				'terms'    => array(),
+				'operator' => 'NOT EXISTS',
+			);
+			// Remove the standard format:
+			$formats = array_diff( $formats, array( 'standard' ) );
+		}
+
+		// Add any remaining formats to the tax query.
+		if ( ! empty( $formats ) ) {
+			// Add the post-format- prefix.
+			$terms = array_map(
+				static function ( $format ) {
+					return 'post-format-' . $format;
+				},
+				$formats
+			);
+
+			$tax_query[] = array(
+				'taxonomy' => 'post_format',
+				'field'    => 'slug',
+				'terms'    => $terms,
+				'operator' => 'IN',
+			);
+		}
+
+		// This condition is intended to prevent $tax_query from being added to $query
+		// if it only contains the relation.
+		if ( count( $tax_query ) > 1 ) {
+			$query['tax_query'][] = $tax_query;
+		}
+	}
+	return $query;
+}
+add_filter( 'query_loop_block_query_vars', 'gutenberg_filter_query_loop_block_query_vars_post_format', 10, 2 );

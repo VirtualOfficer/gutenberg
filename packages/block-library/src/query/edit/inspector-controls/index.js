@@ -12,6 +12,8 @@ import {
 	__experimentalToolsPanel as ToolsPanel,
 	__experimentalToolsPanelItem as ToolsPanelItem,
 } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
+import { store as coreStore } from '@wordpress/core-data';
 import { __ } from '@wordpress/i18n';
 import { privateApis as blockEditorPrivateApis } from '@wordpress/block-editor';
 import { debounce } from '@wordpress/compose';
@@ -24,6 +26,7 @@ import OrderControl from './order-control';
 import AuthorControl from './author-control';
 import ParentControl from './parent-control';
 import { TaxonomyControls } from './taxonomy-controls';
+import FormatControls from './format-controls';
 import StickyControl from './sticky-control';
 import EnhancedPaginationControl from './enhanced-pagination-control';
 import CreateNewPostLink from './create-new-post-link';
@@ -58,6 +61,7 @@ export default function QueryInspectorControls( props ) {
 		inherit,
 		taxQuery,
 		parents,
+		format,
 	} = query;
 	const allowedControls = useAllowedControls( attributes );
 	const [ showSticky, setShowSticky ] = useState( postType === 'post' );
@@ -134,11 +138,24 @@ export default function QueryInspectorControls( props ) {
 		isControlAllowed( allowedControls, 'parents' ) &&
 		isPostTypeHierarchical;
 
+	// Check if post formats are supported.
+	// If there are no supported formats, getThemeSupports still includes the default 'standard' format,
+	// and in this case the control should not be shown since the user has no other formats to choose from.
+	const showFormatControl = useSelect( ( select ) => {
+		const themeSupports = select( coreStore ).getThemeSupports();
+		return (
+			themeSupports.formats &&
+			themeSupports.formats.length > 0 &&
+			themeSupports.formats.some( ( type ) => type !== 'standard' )
+		);
+	}, [] );
+
 	const showFiltersPanel =
 		showTaxControl ||
 		showAuthorControl ||
 		showSearchControl ||
-		showParentControl;
+		showParentControl ||
+		showFormatControl;
 	const dropdownMenuProps = useToolsPanelDropdownMenuProps();
 
 	const showPostCountControl = isControlAllowed(
@@ -320,6 +337,7 @@ export default function QueryInspectorControls( props ) {
 							parents: [],
 							search: '',
 							taxQuery: null,
+							format: [],
 						} );
 						setQuerySearch( '' );
 					} }
@@ -378,6 +396,18 @@ export default function QueryInspectorControls( props ) {
 								parents={ parents }
 								postType={ postType }
 								onChange={ setQuery }
+							/>
+						</ToolsPanelItem>
+					) }
+					{ showFormatControl && (
+						<ToolsPanelItem
+							hasValue={ () => !! format?.length }
+							label={ __( 'Formats' ) }
+							onDeselect={ () => setQuery( { format: [] } ) }
+						>
+							<FormatControls
+								onChange={ setQuery }
+								query={ query }
 							/>
 						</ToolsPanelItem>
 					) }
