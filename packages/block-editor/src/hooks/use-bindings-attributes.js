@@ -27,7 +27,7 @@ import BlockContext from '../components/block-context';
 const BLOCK_BINDINGS_ALLOWED_BLOCKS = {
 	'core/paragraph': [ 'content' ],
 	'core/heading': [ 'content' ],
-	'core/image': [ 'id', 'url', 'title', 'alt' ],
+	'core/image': [ 'id', 'url', 'title', 'alt', 'caption' ],
 	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
 };
 
@@ -264,9 +264,8 @@ export const withBlockBindingSupport = createHigherOrderComponent(
 						) &&
 						Object.keys( keptAttributes ).length
 					) {
-						// Don't update caption and href until they are supported.
+						// Don't update href until they are supported.
 						if ( hasPatternOverridesDefaultBinding ) {
-							delete keptAttributes?.caption;
 							delete keptAttributes?.href;
 						}
 						setAttributes( keptAttributes );
