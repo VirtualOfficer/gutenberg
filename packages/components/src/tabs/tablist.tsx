@@ -27,25 +27,27 @@ export const TabList = forwardRef<
 >( function TabList( { children, ...otherProps }, ref ) {
 	const context = useTabsContext();
 
-	const tabStoreState = useStoreState( context?.store );
-	const selectedId = tabStoreState?.selectedId;
-	const indicatorPosition = useTrackElementOffsetRect(
-		context?.store.item( selectedId )?.element
-	);
+	const selectedId = useStoreState( context?.store, 'selectedId' );
+	const selectedElement = context?.store.item( selectedId )?.element;
+	const indicatorPosition = useTrackElementOffsetRect( selectedElement );
 
 	const [ animationEnabled, setAnimationEnabled ] = useState( false );
-	useOnValueUpdate(
-		selectedId,
-		( { previousValue } ) => previousValue && setAnimationEnabled( true )
-	);
+	useOnValueUpdate( selectedId, ( { previousValue } ) => {
+		selectedElement?.scrollIntoView( { behavior: 'instant' } );
+		if ( previousValue ) {
+			setAnimationEnabled( true );
+		}
+	} );
 
-	if ( ! context || ! tabStoreState ) {
+	const activeId = useStoreState( context?.store, 'activeId' );
+	const selectOnMove = useStoreState( context?.store, 'selectOnMove' );
+
+	if ( ! context || ! context.store ) {
 		warning( '`Tabs.TabList` must be wrapped in a `Tabs` component.' );
 		return null;
 	}
 
 	const { store } = context;
-	const { activeId, selectOnMove } = tabStoreState;
 	const { setActiveId } = store;
 
 	const onBlur = () => {

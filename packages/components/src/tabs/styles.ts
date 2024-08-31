@@ -16,10 +16,15 @@ export const TabListWrapper = styled.div`
 	align-items: stretch;
 	flex-direction: row;
 	text-align: center;
+	overflow-x: auto;
 
 	&[aria-orientation='vertical'] {
 		flex-direction: column;
 		text-align: start;
+	}
+
+	:where( [aria-orientation='horizontal'] ) {
+		width: fit-content;
 	}
 
 	@media not ( prefers-reduced-motion: reduce ) {
@@ -58,6 +63,7 @@ export const TabListWrapper = styled.div`
 
 export const Tab = styled( Ariakit.Tab )`
 	& {
+		flex-grow: 1;
 		display: inline-flex;
 		align-items: center;
 		position: relative;
@@ -126,6 +132,10 @@ export const Tab = styled( Ariakit.Tab )`
 		min-height: ${ space(
 			10
 		) }; // Avoid fixed height to allow for long strings that go in multiple lines.
+	}
+
+	[aria-orientation='horizontal'] & {
+		justify-content: center;
 	}
 `;
 
