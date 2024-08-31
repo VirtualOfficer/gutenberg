@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { store as coreDataStore } from '@wordpress/core-data';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -75,20 +76,78 @@ export default {
 
 		return true;
 	},
-	getFieldsList( { registry, context } ) {
-		const metaFields = registry
-			.select( coreDataStore )
-			.getEditedEntityRecord(
+	getFieldsList: function GetFieldsList( { registry, context } ) {
+		let metaFields = {};
+		const {
+			type,
+			is_custom: isCustom,
+			slug,
+		} = registry.select( editorStore ).getCurrentPost();
+		const { getPostTypes, getEditedEntityRecord } =
+			registry.select( coreDataStore );
+
+		let postType = context?.postType;
+
+		// useSelect prevents needing a blockBindingsPanel render to fetch the data.
+		const fields = useSelect(
+			( select ) => {
+				const entityRecord = select( coreDataStore ).getEntityRecord(
+					'root',
+					'postType',
+					postType
+				);
+				return entityRecord?.meta;
+			},
+			[ postType ]
+		);
+
+		// If it is a template, use the default values.
+		if ( ! context?.postType && type === 'wp_template' ) {
+			let isGlobalTemplate = false;
+			// Get the 'kind' from the start of the slug.
+			const [ kind ] = slug.split( '-' );
+			if ( isCustom || slug === 'index' ) {
+				isGlobalTemplate = true;
+				// Use 'post' as the default.
+				postType = 'post';
+			} else if ( kind === 'page' ) {
+				postType = 'page';
+			} else if ( kind === 'single' ) {
+				const postTypes =
+					getPostTypes( { per_page: -1 } )?.map(
+						( entity ) => entity.slug
+					) || [];
+
+				// Infer the post type from the slug.
+				// TODO: Review, as it may not have a post type. http://localhost:8888/wp-admin/site-editor.php?canvas=edit
+				const match = slug.match(
+					`^single-(${ postTypes.join( '|' ) })(?:-.+)?$`
+				);
+				postType = match ? match[ 1 ] : 'post';
+			}
+
+			// Populate the `metaFields` object with the default values.
+			Object.entries( fields || {} ).forEach( ( [ key, props ] ) => {
+				// If the template is global, skip the fields with a subtype.
+				if ( isGlobalTemplate && props.subtype ) {
+					return;
+				}
+				metaFields[ key ] = props.default;
+			} );
+		} else {
+			metaFields = getEditedEntityRecord(
 				'postType',
 				context?.postType,
 				context?.postId
 			).meta;
+		}
 
 		if ( ! metaFields || ! Object.keys( metaFields ).length ) {
 			return null;
 		}
 
 		// Remove footnotes or private keys from the list of fields.
+		// TODO: Remove this once we retrieve the fields from 'types' endpoint in post or page editor.
 		return Object.fromEntries(
 			Object.entries( metaFields ).filter(
 				( [ key ] ) => key !== 'footnotes' && key.charAt( 0 ) !== '_'
