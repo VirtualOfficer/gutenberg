@@ -108,7 +108,7 @@ export default function Image( {
 	clientId,
 	blockEditingMode,
 	parentLayoutType,
-	containerWidth,
+	maxContentWidth,
 } ) {
 	const {
 		url = '',
@@ -146,7 +146,7 @@ export default function Image( {
 		[ id, isSingleSelected ]
 	);
 
-	const { canInsertCover, imageEditing, imageSizes, maxWidth } = useSelect(
+	const { canInsertCover, imageEditing, imageSizes } = useSelect(
 		( select ) => {
 			const { getBlockRootClientId, canInsertBlockType } =
 				select( blockEditorStore );
@@ -157,7 +157,6 @@ export default function Image( {
 			return {
 				imageEditing: settings.imageEditing,
 				imageSizes: settings.imageSizes,
-				maxWidth: settings.maxWidth,
 				canInsertCover: canInsertBlockType(
 					'core/cover',
 					rootClientId
@@ -924,18 +923,6 @@ export default function Image( {
 		const minHeight =
 			naturalHeight < naturalWidth ? MIN_SIZE : MIN_SIZE / ratio;
 
-		// With the current implementation of ResizableBox, an image needs an
-		// explicit pixel value for the max-width. In absence of being able to
-		// set the content-width, this max-width is currently dictated by the
-		// vanilla editor style. The following variable adds a buffer to this
-		// vanilla style, so 3rd party themes have some wiggleroom. This does,
-		// in most cases, allow you to scale the image beyond the width of the
-		// main column, though not infinitely.
-		// @todo It would be good to revisit this once a content-width variable
-		// becomes available.
-		const maxWidthBuffer = maxWidth * 2.5;
-		const maxContentWidth = containerWidth || maxWidthBuffer;
-
 		let showRightHandle = false;
 		let showLeftHandle = false;
 
@@ -982,7 +969,9 @@ export default function Image( {
 				minWidth={ minWidth }
 				maxWidth={ maxContentWidth }
 				minHeight={ minHeight }
-				maxHeight={ maxContentWidth / ratio }
+				maxHeight={
+					maxContentWidth ? maxContentWidth / ratio : undefined
+				}
 				lockAspectRatio={ ratio }
 				enable={ {
 					top: false,

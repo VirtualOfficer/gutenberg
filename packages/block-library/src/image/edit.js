@@ -23,7 +23,6 @@ import { useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { image as icon, plugins as pluginsIcon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
-import { useResizeObserver } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -31,6 +30,7 @@ import { useResizeObserver } from '@wordpress/compose';
 import { unlock } from '../lock-unlock';
 import { useUploadMediaFromBlobURL } from '../utils/hooks';
 import Image from './image';
+import { useMaxWidthObserver } from './use-max-width-observer';
 
 /**
  * Module constants
@@ -110,8 +110,7 @@ export function ImageEdit( {
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 
-	const [ contentResizeListener, { width: containerWidth } ] =
-		useResizeObserver();
+	const [ maxWidthObserver, maxContentWidth ] = useMaxWidthObserver();
 
 	const altRef = useRef();
 	useEffect( () => {
@@ -384,7 +383,7 @@ export function ImageEdit( {
 					clientId={ clientId }
 					blockEditingMode={ blockEditingMode }
 					parentLayoutType={ parentLayout?.type }
-					containerWidth={ containerWidth }
+					maxContentWidth={ maxContentWidth }
 				/>
 				<MediaPlaceholder
 					icon={ <BlockIcon icon={ icon } /> }
@@ -402,7 +401,7 @@ export function ImageEdit( {
 			{
 				// The listener cannot be placed as the first element as it will break the in-between inserter.
 				// See https://github.com/WordPress/gutenberg/blob/71134165868298fc15e22896d0c28b41b3755ff7/packages/block-editor/src/components/block-list/use-in-between-inserter.js#L120
-				contentResizeListener
+				isSingleSelected && maxWidthObserver
 			}
 		</>
 	);
