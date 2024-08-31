@@ -15,9 +15,10 @@ import { Truncate } from '../truncate';
 import type { DropdownMenuContext } from './types';
 
 const ANIMATION_PARAMS = {
-	SLIDE_AMOUNT: '2px',
+	SCALE_AMOUNT_OUTER: 0.82,
+	SCALE_AMOUNT_CONTENT: 0.9,
 	DURATION: '400ms',
-	EASING: 'cubic-bezier( 0.16, 1, 0.3, 1 )',
+	EASING: 'cubic-bezier(0.33, 0, 0, 1)',
 };
 
 const CONTENT_WRAPPER_PADDING = space( 1 );
@@ -38,41 +39,70 @@ const TOOLBAR_VARIANT_BOX_SHADOW = `0 0 0 ${ CONFIG.borderWidth } ${ TOOLBAR_VAR
 
 const GRID_TEMPLATE_COLS = 'minmax( 0, max-content ) 1fr';
 
-const slideUpAndFade = keyframes( {
-	'0%': {
-		opacity: 0,
-		transform: `translateY(${ ANIMATION_PARAMS.SLIDE_AMOUNT })`,
+const scaleYOuter = keyframes( {
+	from: {
+		transform: `scaleY(${ ANIMATION_PARAMS.SCALE_AMOUNT_OUTER })`,
 	},
-	'100%': { opacity: 1, transform: 'translateY(0)' },
 } );
 
-const slideRightAndFade = keyframes( {
-	'0%': {
-		opacity: 0,
-		transform: `translateX(-${ ANIMATION_PARAMS.SLIDE_AMOUNT })`,
+const scaleYContent = keyframes( {
+	// Cause the content to scale at a different rate than the outer container:
+	// - counter the outer scale factor by doing "1 / scaleAmountOuter"
+	// - then apply the content scale factor
+	from: {
+		transform: `scaleY(calc(1 / ${ ANIMATION_PARAMS.SCALE_AMOUNT_OUTER } * ${ ANIMATION_PARAMS.SCALE_AMOUNT_CONTENT }))`,
 	},
-	'100%': { opacity: 1, transform: 'translateX(0)' },
 } );
 
-const slideDownAndFade = keyframes( {
-	'0%': {
+const fadeIn = keyframes( {
+	from: {
 		opacity: 0,
-		transform: `translateY(-${ ANIMATION_PARAMS.SLIDE_AMOUNT })`,
 	},
-	'100%': { opacity: 1, transform: 'translateY(0)' },
 } );
 
-const slideLeftAndFade = keyframes( {
-	'0%': {
-		opacity: 0,
-		transform: `translateX(${ ANIMATION_PARAMS.SLIDE_AMOUNT })`,
-	},
-	'100%': { opacity: 1, transform: 'translateX(0)' },
-} );
-
-export const DropdownMenu = styled( Ariakit.Menu )<
+export const MenuPopoverOuterWrapper = styled.div<
 	Pick< DropdownMenuContext, 'variant' >
 >`
+	position: relative;
+
+	background-color: ${ COLORS.ui.background };
+	border-radius: ${ CONFIG.radiusMedium };
+	${ ( props ) => css`
+		box-shadow: ${ props.variant === 'toolbar'
+			? TOOLBAR_VARIANT_BOX_SHADOW
+			: DEFAULT_BOX_SHADOW };
+	` }
+
+	overflow: hidden;
+
+	/* Animation */
+	@media not ( prefers-reduced-motion ) {
+		&:has( [data-open] ) {
+			animation-duration: ${ ANIMATION_PARAMS.DURATION };
+			animation-timing-function: ${ ANIMATION_PARAMS.EASING };
+			will-change: transform, opacity;
+		}
+
+		&:has( [data-open][data-side='bottom'] ) {
+			transform-origin: top;
+		}
+		&:has( [data-open][data-side='top'] ) {
+			transform-origin: bottom;
+		}
+
+		&:has( [data-open][data-side='bottom'] ),
+		&:has( [data-open][data-side='top'] ) {
+			animation-name: ${ fadeIn }, ${ scaleYOuter };
+		}
+
+		&:has( [data-open][data-side='left'] ),
+		&:has( [data-open][data-side='right'] ) {
+			animation-name: ${ fadeIn };
+		}
+	}
+`;
+
+export const MenuPopoverInnerWrapper = styled.div`
 	position: relative;
 	/* Same as popover component */
 	/* TODO: is there a way to read the sass variable? */
@@ -86,15 +116,8 @@ export const DropdownMenu = styled( Ariakit.Menu )<
 	min-width: 160px;
 	max-width: 320px;
 	max-height: var( --popover-available-height );
-	padding: ${ CONTENT_WRAPPER_PADDING };
 
-	background-color: ${ COLORS.ui.background };
-	border-radius: ${ CONFIG.radiusMedium };
-	${ ( props ) => css`
-		box-shadow: ${ props.variant === 'toolbar'
-			? TOOLBAR_VARIANT_BOX_SHADOW
-			: DEFAULT_BOX_SHADOW };
-	` }
+	padding: ${ CONTENT_WRAPPER_PADDING };
 
 	overscroll-behavior: contain;
 	overflow: auto;
@@ -103,22 +126,15 @@ export const DropdownMenu = styled( Ariakit.Menu )<
 	outline: 2px solid transparent !important;
 
 	/* Animation */
-	&[data-open] {
-		@media not ( prefers-reduced-motion ) {
-			animation-duration: ${ ANIMATION_PARAMS.DURATION };
-			animation-timing-function: ${ ANIMATION_PARAMS.EASING };
-			will-change: transform, opacity;
-			/* Default animation.*/
-			animation-name: ${ slideDownAndFade };
-			&[data-side='left'] {
-				animation-name: ${ slideLeftAndFade };
-			}
-			&[data-side='up'] {
-				animation-name: ${ slideUpAndFade };
-			}
-			&[data-side='right'] {
-				animation-name: ${ slideRightAndFade };
-			}
+	@media not ( prefers-reduced-motion ) {
+		&[data-open] {
+			animation-duration: inherit;
+			animation-timing-function: inherit;
+			transform-origin: inherit;
+		}
+		&[data-open][data-side='bottom'],
+		&[data-open][data-side='top'] {
+			animation-name: ${ fadeIn }, ${ scaleYContent };
 		}
 	}
 `;
@@ -201,7 +217,7 @@ const baseItem = css`
 	}
 
 	/* When the item is the trigger of an open submenu */
-	${ DropdownMenu }:not(:focus) &:not(:focus)[aria-expanded="true"] {
+	${ MenuPopoverInnerWrapper }:not(:focus) &:not(:focus)[aria-expanded="true"] {
 		background-color: ${ LIGHT_BACKGROUND_COLOR };
 		color: ${ COLORS.theme.foreground };
 	}
@@ -299,9 +315,9 @@ export const ItemSuffixWrapper = styled.span`
 	 * When the parent menu item is active, except when it's a non-focused/hovered
 	 * submenu trigger (in that case, color should not be inherited)
 	 */
-	[data-active-item]:not( [data-focus-visible] ) *:not(${ DropdownMenu }) &,
+	[data-active-item]:not( [data-focus-visible] ) *:not(${ MenuPopoverInnerWrapper }) &,
 	/* When the parent menu item is disabled */
-	[aria-disabled='true'] *:not(${ DropdownMenu }) & {
+	[aria-disabled='true'] *:not(${ MenuPopoverInnerWrapper }) & {
 		color: inherit;
 	}
 `;
@@ -364,8 +380,10 @@ export const DropdownMenuItemHelpText = styled( Truncate )`
 	color: ${ LIGHTER_TEXT_COLOR };
 	word-break: break-all;
 
-	[data-active-item]:not( [data-focus-visible] ) *:not( ${ DropdownMenu } ) &,
-	[aria-disabled='true'] *:not( ${ DropdownMenu } ) & {
+	[data-active-item]:not( [data-focus-visible] )
+		*:not( ${ MenuPopoverInnerWrapper } )
+		&,
+	[aria-disabled='true'] *:not( ${ MenuPopoverInnerWrapper } ) & {
 		color: inherit;
 	}
 `;
