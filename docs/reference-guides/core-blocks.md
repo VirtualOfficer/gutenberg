@@ -887,6 +887,17 @@ Add white space between blocks and customize its height. ([Source](https://githu
 -	**Supports:** anchor, interactivity (clientNavigation), spacing (margin)
 -	**Attributes:** height, width
 
+## Tab
+
+Single tab within a tabs block. ([Source](https://github.com/WordPress/gutenberg/tree/trunk/packages/block-library/src/tab))
+
+-	**Name:** core/tab
+-	**Experimental:** true
+-	**Category:** design
+-	**Parent:** core/tabs
+-	**Supports:** anchor, ~~html~~, ~~reusable~~
+-	**Attributes:** isActive, label, slug, tabIndex
+
 ## Table
 
 Create structured content in rows and columns to display information. ([Source](https://github.com/WordPress/gutenberg/tree/trunk/packages/block-library/src/table))
@@ -905,6 +916,17 @@ Summarize your post with a list of headings. Add HTML anchors to Heading blocks 
 -	**Category:** design
 -	**Supports:** color (background, gradients, link, text), interactivity (clientNavigation), spacing (margin, padding), typography (fontSize, lineHeight), ~~html~~
 -	**Attributes:** headings, onlyIncludeCurrentPage
+
+## Tabs
+
+Organize content into tabs. ([Source](https://github.com/WordPress/gutenberg/tree/trunk/packages/block-library/src/tabs))
+
+-	**Name:** core/tabs
+-	**Experimental:** true
+-	**Category:** design
+-	**Allowed Blocks:** core/tab
+-	**Supports:** align (full, wide), color (text, ~~background~~), interactivity, spacing (margin, padding), ~~html~~
+-	**Attributes:** innerTabs
 
 ## Tag Cloud
 

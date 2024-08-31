@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "core/tabs",
+	"title": "Tabs",
+	"category": "design",
+	"description": "Organize content into tabs.",
+	"textdomain": "default",
+	"__experimental": true,
+	"allowedBlocks": [ "core/tab" ],
+	"attributes": {
+		"innerTabs": {
+			"type": "array",
+			"default": [],
+			"source": "query",
+			"selector": ".wp-block-tabs__tab-label",
+			"query": {
+				"href": {
+					"type": "string",
+					"source": "attribute",
+					"attribute": "href"
+				},
+				"label": {
+					"type": "string",
+					"source": "html"
+				}
+			}
+		}
+	},
+	"supports": {
+		"align": [ "wide", "full" ],
+		"color": {
+			"background": false,
+			"text": true
+		},
+		"html": false,
+		"interactivity": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorStyle": "wp-block-tabs-editor",
+	"style": "wp-block-tabs"
+}
