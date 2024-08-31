@@ -24,7 +24,12 @@ import {
 } from '@wordpress/block-editor';
 import { PluginArea } from '@wordpress/plugins';
 import { __, sprintf } from '@wordpress/i18n';
-import { useCallback, useMemo } from '@wordpress/element';
+import {
+	useCallback,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+} from '@wordpress/element';
 import { store as noticesStore } from '@wordpress/notices';
 import { store as preferencesStore } from '@wordpress/preferences';
 import {
@@ -36,8 +41,8 @@ import { privateApis as blockLibraryPrivateApis } from '@wordpress/block-library
 import { addQueryArgs } from '@wordpress/url';
 import { decodeEntities } from '@wordpress/html-entities';
 import { store as coreStore } from '@wordpress/core-data';
-import { SlotFillProvider } from '@wordpress/components';
-import { useViewportMatch } from '@wordpress/compose';
+import { ResizableBox, SlotFillProvider } from '@wordpress/components';
+import { useMediaQuery, useViewportMatch } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -149,6 +154,96 @@ function useEditorStyles() {
 		hasThemeStyleSupport,
 		postType,
 	] );
+}
+
+function MetaBoxesMain() {
+	const [ isOpen, openHeight ] = useSelect( ( select ) => {
+		const { get } = select( preferencesStore );
+		return [
+			get( 'core/edit-post', 'metaBoxesMainIsOpen' ),
+			get( 'core/edit-post', 'metaBoxesMainOpenHeight' ),
+		];
+	}, [] );
+	const { set: setPreference } = useDispatch( preferencesStore );
+	const resizableBoxRef = useRef();
+	const isShort = useMediaQuery( '(max-height: 549px)' );
+
+	// In case a user size is set stops the default max-height from applying.
+	useLayoutEffect( () => {
+		if ( ! isShort && openHeight !== undefined ) {
+			resizableBoxRef.current.resizable.classList.add( 'has-user-size' );
+		}
+	}, [ isShort, openHeight ] );
+
+	const className = 'edit-post-meta-boxes-main';
+	const contents = (
+		// The class name 'edit-post-layout__metaboxes' is retained because some plugins use it.
+		<div className="edit-post-meta-boxes-main__liner edit-post-layout__metaboxes">
+			<MetaBoxes location="normal" />
+			<MetaBoxes location="advanced" />
+		</div>
+	);
+
+	if ( isShort ) {
+		return (
+			<details
+				className={ className }
+				open={ isOpen }
+				onToggle={ ( { target } ) => {
+					setPreference(
+						'core/edit-post',
+						'metaBoxesMainIsOpen',
+						target.open
+					);
+				} }
+			>
+				<summary>{ __( 'Meta Boxes' ) }</summary>
+				{ contents }
+			</details>
+		);
+	}
+	return (
+		<ResizableBox
+			className={ className }
+			defaultSize={ { height: openHeight } }
+			ref={ resizableBoxRef }
+			enable={ {
+				top: true,
+				right: false,
+				bottom: false,
+				left: false,
+				topLeft: false,
+				topRight: false,
+				bottomRight: false,
+				bottomLeft: false,
+			} }
+			// This is overriden by an !important rule that applies until user resizes.
+			maxHeight="100%"
+			bounds="parent"
+			boundsByDirection
+			// Avoids hiccups while dragging over objects like iframes and ensures that
+			// the event to end the drag is captured by the target (resize handle)
+			// whether or not it’s under the pointer.
+			onPointerDown={ ( { pointerId, target } ) => {
+				target.setPointerCapture( pointerId );
+			} }
+			onResizeStart={ ( event, direction, elementRef ) => {
+				// Avoids height jumping in case it’s limited by max-height.
+				elementRef.style.height = `${ elementRef.offsetHeight }px`;
+				// Stops initial max-height from being applied.
+				elementRef.classList.add( 'has-user-size' );
+			} }
+			onResizeStop={ () => {
+				setPreference(
+					'core/edit-post',
+					'metaBoxesMainOpenHeight',
+					resizableBoxRef.current.state.height
+				);
+			} }
+		>
+			{ contents }
+		</ResizableBox>
+	);
 }
 
 function Layout( {
@@ -354,12 +449,7 @@ function Layout( {
 					}
 					extraContent={
 						! isDistractionFree &&
-						showMetaBoxes && (
-							<div className="edit-post-layout__metaboxes">
-								<MetaBoxes location="normal" />
-								<MetaBoxes location="advanced" />
-							</div>
-						)
+						showMetaBoxes && <MetaBoxesMain />
 					}
 				>
 					<PostLockedModal />
