@@ -22,7 +22,7 @@ import {
 	useDisabled,
 } from '@wordpress/compose';
 import { __experimentalStyleProvider as StyleProvider } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -130,6 +130,8 @@ function Iframe( {
 		useResizeObserver();
 	const [ containerResizeListener, { width: containerWidth } ] =
 		useResizeObserver();
+	const { __unstableSetEditorMode } = useDispatch( blockEditorStore );
+	const { __unstableGetEditorMode } = useSelect( blockEditorStore );
 
 	const setRef = useRefEffect( ( node ) => {
 		node._load = () => {
@@ -431,6 +433,22 @@ function Iframe( {
 								'editor-styles-wrapper',
 								...bodyClasses
 							) }
+							onClick={ ( event ) => {
+								if (
+									__unstableGetEditorMode() === 'zoom-out' &&
+									event.target === event.currentTarget
+								) {
+									__unstableSetEditorMode( 'edit' );
+								}
+							} }
+							onKeyDown={ ( event ) => {
+								if (
+									__unstableGetEditorMode() === 'zoom-out' &&
+									event.key === 'Enter'
+								) {
+									__unstableSetEditorMode( 'edit' );
+								}
+							} }
 						>
 							{ contentResizeListener }
 							<StyleProvider document={ iframeDocument }>
