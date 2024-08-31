@@ -466,6 +466,7 @@ const getNavigationButton = ( buttonKey: keyof typeof BUTTON_TEXT ) =>
 
 describe( 'Navigator', () => {
 	const originalGetClientRects = window.Element.prototype.getClientRects;
+	const originalMatchMedia = window.matchMedia;
 
 	// `getClientRects` needs to be mocked so that `isVisible` from the `@wordpress/dom`
 	// `focusable` module can pass, in a JSDOM env where the DOM elements have no width/height.
@@ -477,16 +478,27 @@ describe( 'Navigator', () => {
 			height: 100,
 		},
 	] );
+	// Mock `matchMedia` so that all animations are skipped.
+	const mockedMatchMedia = jest.fn( ( query: string ) => {
+		if ( /prefers-reduced-motion/.test( query ) ) {
+			return { matches: true } as ReturnType< typeof window.matchMedia >;
+		}
+
+		return originalMatchMedia( query );
+	} );
 
 	beforeAll( () => {
 		// @ts-expect-error There's no need for an exact mock, this is just needed
 		// for the tests to pass (see `mockedGetClientRects` inline comments).
 		window.Element.prototype.getClientRects =
 			jest.fn( mockedGetClientRects );
+
+		window.matchMedia = jest.fn( mockedMatchMedia );
 	} );
 
 	afterAll( () => {
 		window.Element.prototype.getClientRects = originalGetClientRects;
+		window.matchMedia = originalMatchMedia;
 	} );
 
 	it( 'should render', () => {

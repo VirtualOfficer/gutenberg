@@ -13,9 +13,9 @@ import {
 	useMemo,
 	useRef,
 	useId,
+	useState,
 } from '@wordpress/element';
 import { useMergeRefs } from '@wordpress/compose';
-import { isRTL as isRTLFn } from '@wordpress/i18n';
 import { escapeAttribute } from '@wordpress/escape-html';
 
 /**
@@ -28,22 +28,38 @@ import { View } from '../../view';
 import { NavigatorContext } from '../context';
 import * as styles from '../styles';
 import type { NavigatorScreenProps } from '../types';
+import { useScreenAnimatePresence } from './use-screen-animate-presence';
 
 function UnconnectedNavigatorScreen(
 	props: WordPressComponentProps< NavigatorScreenProps, 'div', false >,
 	forwardedRef: ForwardedRef< any >
 ) {
 	const screenId = useId();
-	const { children, className, path, ...otherProps } = useContextSystem(
-		props,
-		'NavigatorScreen'
-	);
 
-	const { location, match, addScreen, removeScreen } =
+	const [ wrapperEl, setWrapperEl ] = useState< HTMLElement | null >( null );
+	const wrapperRefCallback: React.RefCallback< HTMLElement > = ( el ) =>
+		setWrapperEl( el );
+	const mergedWrapperRef = useMergeRefs( [
+		forwardedRef,
+		wrapperRefCallback,
+	] );
+
+	const {
+		children,
+		className,
+		path,
+		onAnimationEnd: onAnimationEndProp,
+		...otherProps
+	} = useContextSystem( props, 'NavigatorScreen' );
+
+	const { location, match, addScreen, removeScreen, setWrapperHeight } =
 		useContext( NavigatorContext );
-	const isMatch = match === screenId;
-	const wrapperRef = useRef< HTMLDivElement >( null );
+	const { isInitial, isBack, focusTargetSelector, skipFocus } = location;
 
+	const isMatch = match === screenId;
+	const skipAnimationAndFocusRestoration = !! isInitial && ! isBack;
+
+	// Register / unregister screen with the navigator context.
 	useEffect( () => {
 		const screen = {
 			id: screenId,
@@ -53,30 +69,28 @@ function UnconnectedNavigatorScreen(
 		return () => removeScreen( screen );
 	}, [ screenId, path, addScreen, removeScreen ] );
 
-	const isRTL = isRTLFn();
-	const { isInitial, isBack } = location;
+	// Animation.
+	const { animationStyles, shouldRenderScreen, onAnimationEnd } =
+		useScreenAnimatePresence( {
+			isMatch,
+			isBack,
+			onAnimationEnd: onAnimationEndProp,
+			skipAnimation: skipAnimationAndFocusRestoration,
+			screenEl: wrapperEl,
+			setWrapperHeight,
+		} );
+
 	const cx = useCx();
 	const classes = useMemo(
-		() =>
-			cx(
-				styles.navigatorScreen( {
-					isInitial,
-					isBack,
-					isRTL,
-				} ),
-				className
-			),
-		[ className, cx, isInitial, isBack, isRTL ]
+		() => cx( styles.navigatorScreen, animationStyles, className ),
+		[ className, cx, animationStyles ]
 	);
 
+	// Focus restoration
 	const locationRef = useRef( location );
-
 	useEffect( () => {
 		locationRef.current = location;
 	}, [ location ] );
-
-	// Focus restoration
-	const isInitialLocation = location.isInitial && ! location.isBack;
 	useEffect( () => {
 		// Only attempt to restore focus:
 		// - if the current location is not the initial one (to avoid moving focus on page load)
@@ -85,20 +99,20 @@ function UnconnectedNavigatorScreen(
 		// - if focus hasn't already been restored for the current location
 		// - if the `skipFocus` option is not set to `true`. This is useful when we trigger the navigation outside of NavigatorScreen.
 		if (
-			isInitialLocation ||
+			skipAnimationAndFocusRestoration ||
 			! isMatch ||
-			! wrapperRef.current ||
+			! wrapperEl ||
 			locationRef.current.hasRestoredFocus ||
-			location.skipFocus
+			skipFocus
 		) {
 			return;
 		}
 
-		const activeElement = wrapperRef.current.ownerDocument.activeElement;
+		const activeElement = wrapperEl.ownerDocument.activeElement;
 
 		// If an element is already focused within the wrapper do not focus the
 		// element. This prevents inputs or buttons from losing focus unnecessarily.
-		if ( wrapperRef.current.contains( activeElement ) ) {
+		if ( wrapperEl.contains( activeElement ) ) {
 			return;
 		}
 
@@ -106,33 +120,35 @@ function UnconnectedNavigatorScreen(
 
 		// When navigating back, if a selector is provided, use it to look for the
 		// target element (assumed to be a node inside the current NavigatorScreen)
-		if ( location.isBack && location.focusTargetSelector ) {
-			elementToFocus = wrapperRef.current.querySelector(
-				location.focusTargetSelector
-			);
+		if ( isBack && focusTargetSelector ) {
+			elementToFocus = wrapperEl.querySelector( focusTargetSelector );
 		}
 
 		// If the previous query didn't run or find any element to focus, fallback
 		// to the first tabbable element in the screen (or the screen itself).
 		if ( ! elementToFocus ) {
-			const [ firstTabbable ] = focus.tabbable.find( wrapperRef.current );
-			elementToFocus = firstTabbable ?? wrapperRef.current;
+			const [ firstTabbable ] = focus.tabbable.find( wrapperEl );
+			elementToFocus = firstTabbable ?? wrapperEl;
 		}
 
 		locationRef.current.hasRestoredFocus = true;
 		elementToFocus.focus();
 	}, [
-		isInitialLocation,
+		skipAnimationAndFocusRestoration,
 		isMatch,
-		location.isBack,
-		location.focusTargetSelector,
-		location.skipFocus,
+		isBack,
+		focusTargetSelector,
+		skipFocus,
+		wrapperEl,
 	] );
 
-	const mergedWrapperRef = useMergeRefs( [ forwardedRef, wrapperRef ] );
-
-	return isMatch ? (
-		<View ref={ mergedWrapperRef } className={ classes } { ...otherProps }>
+	return shouldRenderScreen ? (
+		<View
+			ref={ mergedWrapperRef }
+			className={ classes }
+			onAnimationEnd={ onAnimationEnd }
+			{ ...otherProps }
+		>
 			{ children }
 		</View>
 	) : null;
