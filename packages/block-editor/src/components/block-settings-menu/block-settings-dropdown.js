@@ -19,12 +19,16 @@ import { pipe, useCopyToClipboard } from '@wordpress/compose';
  * Internal dependencies
  */
 import BlockActions from '../block-actions';
+import BlockCommentMenuItem from '../collab/block-comment-menu-item';
 import BlockHTMLConvertButton from './block-html-convert-button';
 import __unstableBlockSettingsMenuFirstItem from './block-settings-menu-first-item';
 import BlockSettingsMenuControls from '../block-settings-menu-controls';
 import BlockParentSelectorMenuItem from './block-parent-selector-menu-item';
 import { store as blockEditorStore } from '../../store';
 import { unlock } from '../../lock-unlock';
+
+const isBlockCommentExperimentEnabled =
+	window?.__experimentalEnableBlockComment;
 
 const POPOVER_PROPS = {
 	className: 'block-editor-block-settings-menu__popover',
@@ -64,6 +68,7 @@ export function BlockSettingsDropdown( {
 		selectedBlockClientIds,
 		openedBlockSettingsMenu,
 		isContentOnly,
+		blockCommentID,
 	} = useSelect(
 		( select ) => {
 			const {
@@ -84,6 +89,11 @@ export function BlockSettingsDropdown( {
 			const parentBlockName =
 				_firstParentClientId && getBlockName( _firstParentClientId );
 
+			const commentID =
+				// eslint-disable-next-line @wordpress/data-no-store-string-literals
+				select( 'core/block-editor' ).getBlock( firstBlockClientId )
+					?.attributes?.blockCommentId;
+
 			return {
 				firstParentClientId: _firstParentClientId,
 				onlyBlock: 1 === getBlockCount( _firstParentClientId ),
@@ -100,6 +110,7 @@ export function BlockSettingsDropdown( {
 				openedBlockSettingsMenu: getOpenedBlockSettingsMenu(),
 				isContentOnly:
 					getBlockEditingMode( firstBlockClientId ) === 'contentOnly',
+				blockCommentID: commentID,
 			};
 		},
 		[ firstBlockClientId ]
@@ -278,6 +289,13 @@ export function BlockSettingsDropdown( {
 										</MenuItem>
 									</>
 								) }
+								{ isBlockCommentExperimentEnabled &&
+									! blockCommentID && (
+										<BlockCommentMenuItem
+											clientId={ clientIds }
+											onClose={ onClose }
+										/>
+									) }
 							</MenuGroup>
 							{ canCopyStyles && ! isContentOnly && (
 								<MenuGroup>
