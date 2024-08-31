@@ -6,16 +6,13 @@ import { Guide } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { store as preferencesStore } from '@wordpress/preferences';
 import { store as editorStore } from '@wordpress/editor';
-
-/**
- * Internal dependencies
- */
-import { store as editSiteStore } from '../../store';
+import { useState } from '@wordpress/element';
+import { useDebounce } from '@wordpress/compose';
 
 export default function WelcomeGuideTemplate() {
 	const { toggle } = useDispatch( preferencesStore );
 
-	const isVisible = useSelect( ( select ) => {
+	const visibility = useSelect( ( select ) => {
 		const isTemplateActive = !! select( preferencesStore ).get(
 			'core/edit-site',
 			'welcomeGuideTemplate'
@@ -24,15 +21,23 @@ export default function WelcomeGuideTemplate() {
 			'core/edit-site',
 			'welcomeGuide'
 		);
-		const { isPage } = select( editSiteStore );
-		const { getCurrentPostType } = select( editorStore );
+		const { getCurrentPostType, getEditorSettings } = select( editorStore );
+		const hasBackNavigation =
+			!! getEditorSettings().onNavigateToPreviousEntityRecord;
 		return (
 			isTemplateActive &&
 			! isEditorActive &&
-			isPage() &&
-			getCurrentPostType() === 'wp_template'
+			getCurrentPostType() === 'wp_template' &&
+			hasBackNavigation
 		);
 	}, [] );
+
+	// The visibility conditions change in such a way that it’s tricky to avoid
+	// an unexpected flash of the component. Using state and debouncing writes
+	// to it works around the issue.
+	const [ isVisible, setIsVisible ] = useState();
+	const debouncedSetIsVisible = useDebounce( setIsVisible, 32 );
+	debouncedSetIsVisible( visibility );
 
 	if ( ! isVisible ) {
 		return null;
