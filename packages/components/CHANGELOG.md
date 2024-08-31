@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+-   `BorderBoxControl`: Fix border styling direction for RTL environments ([#64513](https://github.com/WordPress/gutenberg/pull/64513)).
+
 ### Deprecations
 
 -   Deprecate `replace` from the options accepted by `useNavigator().goTo()` ([#64675](https://github.com/WordPress/gutenberg/pull/64675)).
