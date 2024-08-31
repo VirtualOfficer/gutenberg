@@ -55,7 +55,8 @@ const UnconnectedDropdownMenu = (
 		gutter,
 		children,
 		shift,
-		modal = true,
+		modal = false,
+		portal = true,
 
 		// From internal components context
 		variant,
@@ -176,6 +177,7 @@ const UnconnectedDropdownMenu = (
 			<Styled.DropdownMenu
 				{ ...otherProps }
 				modal={ modal }
+				portal={ portal }
 				store={ dropdownMenuStore }
 				// Root menu has an 8px distance from its trigger,
 				// otherwise 0 (which causes the submenu to slightly overlap)
