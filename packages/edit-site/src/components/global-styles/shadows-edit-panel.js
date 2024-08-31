@@ -13,7 +13,6 @@ import {
 	__experimentalItemGroup as ItemGroup,
 	__experimentalInputControl as InputControl,
 	__experimentalUnitControl as UnitControl,
-	__experimentalParseQuantityAndUnitFromRawValue as parseQuantityAndUnitFromRawValue,
 	__experimentalGrid as Grid,
 	__experimentalDropdownContentWrapper as DropdownContentWrapper,
 	__experimentalUseNavigator as useNavigator,
@@ -21,7 +20,6 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalConfirmDialog as ConfirmDialog,
 	Dropdown,
-	RangeControl,
 	Button,
 	Flex,
 	FlexItem,
@@ -35,7 +33,6 @@ import {
 	plus,
 	shadow as shadowIcon,
 	reset,
-	settings,
 	moreVertical,
 } from '@wordpress/icons';
 import { useState, useMemo } from '@wordpress/element';
@@ -51,7 +48,6 @@ import {
 	getShadowParts,
 	shadowStringToObject,
 	shadowObjectToString,
-	CUSTOM_VALUE_SETTINGS,
 } from './shadow-utils';
 
 const { useGlobalSetting } = unlock( blockEditorPrivateApis );
@@ -493,16 +489,7 @@ function ShadowPopover( { shadowObj, onChange } ) {
 	);
 }
 
-function ShadowInputControl( { label, value, onChange, hasNegativeRange } ) {
-	const [ isCustomInput, setIsCustomInput ] = useState( false );
-	const [ parsedQuantity, parsedUnit ] =
-		parseQuantityAndUnitFromRawValue( value );
-
-	const sliderOnChange = ( next ) => {
-		onChange(
-			next !== undefined ? [ next, parsedUnit || 'px' ].join( '' ) : '0px'
-		);
-	};
+function ShadowInputControl( { label, value, onChange } ) {
 	const onValueChange = ( next ) => {
 		const isNumeric = next !== undefined && ! isNaN( parseFloat( next ) );
 		const nextValue = isNumeric ? next : '0px';
@@ -510,50 +497,14 @@ function ShadowInputControl( { label, value, onChange, hasNegativeRange } ) {
 	};
 
 	return (
-		<VStack justify="flex-start">
-			<HStack justify="space-between">
-				<Subtitle>{ label }</Subtitle>
-				<Button
-					label={ __( 'Use custom size' ) }
-					icon={ settings }
-					onClick={ () => {
-						setIsCustomInput( ! isCustomInput );
-					} }
-					isPressed={ isCustomInput }
-					size="small"
-				/>
-			</HStack>
-			{ isCustomInput ? (
-				<UnitControl
-					label={ label }
-					hideLabelFromVision
-					__next40pxDefaultSize
-					value={ value }
-					onChange={ onValueChange }
-				/>
-			) : (
-				<RangeControl
-					value={ parsedQuantity ?? 0 }
-					onChange={ sliderOnChange }
-					withInputField={ false }
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-					min={
-						hasNegativeRange
-							? -(
-									CUSTOM_VALUE_SETTINGS[ parsedUnit ?? 'px' ]
-										?.max ?? 10
-							  )
-							: 0
-					}
-					max={
-						CUSTOM_VALUE_SETTINGS[ parsedUnit ?? 'px' ]?.max ?? 10
-					}
-					step={
-						CUSTOM_VALUE_SETTINGS[ parsedUnit ?? 'px' ]?.step ?? 0.1
-					}
-				/>
-			) }
-		</VStack>
+		<HStack align="flex-end">
+			<UnitControl
+				label={ label }
+				__next40pxDefaultSize
+				value={ value }
+				onChange={ onValueChange }
+				className="edit-site-global-styles__shadow-editor-control"
+			/>
+		</HStack>
 	);
 }
